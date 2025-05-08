@@ -1,4 +1,3 @@
-# .github/workflows/docker-publish.yml
 name: Publish Docker Image
 
 on:
@@ -29,6 +28,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/cemGr/my-python-app:latest
-            ghcr.io/cemGr/my-python-app:${{ github.ref_name }}
-
+            ghcr.io/cemgr/my-python-app:latest
+            ghcr.io/cemgr/my-python-app:${{ github.ref_name }}
