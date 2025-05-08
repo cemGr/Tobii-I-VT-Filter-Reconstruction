@@ -91,8 +91,8 @@ git push origin --tags
 ### Push Docker image to GitHub Container Registry
 
 ```bash
-docker tag my-python-app:latest ghcr.io/<user>/my-python-app:latest
-docker push ghcr.io/<user>/my-python-app:latest
+docker tag my-python-app:latest ghcr.io/cemgr/my-python-app:latest
+docker push ghcr.io/cemgr/my-python-app:latest
 ```
 
 ### Publish to PyPI
