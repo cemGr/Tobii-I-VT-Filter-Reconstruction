@@ -1,0 +1,32 @@
+name: Publish Docker Image
+
+on:
+  push:
+    branches:
+      - main
+      - testTDD
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GR_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/cemgr/my-python-app:latest
+            ghcr.io/cemgr/my-python-app:${{ github.ref_name }}
