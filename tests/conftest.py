@@ -8,6 +8,31 @@ import pytest
 from ivt_filter.domain.dataset import EyeData, Recording, Sample
 
 
+def _parse_recording_start(df: pd.DataFrame) -> datetime:
+    """Return an absolute recording start time if the TSV provides one.
+
+    Tobii exports include ``Recording date UTC`` and ``Recording start time UTC``
+    columns. When present we combine them to anchor the relative
+    ``Recording timestamp [ms]`` values to a realistic wall clock. If the
+    columns are missing or unparsable we gracefully fall back to the Unix epoch
+    so downstream computations continue to work.
+    """
+
+    date_col = "Recording date UTC"
+    time_col = "Recording start time UTC"
+    if date_col in df.columns and time_col in df.columns:
+        date_value = df[date_col].iloc[0]
+        time_value = df[time_col].iloc[0]
+        if isinstance(date_value, str) and isinstance(time_value, str):
+            try:
+                combined = f"{date_value} {time_value}"
+                dt = pd.to_datetime(combined, dayfirst=True, utc=True)
+                return dt.tz_localize(None).to_pydatetime()
+            except (TypeError, ValueError):
+                pass
+    return datetime.fromtimestamp(0)
+
+
 @dataclass
 class GroundTruthEvent:
     event_type: str
@@ -22,9 +47,10 @@ class GroundTruthEvent:
 def load_recording_from_tsv(path: str) -> Recording:
     df = pd.read_csv(path, sep="\t")
     df = df[df["Sensor"] == "Eye Tracker"]
+    start_time = _parse_recording_start(df)
     samples: List[Sample] = []
     for _, row in df.iterrows():
-        ts = datetime.fromtimestamp(row["Recording timestamp [ms]"] / 1000.0)
+        ts = start_time + timedelta(milliseconds=float(row["Recording timestamp [ms]"]))
         left_eye = EyeData(
             gaze_x=row.get("Gaze point left X [DACS px]", float("nan")),
             gaze_y=row.get("Gaze point left Y [DACS px]", float("nan")),
@@ -53,7 +79,7 @@ def load_recording_from_tsv(path: str) -> Recording:
             right_eye=right_eye,
         )
         samples.append(sample)
-    start = samples[0].timestamp if samples else datetime.utcnow()
+    start = samples[0].timestamp if samples else start_time
     end = samples[-1].timestamp if samples else start
     return Recording(id=path, start_time=start, end_time=end, samples=samples)
 
@@ -61,6 +87,7 @@ def load_recording_from_tsv(path: str) -> Recording:
 def load_ground_truth_events_from_tsv(path: str) -> List[GroundTruthEvent]:
     df = pd.read_csv(path, sep="\t")
     df = df[df["Sensor"] == "Eye Tracker"]
+    start_time = _parse_recording_start(df)
     grouped = df.groupby(["Eye movement type", "Eye movement type index"])
     events: List[GroundTruthEvent] = []
     for (etype, idx), group in grouped:
@@ -70,8 +97,8 @@ def load_ground_truth_events_from_tsv(path: str) -> List[GroundTruthEvent]:
             GroundTruthEvent(
                 event_type=str(etype),
                 index=int(idx),
-                start_time=datetime.fromtimestamp(start_ms / 1000.0),
-                end_time=datetime.fromtimestamp(end_ms / 1000.0),
+                start_time=start_time + timedelta(milliseconds=float(start_ms)),
+                end_time=start_time + timedelta(milliseconds=float(end_ms)),
                 duration_ms=float(group["Eye movement event duration [ms]"].iloc[0]),
                 fixation_x=float(group.get("Fixation point X [DACS px]", pd.Series([float("nan")])).iloc[0])
                 if "Fixation point X [DACS px]" in group
