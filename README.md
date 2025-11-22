@@ -50,6 +50,26 @@ pytest --cov=app       # measure coverage
 
 ---
 
+## Velocity analysis (IVT preview)
+
+The repository includes a small analysis helper that loads a Tobii Pro Lab TSV export,
+computes gaze velocities using the IVT-style angular window method, and shows a
+velocity-over-time plot. Use one of the included `*_short.tsv` fixtures or your own
+export:
+
+```bash
+python analysis.py --input "I-VT-normal Data export_short.tsv" --window 20
+```
+
+- `--input` points to the TSV file exported from Tobii Pro Lab.
+- `--window` sets the velocity window length in milliseconds (default: `20`).
+
+The command opens a matplotlib window with the computed velocity curve. If you run
+this in a headless environment, set `MPLBACKEND=Agg` to suppress the UI while still
+executing the computation.
+
+---
+
 ## Docker
 
 **Build image**
