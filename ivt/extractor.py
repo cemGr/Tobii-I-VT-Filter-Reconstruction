@@ -33,7 +33,13 @@ class TobiiTSVExtractor:
 
     def convert(self, input_path: str, output_path: str) -> None:
         input_path = Path(input_path)
-        df = pd.read_csv(input_path, sep="\t")
+        wanted = set(self.raw_columns.values()) | {"Sensor"}
+        df = pd.read_csv(
+            input_path,
+            sep="\t",
+            low_memory=False,
+            usecols=lambda c: c in wanted,
+        )
 
         if "Sensor" in df.columns:
             df = df[df["Sensor"] == "Eye Tracker"]

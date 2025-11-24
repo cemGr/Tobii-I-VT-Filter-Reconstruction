@@ -19,6 +19,7 @@ class IVTClassifier:
             raise ValueError("DataFrame must contain 'velocity_deg_per_sec' before classification.")
 
         df = df.copy()
+        df["velocity_deg_per_sec"] = pd.to_numeric(df["velocity_deg_per_sec"], errors="coerce")
 
         def classify_sample(v: float) -> str:
             if v is None or not math.isfinite(v):
@@ -49,11 +50,11 @@ class IVTClassifier:
             event_indices.append(current_index)
 
         df["ivt_event_type"] = event_types
-        df["ivt_event_index"] = event_indices
+        df["ivt_event_index"] = pd.Series(event_indices, dtype="Int64")
         return df
 
     def classify_from_file(self, input_path: str, output_path: str) -> pd.DataFrame:
-        df = pd.read_csv(input_path, sep="\t", decimal=",")
+        df = pd.read_csv(input_path, sep="\t")
         result = self.classify(df)
         result.to_csv(output_path, sep="\t", index=False)
         return result

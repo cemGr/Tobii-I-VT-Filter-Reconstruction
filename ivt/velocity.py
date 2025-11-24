@@ -77,7 +77,7 @@ class VelocityCalculator:
         return last_valid
 
     def compute_from_file(self, input_path: str, output_path: Optional[str] = None) -> pd.DataFrame:
-        df = pd.read_csv(input_path, sep="\t", decimal=",")
+        df = pd.read_csv(input_path, sep="\t")
         result = self.compute(df)
         if output_path:
             result.to_csv(output_path, sep="\t", index=False)

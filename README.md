@@ -1,67 +1,51 @@
 # Tobii-I-VT-Filter-Reconstruction
 
-Werkzeuge zur Rekonstruktion des I-VT-Filters auf Basis der Beschreibungen im
-Exposé und im Tobii-Papier. Die Kernfunktionen (Extraktion, Geschwindigkeits-
-berechnung, Klassifikation, Auswertung) sind nun in einem modularen
-`ivt`-Package gekapselt und folgen einer klaren SOLID-Aufteilung.
+Utilities to reproduce the I-VT filter described in the exposé and Tobii paper.
+Extraction, velocity computation, classification, and evaluation live in a
+modular `ivt` package that follows SOLID principles and can be used via CLI or
+Python API.
 
-## Projektstruktur
+## Project layout
+- `ivt/` – core library (extraction, velocity, classifier, evaluation, CLI).
+- `app/` – lightweight smoke examples.
+- `tests/` – TTD suite that guards extractor, velocity, and CLI behavior.
+- `data/raw/` – untouched Tobii TSV exports (e.g. `ivt_frequency120_fixation_export.tsv`).
+- `data/processed/` – pipeline outputs (slim TSVs, velocity TSVs, classified TSVs).
+- `docs/` – exposé and Tobii paper; `docs/images/` for generated plots.
 
-Die wichtigsten Artefakte sind nach Rollen gruppiert, sodass keine Dateien mehr
-lose im Root-Verzeichnis liegen:
-
-- `ivt/` – Kernbibliothek (Extraktion, Geschwindigkeitsberechnung,
-  Klassifikation, Evaluation).
-- `app/` – kleine Beispiel-/Smoke-Tests für Grundfunktionen.
-- `tests/` – TTD-Suite für Extraktor, Velocity und CLI-Wrapper.
-- `data/raw/` – unveränderte Tobii-TSV-Beispiele (z.B.
-  `ivt_frequency120_fixation_export.tsv`).
-- `data/processed/` – daraus erzeugte Slim-/Velocity-/Eval-Dateien (z.B.
-  `ivt_normal_with_velocity.tsv`).
-- `docs/` – Exposé und Tobii-Papier; unter `docs/images/` liegen die
-  Auswertungsplots.
-
-## Schneller Einstieg
-
-### 1. Repository klonen
+## Quickstart
+1) Clone and activate an environment
 ```bash
 git clone git@github.com:cemGr/Tobii-I-VT-Filter-Reconstruction.git
 cd Tobii-I-VT-Filter-Reconstruction
-```
-
-### 2. (Optional) Virtuelle Umgebung
-```bash
 python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
 ./.venv/Scripts/Activate.ps1  # Windows PowerShell
 ```
 
-### 3. Abhängigkeiten installieren
+2) Install dependencies
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 pip install -e .
 ```
 
-### 4. IVT-Pipeline nutzen
-Das neue CLI bündelt die Schritte Extraktion → Geschwindigkeit → Klassifikation →
-Evaluation. Jeder Schritt ist optional und kann einzeln ausgeführt werden.
-
+3) Run the IVT pipeline (all steps are independent)
 ```bash
-# 4.1 Tobii-Export verschlanken
+# 3.1 Slim a Tobii export to the IVT-friendly columns
 python -m ivt extract data/raw/ivt_frequency120_fixation_export.tsv data/processed/ivt_input.tsv
 
-# 4.2 Olsen-Geschwindigkeit berechnen (z.B. 20 ms Fenster, Augen gemittelt)
+# 3.2 Compute Olsen velocity (e.g., 20 ms window, averaged eyes)
 python -m ivt velocity data/processed/ivt_input.tsv data/processed/ivt_with_velocity.tsv --window 20 --eye average
 
-# 4.3 I-VT-Klassifikation anwenden
+# 3.3 Classify with I-VT (velocity threshold in deg/sec)
 python -m ivt classify data/processed/ivt_with_velocity.tsv data/processed/ivt_with_classes.tsv --threshold 30
 
-# 4.4 Gegen Ground-Truth auswerten
+# 3.4 Evaluate against ground truth labels if available
 python -m ivt evaluate data/processed/ivt_with_classes.tsv --gt-col gt_event_type
 ```
 
-Alle Schritte können auch als Python-API genutzt werden:
+4) Use the Python API when scripting
 ```python
 from ivt import (
     TobiiTSVExtractor,
@@ -73,18 +57,42 @@ from ivt import (
 slim_path = "data/processed/ivt_input.tsv"
 TobiiTSVExtractor().convert("data/raw/ivt_frequency120_fixation_export.tsv", slim_path)
 
-df_velocity = VelocityCalculator().compute_from_file(slim_path)
-classified = IVTClassifier().classify(df_velocity)
+with_velocity = VelocityCalculator().compute_from_file(slim_path)
+classified = IVTClassifier().classify(with_velocity)
 stats = evaluate_ivt_vs_ground_truth(classified)
 ```
 
-## Testen (TTD)
-Die Kernfunktionen werden testgetrieben abgesichert, insbesondere die
-Geschwindigkeitsberechnung. Neue Tests liegen unter `tests/`.
+## Plotting quick recipe
+You can visualize velocity and classification results directly from the TSVs:
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
 
+ivtdf = pd.read_csv("data/processed/ivt_with_classes.tsv", sep="\t")
+
+fig, ax = plt.subplots(2, 1, figsize=(10, 6), sharex=True)
+ax[0].plot(ivtdf["time_ms"], ivtdf["velocity_deg_per_sec"], label="velocity")
+ax[0].axhline(30, color="red", linestyle="--", label="threshold")
+ax[0].set_ylabel("deg/sec")
+ax[0].legend()
+
+ax[1].plot(ivtdf["time_ms"], ivtdf["ivt_event_index"], drawstyle="steps-post")
+ax[1].set_ylabel("event index")
+ax[1].set_xlabel("time (ms)")
+plt.tight_layout()
+plt.show()
+```
+
+## Notes on data handling
+- Extractor reads only the columns required for IVT and filters non-eye-tracker
+  sensors, which suppresses the mixed-type `DtypeWarning` from large TSVs.
+- Velocity and classifier CLI commands expect dot (`.`) decimals; both coerce
+  non-numeric values to `NaN` so invalid rows are marked `Unclassified`.
+
+## Testing (TTD)
 ```bash
-pytest              # alle Tests inkl. Velocity-/Extractor-Checks
-python -m unittest  # falls du die eingebaute Test-Suite nutzen möchtest
+pytest              # full suite
+python -m unittest  # optional built-in runner
 ```
 
 ## Docker
@@ -93,9 +101,9 @@ docker build -t tobii-ivt:latest .
 docker run --rm -it tobii-ivt:latest bash
 ```
 
-## Release & Publishing
+## Release & publishing
 ```bash
-# Version in setup.py anpassen, committen, dann taggen
+# Bump version in setup.py, commit, then tag
 git tag vX.Y.Z
 git push origin --tags
 ```
