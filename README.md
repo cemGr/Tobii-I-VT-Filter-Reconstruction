@@ -5,6 +5,22 @@ Exposé und im Tobii-Papier. Die Kernfunktionen (Extraktion, Geschwindigkeits-
 berechnung, Klassifikation, Auswertung) sind nun in einem modularen
 `ivt`-Package gekapselt und folgen einer klaren SOLID-Aufteilung.
 
+## Projektstruktur
+
+Die wichtigsten Artefakte sind nach Rollen gruppiert, sodass keine Dateien mehr
+lose im Root-Verzeichnis liegen:
+
+- `ivt/` – Kernbibliothek (Extraktion, Geschwindigkeitsberechnung,
+  Klassifikation, Evaluation).
+- `app/` – kleine Beispiel-/Smoke-Tests für Grundfunktionen.
+- `tests/` – TTD-Suite für Extraktor, Velocity und CLI-Wrapper.
+- `data/raw/` – unveränderte Tobii-TSV-Beispiele (z.B.
+  `ivt_frequency120_fixation_export.tsv`).
+- `data/processed/` – daraus erzeugte Slim-/Velocity-/Eval-Dateien (z.B.
+  `ivt_normal_with_velocity.tsv`).
+- `docs/` – Exposé und Tobii-Papier; unter `docs/images/` liegen die
+  Auswertungsplots.
+
 ## Schneller Einstieg
 
 ### 1. Repository klonen
@@ -33,16 +49,16 @@ Evaluation. Jeder Schritt ist optional und kann einzeln ausgeführt werden.
 
 ```bash
 # 4.1 Tobii-Export verschlanken
-python -m ivt extract I-VT-frequency120Fixation\ export.tsv ivt_input.tsv
+python -m ivt extract data/raw/ivt_frequency120_fixation_export.tsv data/processed/ivt_input.tsv
 
 # 4.2 Olsen-Geschwindigkeit berechnen (z.B. 20 ms Fenster, Augen gemittelt)
-python -m ivt velocity ivt_input.tsv ivt_with_velocity.tsv --window 20 --eye average
+python -m ivt velocity data/processed/ivt_input.tsv data/processed/ivt_with_velocity.tsv --window 20 --eye average
 
 # 4.3 I-VT-Klassifikation anwenden
-python -m ivt classify ivt_with_velocity.tsv ivt_with_classes.tsv --threshold 30
+python -m ivt classify data/processed/ivt_with_velocity.tsv data/processed/ivt_with_classes.tsv --threshold 30
 
 # 4.4 Gegen Ground-Truth auswerten
-python -m ivt evaluate ivt_with_classes.tsv --gt-col gt_event_type
+python -m ivt evaluate data/processed/ivt_with_classes.tsv --gt-col gt_event_type
 ```
 
 Alle Schritte können auch als Python-API genutzt werden:
@@ -54,8 +70,8 @@ from ivt import (
     evaluate_ivt_vs_ground_truth,
 )
 
-slim_path = "ivt_input.tsv"
-TobiiTSVExtractor().convert("raw_tobii.tsv", slim_path)
+slim_path = "data/processed/ivt_input.tsv"
+TobiiTSVExtractor().convert("data/raw/ivt_frequency120_fixation_export.tsv", slim_path)
 
 df_velocity = VelocityCalculator().compute_from_file(slim_path)
 classified = IVTClassifier().classify(df_velocity)
