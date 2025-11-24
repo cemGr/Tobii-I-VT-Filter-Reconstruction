@@ -30,7 +30,7 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-3) Run the IVT pipeline (all steps are independent)
+3) Run the IVT pipeline (all steps are independent). Locale-specific decimal commas in gaze/eye columns are accepted during velocity computation.
 ```bash
 # 3.1 Slim a Tobii export to the IVT-friendly columns
 python -m ivt extract data/raw/ivt_frequency120_fixation_export.tsv data/processed/ivt_input.tsv

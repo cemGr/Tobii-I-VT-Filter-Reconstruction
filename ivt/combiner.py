@@ -24,6 +24,27 @@ class EyeCombiner:
         self.config = config
 
     @staticmethod
+    def _to_float(value):
+        if value is None:
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+        if isinstance(value, str):
+            cleaned = value.strip()
+            if cleaned == "":
+                return None
+            cleaned = cleaned.replace(",", ".")
+            try:
+                return float(cleaned)
+            except ValueError:
+                return None
+
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
     def _parse_validity(value) -> int:
         if isinstance(value, str):
             v = value.strip().lower()
@@ -42,31 +63,21 @@ class EyeCombiner:
         v_left = self._parse_validity(row.get("validity_left"))
         v_right = self._parse_validity(row.get("validity_right"))
 
-        left_valid = (
-            pd.notna(row.get("gaze_left_x_px"))
-            and pd.notna(row.get("gaze_left_y_px"))
-            and v_left <= cfg.max_validity
-        )
-        right_valid = (
-            pd.notna(row.get("gaze_right_x_px"))
-            and pd.notna(row.get("gaze_right_y_px"))
-            and v_right <= cfg.max_validity
-        )
+        lx = self._to_float(row.get("gaze_left_x_px"))
+        ly = self._to_float(row.get("gaze_left_y_px"))
+        rx = self._to_float(row.get("gaze_right_x_px"))
+        ry = self._to_float(row.get("gaze_right_y_px"))
+        lz = self._to_float(row.get("eye_left_z_mm"))
+        rz = self._to_float(row.get("eye_right_z_mm"))
 
-        lx, ly = row.get("gaze_left_x_px"), row.get("gaze_left_y_px")
-        rx, ry = row.get("gaze_right_x_px"), row.get("gaze_right_y_px")
-        lz = row.get("eye_left_z_mm")
-        rz = row.get("eye_right_z_mm")
+        left_valid = lx is not None and ly is not None and v_left <= cfg.max_validity
+        right_valid = rx is not None and ry is not None and v_right <= cfg.max_validity
 
         def use_left() -> CombinedGaze:
-            return CombinedGaze(
-                float(lx), float(ly), float(lz) if pd.notna(lz) else None, True
-            )
+            return CombinedGaze(lx, ly, lz if pd.notna(lz) else None, True)
 
         def use_right() -> CombinedGaze:
-            return CombinedGaze(
-                float(rx), float(ry), float(rz) if pd.notna(rz) else None, True
-            )
+            return CombinedGaze(rx, ry, rz if pd.notna(rz) else None, True)
 
         mode = cfg.eye_mode
         if mode == "left":
@@ -75,14 +86,14 @@ class EyeCombiner:
             return use_right() if right_valid else CombinedGaze(None, None, None, False)
 
         if left_valid and right_valid:
-            gaze_x = (float(lx) + float(rx)) / 2.0
-            gaze_y = (float(ly) + float(ry)) / 2.0
+            gaze_x = (lx + rx) / 2.0
+            gaze_y = (ly + ry) / 2.0
             if pd.notna(lz) and pd.notna(rz):
-                eye_z = (float(lz) + float(rz)) / 2.0
+                eye_z = (lz + rz) / 2.0
             elif pd.notna(lz):
-                eye_z = float(lz)
+                eye_z = lz
             elif pd.notna(rz):
-                eye_z = float(rz)
+                eye_z = rz
             else:
                 eye_z = None
             return CombinedGaze(gaze_x, gaze_y, eye_z, True)
