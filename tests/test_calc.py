@@ -1,8 +1,9 @@
 import pytest
-from app.calc import add, divide , mult
+
+from app.calc import add, divide, mult
+
 
 class TestCalc:
-
     def test_addiere_zwei_zahlen(self):
         assert add(2, 3) == 5
 
@@ -14,5 +15,4 @@ class TestCalc:
             divide(10, 0)
 
     def test_mult_two_numbers(self):
-        assert mult(2,4) == 8
-
+        assert mult(2, 4) == 8
