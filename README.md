@@ -41,7 +41,10 @@ python -m ivt velocity data/processed/ivt_input.tsv data/processed/ivt_with_velo
 # 3.3 Classify with I-VT (velocity threshold in deg/sec)
 python -m ivt classify data/processed/ivt_with_velocity.tsv data/processed/ivt_with_classes.tsv --threshold 30
 
-# 3.4 Evaluate against ground truth labels if available
+# 3.4 Plot velocity + events (png, pdf, etc.)
+python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30
+
+# 3.5 Evaluate against ground truth labels if available
 python -m ivt evaluate data/processed/ivt_with_classes.tsv --gt-col gt_event_type
 ```
 
@@ -63,7 +66,7 @@ stats = evaluate_ivt_vs_ground_truth(classified)
 ```
 
 ## Plotting quick recipe
-You can visualize velocity and classification results directly from the TSVs:
+You can visualize velocity and classification results directly from the TSVs using the Python API:
 ```python
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -81,6 +84,11 @@ ax[1].set_ylabel("event index")
 ax[1].set_xlabel("time (ms)")
 plt.tight_layout()
 plt.show()
+```
+
+Or via the CLI helper (saves a file using a headless backend):
+```bash
+python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30
 ```
 
 ## Notes on data handling
