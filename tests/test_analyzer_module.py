@@ -42,8 +42,33 @@ def test_plot_respects_custom_threshold(tmp_path):
         }
     )
     out_path = tmp_path / "plot.png"
-    analyzer = IVTAnalyzer(PlotConfig(threshold_deg_per_sec=10, show_event_index=True))
+    analyzer = IVTAnalyzer(
+        PlotConfig(threshold_deg_per_sec=10, show_event_index=True, figsize=(4.0, 3.0), dpi=150)
+    )
     analyzer.plot(df, out_path)
 
     assert out_path.exists()
     assert out_path.stat().st_size > 0
+
+
+def test_plot_can_show(monkeypatch, tmp_path):
+    df = pd.DataFrame(
+        {
+            "time_ms": [0, 10],
+            "velocity_deg_per_sec": [1.0, 2.0],
+            "combined_x_px": [50.0, 55.0],
+        }
+    )
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    called = []
+    monkeypatch.setattr(plt, "show", lambda: called.append(True))
+
+    out_path = tmp_path / "plot.png"
+    analyzer = IVTAnalyzer(PlotConfig(show=True))
+    analyzer.plot(df, out_path)
+
+    assert out_path.exists()
+    assert called == [True]

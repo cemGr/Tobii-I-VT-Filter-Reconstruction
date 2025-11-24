@@ -44,6 +44,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include event index step plot when ivt_event_index is present",
     )
+    analyze.add_argument(
+        "--figsize",
+        nargs=2,
+        type=float,
+        metavar=("WIDTH", "HEIGHT"),
+        default=(10.0, 6.0),
+        help="Figure size in inches (width height)",
+    )
+    analyze.add_argument("--dpi", type=float, default=None, help="Optional DPI override for the figure")
+    analyze.add_argument(
+        "--show",
+        action="store_true",
+        help="Display the plot window in addition to saving the file (uses your default backend)",
+    )
 
     evaluate = sub.add_parser("evaluate", help="Evaluate classifier output against ground truth")
     evaluate.add_argument("input", help="TSV containing classifier output and GT")
@@ -80,6 +94,9 @@ def main(argv: list[str] | None = None) -> None:
         cfg = PlotConfig(
             threshold_deg_per_sec=args.threshold,
             show_event_index=args.show_events,
+            figsize=tuple(args.figsize),
+            dpi=args.dpi,
+            show=args.show,
         )
         IVTAnalyzer(cfg).plot_from_file(args.input, args.output)
         return

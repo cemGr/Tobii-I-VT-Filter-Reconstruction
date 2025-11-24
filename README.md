@@ -42,7 +42,8 @@ python -m ivt velocity data/processed/ivt_input.tsv data/processed/ivt_with_velo
 python -m ivt classify data/processed/ivt_with_velocity.tsv data/processed/ivt_with_classes.tsv --threshold 30
 
 # 3.4 Plot velocity + gaze position (png, pdf, etc.)
-python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30
+# Control figure size with --figsize W H, pass --show to open the window interactively
+python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30 --figsize 12 7 --show
 
 # 3.5 Evaluate against ground truth labels if available
 python -m ivt evaluate data/processed/ivt_with_classes.tsv --gt-col gt_event_type
@@ -87,7 +88,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Or via the CLI helper (saves a file using a headless backend). Pass `--show-events` if you also want the numbered event index as a third subplot when the column is present:
+Or via the CLI helper. Adjust sizing with `--figsize`/`--dpi`, pass `--show` to open a window instead of only saving the file, and add `--show-events` if you also want the numbered event index as a third subplot when the column is present:
 ```bash
 python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30 --show-events
 ```

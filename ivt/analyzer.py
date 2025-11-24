@@ -20,7 +20,9 @@ class PlotConfig:
     event_index_column: str = "ivt_event_index"
     show_event_index: bool = False
     figsize: tuple[float, float] = (10.0, 6.0)
+    dpi: float | None = None
     tight_layout: bool = True
+    show: bool = False
 
     def ensure_columns(self, columns: Iterable[str]) -> None:
         """Validate that required columns exist."""
@@ -43,14 +45,17 @@ class IVTAnalyzer:
 
         try:
             matplotlib = import_module("matplotlib")
-            matplotlib.use("Agg")
+            if not cfg.show:
+                matplotlib.use("Agg")
             plt = import_module("matplotlib.pyplot")
         except ModuleNotFoundError as exc:  # pragma: no cover - dependency is optional in CI
             raise ModuleNotFoundError(
                 "matplotlib is required for plotting; install via `pip install matplotlib`."
             ) from exc
 
-        fig, axes = plt.subplots(2 + int(cfg.show_event_index), 1, figsize=cfg.figsize, sharex=True)
+        fig, axes = plt.subplots(
+            2 + int(cfg.show_event_index), 1, figsize=cfg.figsize, dpi=cfg.dpi, sharex=True
+        )
         ax = list(axes) if hasattr(axes, "__iter__") else [axes]
 
         ax[0].plot(df[cfg.time_column], df[cfg.velocity_column], label="velocity")
@@ -89,6 +94,8 @@ class IVTAnalyzer:
 
         output_path = Path(output_path or "ivt_plot.png")
         fig.savefig(output_path)
+        if cfg.show:  # pragma: no cover - UI-driven choice
+            plt.show()
         plt.close(fig)
         return output_path
 
