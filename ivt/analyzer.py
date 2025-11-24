@@ -17,6 +17,7 @@ class PlotConfig:
     velocity_column: str = "velocity_deg_per_sec"
     time_column: str = "time_ms"
     gaze_x_column: str = "combined_x_px"
+    gaze_y_column: str = "combined_y_px"
     event_index_column: str = "ivt_event_index"
     show_event_index: bool = False
     figsize: tuple[float, float] = (10.0, 6.0)
@@ -26,7 +27,12 @@ class PlotConfig:
 
     def ensure_columns(self, columns: Iterable[str]) -> None:
         """Validate that required columns exist."""
-        missing = {self.time_column, self.velocity_column, self.gaze_x_column} - set(columns)
+        missing = {
+            self.time_column,
+            self.velocity_column,
+            self.gaze_x_column,
+            self.gaze_y_column,
+        } - set(columns)
         if missing:
             raise ValueError(f"Missing required columns: {', '.join(sorted(missing))}")
 
@@ -65,7 +71,8 @@ class IVTAnalyzer:
         ax[0].legend()
 
         ax[1].plot(df[cfg.time_column], df[cfg.gaze_x_column], label="gaze x")
-        ax[1].set_ylabel("gaze x (px)")
+        ax[1].plot(df[cfg.time_column], df[cfg.gaze_y_column], label="gaze y")
+        ax[1].set_ylabel("gaze (px)")
         ax[1].legend()
 
         next_idx = 2

@@ -81,14 +81,15 @@ ax[0].set_ylabel("deg/sec")
 ax[0].legend()
 
 ax[1].plot(ivtdf["time_ms"], ivtdf["combined_x_px"], label="gaze x")
-ax[1].set_ylabel("gaze x (px)")
+ax[1].plot(ivtdf["time_ms"], ivtdf["combined_y_px"], label="gaze y")
+ax[1].set_ylabel("gaze (px)")
 ax[1].set_xlabel("time (ms)")
 ax[1].legend()
 plt.tight_layout()
 plt.show()
 ```
 
-Or via the CLI helper. Adjust sizing with `--figsize`/`--dpi`, pass `--show` to open a window instead of only saving the file, and add `--show-events` if you also want the numbered event index as a third subplot when the column is present:
+Or via the CLI helper. Adjust sizing with `--figsize`/`--dpi`, pass `--show` to open a window instead of only saving the file, and add `--show-events` if you also want the numbered event index as a third subplot when the column is present. Both gaze x/y traces are plotted by default:
 ```bash
 python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30 --show-events
 ```
