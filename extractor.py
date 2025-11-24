@@ -39,6 +39,6 @@ def convert_tobii_tsv_to_ivt_tsv(input_path: str, output_path: str) -> None:
 
 if __name__ == "__main__":
     convert_tobii_tsv_to_ivt_tsv(
-        "I-VT-normal Data export_short.tsv",
-        "ivt_normal_input.tsv",
+        "I-VT-frequency120Fixation export.tsv",
+        "I-VT-frequency120Fixation export_input.tsv",
     )
