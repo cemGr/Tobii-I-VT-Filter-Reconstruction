@@ -41,7 +41,7 @@ python -m ivt velocity data/processed/ivt_input.tsv data/processed/ivt_with_velo
 # 3.3 Classify with I-VT (velocity threshold in deg/sec)
 python -m ivt classify data/processed/ivt_with_velocity.tsv data/processed/ivt_with_classes.tsv --threshold 30
 
-# 3.4 Plot velocity + events (png, pdf, etc.)
+# 3.4 Plot velocity + gaze position (png, pdf, etc.)
 python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30
 
 # 3.5 Evaluate against ground truth labels if available
@@ -79,16 +79,17 @@ ax[0].axhline(30, color="red", linestyle="--", label="threshold")
 ax[0].set_ylabel("deg/sec")
 ax[0].legend()
 
-ax[1].plot(ivtdf["time_ms"], ivtdf["ivt_event_index"], drawstyle="steps-post")
-ax[1].set_ylabel("event index")
+ax[1].plot(ivtdf["time_ms"], ivtdf["combined_x_px"], label="gaze x")
+ax[1].set_ylabel("gaze x (px)")
 ax[1].set_xlabel("time (ms)")
+ax[1].legend()
 plt.tight_layout()
 plt.show()
 ```
 
-Or via the CLI helper (saves a file using a headless backend):
+Or via the CLI helper (saves a file using a headless backend). Pass `--show-events` if you also want the numbered event index as a third subplot when the column is present:
 ```bash
-python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30
+python -m ivt analyze data/processed/ivt_with_classes.tsv docs/images/ivt_plot.png --threshold 30 --show-events
 ```
 
 ## Notes on data handling

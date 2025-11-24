@@ -10,6 +10,7 @@ def test_plot_from_file_creates_image(tmp_path):
         {
             "time_ms": [0, 10, 20, 30],
             "velocity_deg_per_sec": [0.0, 5.0, 15.0, 25.0],
+            "combined_x_px": [100.0, 101.0, 102.0, 103.0],
             "ivt_event_index": [0, 0, 1, 1],
         }
     )
@@ -24,7 +25,7 @@ def test_plot_from_file_creates_image(tmp_path):
 
 
 def test_plot_requires_time_and_velocity_columns():
-    df = pd.DataFrame({"velocity_deg_per_sec": [1, 2, 3]})
+    df = pd.DataFrame({"velocity_deg_per_sec": [1, 2, 3], "combined_x_px": [1, 2, 3]})
     analyzer = IVTAnalyzer()
 
     with pytest.raises(ValueError):
@@ -36,11 +37,12 @@ def test_plot_respects_custom_threshold(tmp_path):
         {
             "time_ms": [0, 10],
             "velocity_deg_per_sec": [1.0, 2.0],
+            "combined_x_px": [50.0, 55.0],
             "ivt_event_index": [0, 1],
         }
     )
     out_path = tmp_path / "plot.png"
-    analyzer = IVTAnalyzer(PlotConfig(threshold_deg_per_sec=10))
+    analyzer = IVTAnalyzer(PlotConfig(threshold_deg_per_sec=10, show_event_index=True))
     analyzer.plot(df, out_path)
 
     assert out_path.exists()

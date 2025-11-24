@@ -16,13 +16,15 @@ class PlotConfig:
     threshold_deg_per_sec: float | None = None
     velocity_column: str = "velocity_deg_per_sec"
     time_column: str = "time_ms"
+    gaze_x_column: str = "combined_x_px"
     event_index_column: str = "ivt_event_index"
+    show_event_index: bool = False
     figsize: tuple[float, float] = (10.0, 6.0)
     tight_layout: bool = True
 
     def ensure_columns(self, columns: Iterable[str]) -> None:
         """Validate that required columns exist."""
-        missing = {self.time_column, self.velocity_column} - set(columns)
+        missing = {self.time_column, self.velocity_column, self.gaze_x_column} - set(columns)
         if missing:
             raise ValueError(f"Missing required columns: {', '.join(sorted(missing))}")
 
@@ -34,7 +36,7 @@ class IVTAnalyzer:
         self.config = config or PlotConfig()
 
     def plot(self, df: pd.DataFrame, output_path: str | Path | None = None) -> Path:
-        """Plot velocity and event indices; save to the provided path."""
+        """Plot velocity and gaze position; optionally include event indices."""
 
         self.config.ensure_columns(df.columns)
         cfg = self.config
@@ -48,7 +50,8 @@ class IVTAnalyzer:
                 "matplotlib is required for plotting; install via `pip install matplotlib`."
             ) from exc
 
-        fig, ax = plt.subplots(2, 1, figsize=cfg.figsize, sharex=True)
+        fig, axes = plt.subplots(2 + int(cfg.show_event_index), 1, figsize=cfg.figsize, sharex=True)
+        ax = list(axes) if hasattr(axes, "__iter__") else [axes]
 
         ax[0].plot(df[cfg.time_column], df[cfg.velocity_column], label="velocity")
         if cfg.threshold_deg_per_sec is not None:
@@ -56,13 +59,30 @@ class IVTAnalyzer:
         ax[0].set_ylabel("deg/sec")
         ax[0].legend()
 
-        if cfg.event_index_column in df.columns:
-            ax[1].plot(df[cfg.time_column], df[cfg.event_index_column], drawstyle="steps-post")
-            ax[1].set_ylabel("event index")
-        else:
-            ax[1].text(0.5, 0.5, "No event index column", ha="center", va="center", transform=ax[1].transAxes)
-            ax[1].set_ylabel("event index")
-        ax[1].set_xlabel("time (ms)")
+        ax[1].plot(df[cfg.time_column], df[cfg.gaze_x_column], label="gaze x")
+        ax[1].set_ylabel("gaze x (px)")
+        ax[1].legend()
+
+        next_idx = 2
+        if cfg.show_event_index:
+            if cfg.event_index_column in df.columns:
+                ax[next_idx].plot(
+                    df[cfg.time_column], df[cfg.event_index_column], drawstyle="steps-post"
+                )
+                ax[next_idx].set_ylabel("event index")
+            else:
+                ax[next_idx].text(
+                    0.5,
+                    0.5,
+                    "No event index column",
+                    ha="center",
+                    va="center",
+                    transform=ax[next_idx].transAxes,
+                )
+                ax[next_idx].set_ylabel("event index")
+            next_idx += 1
+
+        ax[next_idx - 1].set_xlabel("time (ms)")
 
         if cfg.tight_layout:
             plt.tight_layout()

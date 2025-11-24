@@ -35,10 +35,15 @@ def build_parser() -> argparse.ArgumentParser:
     classify.add_argument("output", help="Path to write TSV with classifier columns")
     classify.add_argument("--threshold", type=float, default=30.0, help="Velocity threshold deg/s")
 
-    analyze = sub.add_parser("analyze", help="Plot velocity and optional event indices")
-    analyze.add_argument("input", help="TSV containing velocity and optional ivt_event_index")
+    analyze = sub.add_parser("analyze", help="Plot velocity and gaze position; optionally show events")
+    analyze.add_argument("input", help="TSV containing velocity and gaze position columns")
     analyze.add_argument("output", help="Path to write the generated plot (png or pdf)")
     analyze.add_argument("--threshold", type=float, default=30.0, help="Velocity threshold deg/s")
+    analyze.add_argument(
+        "--show-events",
+        action="store_true",
+        help="Include event index step plot when ivt_event_index is present",
+    )
 
     evaluate = sub.add_parser("evaluate", help="Evaluate classifier output against ground truth")
     evaluate.add_argument("input", help="TSV containing classifier output and GT")
@@ -72,7 +77,10 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if args.command == "analyze":
-        cfg = PlotConfig(threshold_deg_per_sec=args.threshold)
+        cfg = PlotConfig(
+            threshold_deg_per_sec=args.threshold,
+            show_event_index=args.show_events,
+        )
         IVTAnalyzer(cfg).plot_from_file(args.input, args.output)
         return
 
