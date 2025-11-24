@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal, Optional, Tuple, Dict
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -43,6 +43,13 @@ class OlsenVelocityConfig:
     min_dt_ms: float = 0.1
 
 
+@dataclass
+class IVTClassifierConfig:
+    """Configuration for the I-VT velocity-threshold classifier."""
+
+    velocity_threshold_deg_per_sec: float = 30.0
+
+
 # -----------------------------
 # 1) Gaze/Eye combination
 # -----------------------------
@@ -69,7 +76,7 @@ def _parse_validity(value) -> int:
         return 999
 
 
-def _combine_gaze_and_eye(row: pd.Series, cfg: OlsenVelocityConfig):
+def _combine_gaze_and_eye(row: pd.Series, cfg: OlsenVelocityConfig) -> Tuple[Optional[float], Optional[float], Optional[float], bool]:
     """Combine left and right eye into a single gaze point and Z distance.
 
     Returns: (combined_x_px, combined_y_px, eye_z_mm, is_valid)
@@ -293,7 +300,186 @@ def compute_olsen_velocity_from_slim_tsv(
 
 
 # -----------------------------
-# 4) Plot helpers
+# 4) I-VT classifier (threshold)
+# -----------------------------
+
+
+def apply_ivt_classifier(
+    df: pd.DataFrame,
+    cfg: Optional[IVTClassifierConfig] = None,
+) -> pd.DataFrame:
+    """
+    Apply a simple I-VT velocity-threshold classifier on a DataFrame
+    that already contains 'velocity_deg_per_sec'.
+
+    Adds:
+      - ivt_sample_type  (Fixation / Saccade / Unclassified)
+      - ivt_event_type   (Fixation / Saccade / Unclassified)
+      - ivt_event_index  (int, increments for each new Fixation/Saccade event)
+    """
+    if cfg is None:
+        cfg = IVTClassifierConfig()
+
+    if "velocity_deg_per_sec" not in df.columns:
+        raise ValueError("DataFrame must contain 'velocity_deg_per_sec' before classification.")
+
+    df = df.copy()
+
+    def classify_sample(v: float) -> str:
+        if v is None or not math.isfinite(v):
+            return "Unclassified"
+        if v > cfg.velocity_threshold_deg_per_sec:
+            return "Saccade"
+        return "Fixation"
+
+    df["ivt_sample_type"] = df["velocity_deg_per_sec"].apply(classify_sample)
+
+    # Build event-level type/index from per-sample labels
+    event_types: list[str] = []
+    event_indices: list[Optional[int]] = []
+
+    current_type: Optional[str] = None
+    current_index: int = 0
+
+    for label in df["ivt_sample_type"]:
+        if label not in ("Fixation", "Saccade"):
+            event_types.append(label)
+            event_indices.append(None)
+            current_type = None
+            continue
+
+        if label != current_type:
+            current_index += 1
+            current_type = label
+
+        event_types.append(label)
+        event_indices.append(current_index)
+
+    df["ivt_event_type"] = event_types
+    df["ivt_event_index"] = event_indices
+
+    return df
+
+
+# -----------------------------
+# 5) Evaluation vs. ground truth 
+# -----------------------------
+
+
+def evaluate_ivt_vs_ground_truth(
+    df: pd.DataFrame,
+    gt_col: Optional[str] = None,
+    pred_col: str = "ivt_sample_type",
+) -> Dict[str, float]:
+    """
+    Compare I-VT classifier output against ground truth.
+
+    The evaluation is done on a *sample level* and focuses on
+    Fixation/Saccade agreement, as in RQ1.1 of the exposé
+    ("percentage agreement").
+
+    Returns a dict with summary statistics and also prints
+    a small report to stdout, including Cohen's kappa.
+    """
+
+    if gt_col is None:
+        if "gt_event_type" in df.columns:
+            gt_col = "gt_event_type"
+        elif "Eye movement type" in df.columns:
+            gt_col = "Eye movement type"
+        else:
+            raise ValueError("No ground-truth event type column found.")
+
+    if pred_col not in df.columns:
+        raise ValueError(f"Prediction column '{pred_col}' not found. Run apply_ivt_classifier first.")
+
+    # We focus on samples where the GT is Fixation or Saccade.
+    mask = df[gt_col].isin(["Fixation", "Saccade"])
+    gt = df.loc[mask, gt_col].astype(str)
+    pred = df.loc[mask, pred_col].astype(str)
+
+    total = len(gt)
+    if total == 0:
+        raise ValueError("No samples with ground truth Fixation/Saccade found.")
+
+    # Observed agreement (sample-level)
+    agree_mask = gt == pred
+    agree = int(agree_mask.sum())
+    agreement = agree / total
+
+    # Confusion counts for Fixation/Saccade (für Recall)
+    tp_fix = int(((gt == "Fixation") & (pred == "Fixation")).sum())
+    fn_fix = int(((gt == "Fixation") & (pred == "Saccade")).sum())
+    tp_sac = int(((gt == "Saccade") & (pred == "Saccade")).sum())
+    fn_sac = int(((gt == "Saccade") & (pred == "Fixation")).sum())
+
+    n_fix = int((gt == "Fixation").sum())
+    n_sac = int((gt == "Saccade").sum())
+
+    recall_fix = tp_fix / n_fix if n_fix > 0 else float("nan")
+    recall_sac = tp_sac / n_sac if n_sac > 0 else float("nan")
+
+    # ---- Cohen's kappa (multi-class, generisch) ----
+    labels = sorted(set(gt) | set(pred))
+    label_to_idx = {lab: i for i, lab in enumerate(labels)}
+    k = len(labels)
+
+    # Konfusionsmatrix aufbauen
+    conf = [[0] * k for _ in range(k)]
+    for g_val, p_val in zip(gt, pred):
+        i = label_to_idx[g_val]
+        j = label_to_idx[p_val]
+        conf[i][j] += 1
+
+    # Beobachtete Übereinstimmung Po
+    po = sum(conf[i][i] for i in range(k)) / total
+
+    # Erwartete Übereinstimmung Pe (Randverteilungen)
+    row_marg = [sum(conf[i][j] for j in range(k)) for i in range(k)]
+    col_marg = [sum(conf[i][j] for i in range(k)) for j in range(k)]
+    pe = sum(row_marg[i] * col_marg[i] for i in range(k)) / (total * total)
+
+    if 1.0 - pe != 0.0:
+        kappa = (po - pe) / (1.0 - pe)
+    else:
+        kappa = float("nan")
+
+    stats = {
+        "n_samples_gt_fix_or_sac": total,
+        "n_fix_in_gt": n_fix,
+        "n_sac_in_gt": n_sac,
+        "n_agree": agree,
+        "percentage_agreement": agreement * 100.0,
+        "fixation_recall": recall_fix * 100.0,
+        "saccade_recall": recall_sac * 100.0,
+        "cohen_kappa": kappa,
+    }
+
+    # Print report
+    print("=== I-VT classifier evaluation vs. ground truth ===")
+    print(f"Total samples with GT Fixation/Saccade: {total}")
+    print(f"  Fixation in GT: {n_fix}")
+    print(f"  Saccade in GT:  {n_sac}")
+    print()
+    print(f"Agreement (sample-level): {agree} / {total} = {agreement*100:.2f}%")
+    print()
+    print("Confusion (rows = GT, cols = Pred):")
+    print("             Pred: Fixation   Pred: Saccade")
+    print(f"GT Fixation   {tp_fix:7d}        {fn_fix:7d}")
+    print(f"GT Saccade    {fn_sac:7d}        {tp_sac:7d}")
+    print()
+    print(f"Fixation recall: {recall_fix*100:.2f}%")
+    print(f"Saccade recall:  {recall_sac*100:.2f}%")
+    print()
+    print(f"Cohen's kappa:   {kappa:.3f}")
+    print("==============================================")
+
+    return stats
+
+
+
+# -----------------------------
+# 6) Plot helpers
 # -----------------------------
 
 
@@ -314,9 +500,9 @@ def _plot_velocity_only(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> None:
 
 
 def _plot_velocity_and_classification(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> None:
-    """Zwei einfache Darstellungen:
-    - oben: Zeit vs. Geschwindigkeit
-    - unten: Zeit vs. Klassifikation (diskrete Stufen)
+    """Two simple plots:
+    - top:  time vs. velocity
+    - bottom: time vs. (ground-truth) classification as discrete steps
     """
 
     # 1) Velocity
@@ -324,19 +510,19 @@ def _plot_velocity_and_classification(df: pd.DataFrame, cfg: OlsenVelocityConfig
     times_vel = df.loc[mask, "time_ms"]
     vels = df.loc[mask, "velocity_deg_per_sec"]
 
-    # 2) Klassifikation (Fixation/Saccade/...)
+    # 2) Classification (Fixation/Saccade/...)
     if "gt_event_type" in df.columns:
         type_col = "gt_event_type"
     elif "Eye movement type" in df.columns:
         type_col = "Eye movement type"
     else:
-        raise ValueError("Keine Event-Typ-Spalte gefunden (gt_event_type / Eye movement type).")
+        raise ValueError("No event-type column found for plotting (gt_event_type / Eye movement type).")
 
     times_evt = df["time_ms"]
     events = df[type_col].fillna("Unknown").astype(str)
 
     # mapping label -> code
-    unique_labels = list(dict.fromkeys(events))  # Reihenfolge beibehalten
+    unique_labels = list(dict.fromkeys(events))  # preserve order
     label_to_code = {lab: i for i, lab in enumerate(unique_labels)}
     codes = events.map(label_to_code)
 
@@ -344,15 +530,15 @@ def _plot_velocity_and_classification(df: pd.DataFrame, cfg: OlsenVelocityConfig
         2, 1, sharex=True, figsize=(10, 6), gridspec_kw={"height_ratios": [3, 1]}
     )
 
-    # oben: Geschwindigkeit
+    # top: velocity
     ax1.plot(times_vel, vels)
     ax1.set_ylabel("Velocity [deg/s]")
     ax1.set_title(
-        f"Olsen-style velocity + classification Cem "
+        f"Olsen-style velocity + GT classification "
         f"(window={cfg.window_length_ms} ms, eye_mode={cfg.eye_mode})"
     )
 
-    # unten: Klassifikation als Stepplot
+    # bottom: classification as step plot
     ax2.step(times_evt, codes, where="post")
     ax2.set_xlabel("Time [ms]")
     ax2.set_ylabel("Class")
@@ -389,7 +575,7 @@ if __name__ == "__main__":
         required=False,
         help=(
             "Optional output TSV path. If provided, the DataFrame with the added "
-            "velocity_deg_per_sec column will be written there."
+            "velocity_deg_per_sec and possible classifier columns will be written there."
         ),
     )
     parser.add_argument(
@@ -412,20 +598,54 @@ if __name__ == "__main__":
     parser.add_argument(
         "--with-events",
         action="store_true",
-        help="If set, show two plots: time vs velocity and time vs classification.",
+        help="If set, show two plots: time vs velocity and time vs GT classification.",
+    )
+    parser.add_argument(
+        "--classify",
+        action="store_true",
+        help=(
+            "If set, apply an I-VT velocity-threshold classifier and add "
+            "ivt_sample_type / ivt_event_type / ivt_event_index columns."
+        ),
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=30.0,
+        help="Velocity threshold in deg/s for the I-VT classifier (default: 30).",
+    )
+    parser.add_argument(
+        "--evaluate",
+        action="store_true",
+        help="If set, compare classifier output with ground truth and print statistics.",
     )
 
     args = parser.parse_args()
-    config = OlsenVelocityConfig(window_length_ms=args.window, eye_mode=args.eye)
+    vel_config = OlsenVelocityConfig(window_length_ms=args.window, eye_mode=args.eye)
 
+    # 1) Compute velocity
     df_result = compute_olsen_velocity_from_slim_tsv(
         input_path=args.input,
-        output_path=args.output,
-        cfg=config,
+        output_path=None,  # we will handle writing at the end
+        cfg=vel_config,
     )
 
+    # 2) Optional: apply classifier
+    if args.classify or args.evaluate:
+        cls_cfg = IVTClassifierConfig(velocity_threshold_deg_per_sec=args.threshold)
+        df_result = apply_ivt_classifier(df_result, cls_cfg)
+
+    # 3) Optional: write TSV
+    if args.output is not None:
+        df_result.to_csv(args.output, sep="\t", index=False)
+
+    # 4) Optional: evaluation report
+    if args.evaluate:
+        evaluate_ivt_vs_ground_truth(df_result)
+
+    # 5) Optional: plots
     if not args.no_plot:
         if args.with_events:
-            _plot_velocity_and_classification(df_result, config)
+            _plot_velocity_and_classification(df_result, vel_config)
         else:
-            _plot_velocity_only(df_result, config)
+            _plot_velocity_only(df_result, vel_config)
