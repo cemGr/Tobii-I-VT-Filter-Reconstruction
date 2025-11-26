@@ -2,34 +2,47 @@
 from __future__ import annotations
 
 import math
-from typing import Optional
 
 from .config import OlsenVelocityConfig
 
 
 class VisualAngleCalculator:
-    """Convert pixel displacement to visual angles."""
+    """Convert gaze displacement to visual angles."""
 
     def __init__(self, config: OlsenVelocityConfig) -> None:
         self.config = config
 
     def visual_angle_deg(
         self,
-        x1_px: float,
-        y1_px: float,
-        x2_px: float,
-        y2_px: float,
-        eye_z_mm: Optional[float],
+        x1: float,
+        y1: float,
+        x2: float,
+        y2: float,
+        eye_z_mm: float | None,
+        is_mm: bool,
     ) -> float:
-        dx = float(x2_px) - float(x1_px)
-        dy = float(y2_px) - float(y1_px)
-        s_px = math.hypot(dx, dy)
+        """Compute visual angle between two gaze points and eye distance.
 
-        d_mm = (
-            float(eye_z_mm)
-            if eye_z_mm is not None and math.isfinite(eye_z_mm) and eye_z_mm > 0
-            else self.config.default_eye_distance_mm
-        )
+        If ``is_mm`` is True, x/y are interpreted as millimetres on the stimulus plane.
+        If ``is_mm`` is False, x/y are interpreted as pixels and converted to mm using
+        ``pixel_size_mm`` from the configuration.
+        """
 
-        theta_rad = math.atan2(s_px, d_mm)
+        dx = float(x2) - float(x1)
+        dy = float(y2) - float(y1)
+
+        if is_mm:
+            s_mm = math.hypot(dx, dy)
+        else:
+            if self.config.pixel_size_mm is None:
+                raise ValueError("pixel_size_mm must be provided if use_gaze_mm is False")
+            s_px = math.hypot(dx, dy)
+            s_mm = s_px * self.config.pixel_size_mm
+
+        if eye_z_mm is None or not math.isfinite(eye_z_mm) or eye_z_mm <= 0:
+            d_mm = 600.0
+        else:
+            d_mm = float(eye_z_mm)
+
+        theta_rad = math.atan2(s_mm, d_mm)
         return math.degrees(theta_rad)
