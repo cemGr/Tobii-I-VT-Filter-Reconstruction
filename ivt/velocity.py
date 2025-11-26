@@ -26,8 +26,10 @@ class VelocityCalculator:
 
         half_window = cfg.window_length_ms / 2.0
         times = df["time_ms"].to_numpy()
-        cx = df["combined_x_px"].to_numpy()
-        cy = df["combined_y_px"].to_numpy()
+        coord_x_col = "combined_x_mm" if cfg.use_gaze_mm else "combined_x_px"
+        coord_y_col = "combined_y_mm" if cfg.use_gaze_mm else "combined_y_px"
+        cx = df[coord_x_col].to_numpy()
+        cy = df[coord_y_col].to_numpy()
         cz = df["eye_z_mm"].to_numpy()
         valid = df["combined_valid"].to_numpy()
         n = len(df)
@@ -56,7 +58,14 @@ class VelocityCalculator:
             if any(pd.isna(v) for v in (x1, y1, x2, y2)):
                 continue
 
-            angle_deg = self.angle_calculator.visual_angle_deg(x1, y1, x2, y2, eye_z)
+            angle_deg = self.angle_calculator.visual_angle_deg(
+                x1,
+                y1,
+                x2,
+                y2,
+                eye_z,
+                is_mm=cfg.use_gaze_mm,
+            )
             dt_s = dt_ms / 1000.0
             df.at[i, "velocity_deg_per_sec"] = angle_deg / dt_s if dt_s > 0 else float("nan")
 
@@ -77,10 +86,10 @@ class VelocityCalculator:
         return last_valid
 
     def compute_from_file(self, input_path: str, output_path: Optional[str] = None) -> pd.DataFrame:
-        df = pd.read_csv(input_path, sep="\t")
+        df = pd.read_csv(input_path, sep="\t", decimal=",")
         result = self.compute(df)
         if output_path:
-            result.to_csv(output_path, sep="\t", index=False)
+            result.to_csv(output_path, sep="\t", index=False, decimal=",")
         return result
 
 

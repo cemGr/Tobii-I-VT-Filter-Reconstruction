@@ -29,6 +29,24 @@ def build_parser() -> argparse.ArgumentParser:
         default="average",
         help="Eye selection strategy",
     )
+    velocity.add_argument(
+        "--use-gaze-mm",
+        action="store_true",
+        default=True,
+        help="Use millimetre gaze columns (default)",
+    )
+    velocity.add_argument(
+        "--no-use-gaze-mm",
+        dest="use_gaze_mm",
+        action="store_false",
+        help="Use pixel gaze columns instead of millimetres",
+    )
+    velocity.add_argument(
+        "--pixel-size-mm",
+        type=float,
+        default=None,
+        help="Pixel size in millimetres (required if not using mm gaze)",
+    )
 
     classify = sub.add_parser("classify", help="Apply IVT classifier to a velocity TSV")
     classify.add_argument("input", help="TSV containing velocity_deg_per_sec")
@@ -79,7 +97,12 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if args.command == "velocity":
-        cfg = OlsenVelocityConfig(window_length_ms=args.window, eye_mode=args.eye)
+        cfg = OlsenVelocityConfig(
+            window_length_ms=args.window,
+            eye_mode=args.eye,
+            use_gaze_mm=args.use_gaze_mm,
+            pixel_size_mm=args.pixel_size_mm,
+        )
         calculator = VelocityCalculator(cfg)
         calculator.compute_from_file(args.input, args.output)
         return

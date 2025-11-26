@@ -7,14 +7,14 @@ from ivt.config import OlsenVelocityConfig
 from ivt.velocity import VelocityCalculator
 
 
-def test_velocity_computation_uses_window_and_distance():
+def test_velocity_computation_uses_window_and_distance_mm():
     df = pd.DataFrame(
         {
             "time_ms": [0, 10, 20],
-            "gaze_left_x_px": [0.0, 1.0, 2.0],
-            "gaze_left_y_px": [0.0, 0.0, 0.0],
-            "gaze_right_x_px": [0.0, 1.0, 2.0],
-            "gaze_right_y_px": [0.0, 0.0, 0.0],
+            "gaze_left_x_mm": [0.0, 1.0, 2.0],
+            "gaze_left_y_mm": [0.0, 0.0, 0.0],
+            "gaze_right_x_mm": [0.0, 1.0, 2.0],
+            "gaze_right_y_mm": [0.0, 0.0, 0.0],
             "validity_left": [0, 0, 0],
             "validity_right": [0, 0, 0],
             "eye_left_z_mm": [600.0, 600.0, 600.0],
@@ -22,7 +22,7 @@ def test_velocity_computation_uses_window_and_distance():
         }
     )
 
-    calc = VelocityCalculator(OlsenVelocityConfig(window_length_ms=20, eye_mode="average"))
+    calc = VelocityCalculator(OlsenVelocityConfig(window_length_ms=20, eye_mode="average", use_gaze_mm=True))
     result = calc.compute(df)
 
     expected_angle = math.degrees(math.atan2(2.0, 600.0))
@@ -37,10 +37,10 @@ def test_velocity_respects_minimum_time_delta():
     df = pd.DataFrame(
         {
             "time_ms": [0, 0],
-            "gaze_left_x_px": [0.0, 1.0],
-            "gaze_left_y_px": [0.0, 0.0],
-            "gaze_right_x_px": [0.0, 1.0],
-            "gaze_right_y_px": [0.0, 0.0],
+            "gaze_left_x_mm": [0.0, 1.0],
+            "gaze_left_y_mm": [0.0, 0.0],
+            "gaze_right_x_mm": [0.0, 1.0],
+            "gaze_right_y_mm": [0.0, 0.0],
             "validity_left": [0, 0],
             "validity_right": [0, 0],
             "eye_left_z_mm": [600.0, 600.0],
@@ -57,10 +57,10 @@ def test_velocity_accepts_comma_decimal_strings():
     df = pd.DataFrame(
         {
             "time_ms": [0, 10, 20],
-            "gaze_left_x_px": ["0,0", "1,0", "2,0"],
-            "gaze_left_y_px": ["0,0", "0,0", "0,0"],
-            "gaze_right_x_px": ["0,0", "1,0", "2,0"],
-            "gaze_right_y_px": ["0,0", "0,0", "0,0"],
+            "gaze_left_x_mm": ["0,0", "1,0", "2,0"],
+            "gaze_left_y_mm": ["0,0", "0,0", "0,0"],
+            "gaze_right_x_mm": ["0,0", "1,0", "2,0"],
+            "gaze_right_y_mm": ["0,0", "0,0", "0,0"],
             "validity_left": [0, 0, 0],
             "validity_right": [0, 0, 0],
             "eye_left_z_mm": ["573,4", "573,4", "573,4"],
