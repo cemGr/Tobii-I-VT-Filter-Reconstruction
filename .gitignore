@@ -46,3 +46,16 @@ coverage.xml
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Data files
+*.tsv
+*.csv
+data/
+*.xlsx
+*.xls
+
+# Temporary files
+/tmp/
+temp/
+*.tmp
+*.bak
