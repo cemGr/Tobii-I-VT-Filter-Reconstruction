@@ -24,7 +24,7 @@ def _nearest_nominal_rate(hz_measured: float) -> float:
         return hz_measured
     rel_diff = abs(best - hz_measured) / hz_measured
     if rel_diff > 0.25:
-        # zu weit weg -> nichts „schoenreden“
+        # Too far away -> don't adjust
         return hz_measured
     return best
 
@@ -53,7 +53,7 @@ def estimate_sampling_rate(
         raise ValueError("Need at least two time samples to estimate sampling rate.")
 
     diffs = np.diff(times)
-    # nur positive Abstaende verwenden (falls 0 oder Rueckspruenge vorkommen)
+    # Only use positive differences (in case of 0 or backwards jumps)
     diffs = diffs[diffs > 0]
     if len(diffs) == 0:
         raise ValueError("No positive time differences found to estimate sampling rate.")

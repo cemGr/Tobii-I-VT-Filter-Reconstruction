@@ -37,7 +37,7 @@ def plot_velocity_and_classification(
     Geschwindigkeit + Ereignis Labels plotten.
 
     type_col:
-      - wenn None: versucht zuerst "gt_event_type", dann "Eye movement type"
+      - wenn None: versucht zuerst postprocessed Spalten, dann "ivt_event_type", dann GT
       - Zeigt sowohl Ground Truth als auch IVT-Klassifikation an, falls beide vorhanden
     """
     mask = df["velocity_deg_per_sec"].notna()
@@ -53,7 +53,10 @@ def plot_velocity_and_classification(
     elif "Eye movement type" in df.columns:
         gt_col = "Eye movement type"
     
-    if "ivt_event_type" in df.columns:
+    # Versuche zuerst postprocessed Spalten zu nutzen (falls vorhanden)
+    if "ivt_event_type_post" in df.columns:
+        ivt_col = "ivt_event_type_post"
+    elif "ivt_event_type" in df.columns:
         ivt_col = "ivt_event_type"
     elif type_col is not None and type_col in df.columns:
         ivt_col = type_col

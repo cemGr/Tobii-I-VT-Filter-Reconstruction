@@ -1,6 +1,6 @@
 import pandas as pd
 
-from velocity import (apply_ivt_post_smoothing, _rebuild_ivt_event_columns,
+from ivt_filter.velocity import (apply_ivt_post_smoothing, _rebuild_ivt_event_columns,
                       IVTClassifierConfig)
 
 

@@ -49,6 +49,17 @@ coverage.xml
 
 # Data files
 *.tsv
+test_data/
+experiments/
+
+# Generated outputs
+*_output*.tsv
+simple_api_output.tsv
+test_simple_output.tsv
+
+# Lock files
+.~lock.*
+*.tsv
 *.csv
 data/
 *.xlsx

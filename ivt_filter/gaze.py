@@ -12,6 +12,10 @@ from .smoothing_strategy import (
     NoSmoothing,
     MedianSmoothing,
     MovingAverageSmoothing,
+    MedianSmoothingStrict,
+    MovingAverageSmoothingStrict,
+    MedianSmoothingAdaptive,
+    MovingAverageSmoothingAdaptive,
 )
 
 
@@ -118,7 +122,8 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             if not valid_mask[prev_idx] or not valid_mask[next_idx]:
                 continue
 
-            gap_ms = float(times[next_idx] - times[prev_idx])
+            # Gap-Größe: Zeit vom letzten validen Sample bis zum letzten invaliden Sample
+            gap_ms = float(times[gap_end] - times[prev_idx])
             if gap_ms <= 0 or gap_ms > max_gap_ms:
                 continue
 
@@ -422,7 +427,12 @@ def prepare_combined_columns(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.D
     return df
 
 
-def _get_smoothing_strategy(mode: str, window_samples: int) -> SmoothingStrategy:
+def _get_smoothing_strategy(
+    mode: str, 
+    window_samples: int,
+    min_samples: int = 1,
+    expansion_radius: int = 0
+) -> SmoothingStrategy:
     """Factory für Smoothing-Strategien."""
     if mode == "none":
         return NoSmoothing(window_samples)
@@ -430,6 +440,14 @@ def _get_smoothing_strategy(mode: str, window_samples: int) -> SmoothingStrategy
         return MedianSmoothing(window_samples)
     elif mode == "moving_average":
         return MovingAverageSmoothing(window_samples)
+    elif mode == "median_strict":
+        return MedianSmoothingStrict(window_samples)
+    elif mode == "moving_average_strict":
+        return MovingAverageSmoothingStrict(window_samples)
+    elif mode == "median_adaptive":
+        return MedianSmoothingAdaptive(window_samples, min_samples, expansion_radius)
+    elif mode == "moving_average_adaptive":
+        return MovingAverageSmoothingAdaptive(window_samples, min_samples, expansion_radius)
     else:
         raise ValueError(f"Unknown smoothing mode: {mode}")
 
@@ -452,8 +470,13 @@ def smooth_combined_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataF
     x_series = df["combined_x_mm"]
     y_series = df["combined_y_mm"]
 
-    # Wähle Smoothing-Strategie basierend auf Config
-    strategy = _get_smoothing_strategy(cfg.smoothing_mode, cfg.smoothing_window_samples)
+    # Select strategy basierend auf Config
+    strategy = _get_smoothing_strategy(
+        cfg.smoothing_mode, 
+        cfg.smoothing_window_samples,
+        cfg.smoothing_min_samples,
+        cfg.smoothing_expansion_radius
+    )
 
     # Anwende Smoothing
     x_smooth = strategy.smooth(x_series, valid_mask)
