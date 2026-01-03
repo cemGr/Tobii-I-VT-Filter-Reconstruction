@@ -1,62 +1,51 @@
 # ivt_filter/velocity_calculation.py
 """
-Strategien für die Velocity-Berechnung.
+Strategies for velocity calculation.
 
-Verschiedene Methoden zur Berechnung des visuellen Winkels zwischen zwei Gaze-Punkten.
+Different methods for calculating visual angle between two gaze points.
 
-Beispiel:
-    >>> from velocity_calculation import Olsen2DApproximation, Ray3DAngle
-    >>> 
-    >>> # Olsen 2D: Schnell, nur eye_z nötig
-    >>> olsen = Olsen2DApproximation()
-    >>> angle = olsen.calculate_visual_angle(
-    ...     x1_mm=516.4, y1_mm=293.0,
-    ...     x2_mm=520.0, y2_mm=299.8,
-    ...     eye_x_mm=None, eye_y_mm=None, eye_z_mm=582.4
-    ... )
-    >>> velocity = angle / 0.02  # dt = 20ms
-    >>> print(f"Olsen 2D: {velocity:.2f} deg/s")  # ~37.84 deg/s
-    >>> 
-    >>> # Ray 3D: Physikalisch korrekt, benötigt eye_x, eye_y, eye_z
-    >>> ray3d = Ray3DAngle()
-    >>> angle = ray3d.calculate_visual_angle(
-    ...     x1_mm=516.4, y1_mm=293.0,
-    ...     x2_mm=520.0, y2_mm=299.8,
-    ...     eye_x_mm=255.4, eye_y_mm=99.5, eye_z_mm=582.4
-    ... )
-    >>> velocity = angle / 0.02
-    >>> print(f"Ray 3D: {velocity:.2f} deg/s")  # ~29.54 deg/s
-    >>> 
-    >>> # Unterschied: Olsen 2D ist ~22% höher bei off-center Positionen
-
-Vergleich der Methoden:
+Comparison of methods:
     
     Olsen 2D Approximation:
-        - Schnell (nur sqrt + atan2)
-        - Benötigt nur eye_z (Distanz)
-        - 2D-Näherung auf Screen-Ebene
-        - Abweichung: 1-5% bei typischen Positionen, bis 22% bei extremen off-center
+        - Fast (only sqrt + atan2)
+        - Requires only eye_z (distance)
+        - 2D approximation on screen plane
+        - Deviation: 1-5% for typical positions, up to 22% for extreme off-center
         
     Ray 3D Angle:
-        - Physikalisch korrekt
-        - Benötigt vollständige Eye-Position (x, y, z)
-        - Berücksichtigt 3D-Geometrie
-        - Etwas langsamer (vector math + acos)
+        - Physically correct
+        - Requires full eye position (x, y, z)
+        - Accounts for 3D geometry
+        - Slightly slower (vector math + acos)
 """
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional
+from dataclasses import dataclass
+from typing import Optional, Tuple
 import math
 import numpy as np
 
+from .constants import PhysicalConstants
+
+
+@dataclass
+class VelocityContext:
+    """Container for velocity calculation inputs."""
+
+    x1_mm: float
+    y1_mm: float
+    x2_mm: float
+    y2_mm: float
+    eye_x_mm: Optional[float]
+    eye_y_mm: Optional[float]
+    eye_z_mm: Optional[float]
+    dir1: Optional[np.ndarray] = None
+    dir2: Optional[np.ndarray] = None
+
 
 class VelocityCalculationStrategy(ABC):
-    """
-    Abstrakte Basis für Velocity-Berechnungs-Strategien.
-    
-    Berechnet den visuellen Winkel zwischen Start- und End-Gaze-Punkt.
-    """
+    """Base class for velocity calculation strategies."""
 
     @abstractmethod
     def calculate_visual_angle(
@@ -69,41 +58,40 @@ class VelocityCalculationStrategy(ABC):
         eye_y_mm: Optional[float],
         eye_z_mm: Optional[float],
     ) -> float:
-        """
-        Berechnet den visuellen Winkel in Grad zwischen zwei Punkten.
-        
-        Args:
-            x1_mm, y1_mm: Start-Gaze-Position auf dem Screen (mm)
-            x2_mm, y2_mm: End-Gaze-Position auf dem Screen (mm)
-            eye_x_mm: X-Position des Auges (mm)
-            eye_y_mm: Y-Position des Auges (mm)
-            eye_z_mm: Z-Position (Distanz) des Auges zum Screen (mm)
-            
-        Returns:
-            Visueller Winkel in Grad
-        """
+        """Calculate visual angle in degrees between two points."""
         pass
+
+    def calculate_visual_angle_ctx(self, ctx: VelocityContext) -> float:
+        """Default adapter to use dataclass context."""
+        return self.calculate_visual_angle(
+            ctx.x1_mm,
+            ctx.y1_mm,
+            ctx.x2_mm,
+            ctx.y2_mm,
+            ctx.eye_x_mm,
+            ctx.eye_y_mm,
+            ctx.eye_z_mm,
+        )
 
     @abstractmethod
     def get_description(self) -> str:
-        """Beschreibung der Berechnungs-Strategie."""
+        """Description of calculation strategy."""
         pass
 
 
 class Olsen2DApproximation(VelocityCalculationStrategy):
-    """
-    Original Olsen-Style 2D-Näherung (Standard).
+    """Original Olsen-style 2D approximation (default).
     
-    Methode:
-      1. Berechne 2D-Distanz auf dem Screen: s = √(Δx² + Δy²)
-      2. Verwende Kleinwinkel-Näherung: θ ≈ arctan(s / d)
+    Method:
+      1. Calculate 2D distance on screen: s = √(Δx² + Δy²)
+      2. Use small angle approximation: θ ≈ arctan(s / d)
       
-    Verwendet nur eye_z (Distanz), ignoriert eye_x und eye_y.
-    Screen liegt in der XY-Ebene, Auge schaut orthogonal darauf.
+    Uses only eye_z (distance), ignores eye_x and eye_y.
+    Assumes screen in XY plane, eye looking orthogonally.
     
-    Schnell, aber weniger präzise bei:
-      - Off-center Gaze (Auge nicht zentral vor Screen)
-      - Großen Winkeln
+    Fast but less accurate for:
+      - Off-center gaze (eye not centered in front of screen)
+      - Large angles
     """
 
     def calculate_visual_angle(
@@ -120,9 +108,8 @@ class Olsen2DApproximation(VelocityCalculationStrategy):
         dy = float(y2_mm) - float(y1_mm)
         s_mm = math.hypot(dx, dy)
 
-        # Distanz Auge-Screen (Fallback: 600mm)
         if eye_z_mm is None or not math.isfinite(eye_z_mm) or eye_z_mm <= 0:
-            d_mm = 600.0
+            d_mm = PhysicalConstants.DEFAULT_EYE_SCREEN_DISTANCE_MM
         else:
             d_mm = float(eye_z_mm)
 
@@ -134,21 +121,20 @@ class Olsen2DApproximation(VelocityCalculationStrategy):
 
 
 class Ray3DAngle(VelocityCalculationStrategy):
-    """
-    Physikalisch korrekte 3D-Ray-Methode.
+    """Physically correct 3D ray method.
     
-    Methode:
-      1. Screen liegt bei z=0, Gaze-Punkte: G₀ = (gx₀, gy₀, 0), G₁ = (gx₁, gy₁, 0)
-      2. Eye-Position: E = (ex, ey, ez)
-      3. Ray-Vektoren: d₀ = G₀ - E, d₁ = G₁ - E
-      4. Winkel zwischen Rays: θ = arccos(d₀ · d₁ / (|d₀| × |d₁|))
+    Method:
+      1. Screen at z=0, gaze points: G₀ = (gx₀, gy₀, 0), G₁ = (gx₁, gy₁, 0)
+      2. Eye position: E = (ex, ey, ez)
+      3. Ray vectors: d₀ = G₀ - E, d₁ = G₁ - E
+      4. Angle between rays: θ = arccos(d₀ · d₁ / (|d₀| × |d₁|))
       
-    Vorteile:
-      - Physikalisch korrekt
-      - Funktioniert auch off-center
-      - Berücksichtigt volle 3D-Geometrie
+    Advantages:
+      - Physically correct
+      - Works for off-center positions
+      - Accounts for full 3D geometry
       
-    Benötigt vollständige Eye-Position (x, y, z).
+    Typically 1-5% lower velocities than Olsen 2D at typical viewing distances.
     """
 
     def calculate_visual_angle(
@@ -175,7 +161,7 @@ class Ray3DAngle(VelocityCalculationStrategy):
         gx0, gy0, gz0 = float(x1_mm), float(y1_mm), 0.0
         gx1, gy1, gz1 = float(x2_mm), float(y2_mm), 0.0
 
-        # Ray-Vektoren vom Auge zu den Gaze-Punkten
+        # Ray vectors from eye to gaze points
         d0x = gx0 - ex
         d0y = gy0 - ey
         d0z = gz0 - ez
@@ -184,28 +170,91 @@ class Ray3DAngle(VelocityCalculationStrategy):
         d1y = gy1 - ey
         d1z = gz1 - ez
 
-        # Skalarprodukt
+        # Dot product
         dot_product = d0x * d1x + d0y * d1y + d0z * d1z
 
-        # Normen (Längen der Vektoren)
+        # Norms (lengths of vectors)
         norm0 = math.sqrt(d0x**2 + d0y**2 + d0z**2)
         norm1 = math.sqrt(d1x**2 + d1y**2 + d1z**2)
 
-        # Numerische Stabilität: prüfe Division durch Null
         if norm0 == 0.0 or norm1 == 0.0:
             return 0.0
 
-        # cos(θ) = dot / (norm0 * norm1)
         cos_theta = dot_product / (norm0 * norm1)
-
-        # Clamp auf [-1, 1] für numerische Stabilität
         cos_theta = max(-1.0, min(1.0, cos_theta))
 
-        # Winkel berechnen
         theta_rad = math.acos(cos_theta)
         theta_deg = math.degrees(theta_rad)
 
         return theta_deg
 
+    def calculate_visual_angle_ctx(self, ctx: VelocityContext) -> float:
+        return self.calculate_visual_angle(
+            ctx.x1_mm,
+            ctx.y1_mm,
+            ctx.x2_mm,
+            ctx.y2_mm,
+            ctx.eye_x_mm,
+            ctx.eye_y_mm,
+            ctx.eye_z_mm,
+        )
+
     def get_description(self) -> str:
         return "3D Ray Angle: θ = acos(ray0 · ray1 / (|ray0| × |ray1|))"
+
+
+class Ray3DGazeDir(VelocityCalculationStrategy):
+    """Velocity directly from normalized gaze direction vectors.
+
+    Expects per-sample normalized gaze direction (x,y,z) for the selected eye.
+    Uses only the direction change; ignores screen geometry and eye position.
+    """
+
+    def calculate_visual_angle(
+        self,
+        x1_mm: float,
+        y1_mm: float,
+        x2_mm: float,
+        y2_mm: float,
+        eye_x_mm: Optional[float],
+        eye_y_mm: Optional[float],
+        eye_z_mm: Optional[float],
+        dir1: Optional[np.ndarray] = None,
+        dir2: Optional[np.ndarray] = None,
+    ) -> float:
+        ctx = VelocityContext(
+            x1_mm=x1_mm,
+            y1_mm=y1_mm,
+            x2_mm=x2_mm,
+            y2_mm=y2_mm,
+            eye_x_mm=eye_x_mm,
+            eye_y_mm=eye_y_mm,
+            eye_z_mm=eye_z_mm,
+            dir1=dir1,
+            dir2=dir2,
+        )
+        return self.calculate_visual_angle_ctx(ctx)
+
+    def calculate_visual_angle_ctx(self, ctx: VelocityContext) -> float:
+        dir1 = ctx.dir1
+        dir2 = ctx.dir2
+        if dir1 is None or dir2 is None:
+            return 0.0
+
+        v1 = np.array(dir1, dtype=float)
+        v2 = np.array(dir2, dtype=float)
+
+        n1 = np.linalg.norm(v1)
+        n2 = np.linalg.norm(v2)
+        if n1 == 0.0 or n2 == 0.0 or not np.isfinite(n1) or not np.isfinite(n2):
+            return 0.0
+
+        v1 /= n1
+        v2 /= n2
+
+        dot = float(np.clip(np.dot(v1, v2), -1.0, 1.0))
+        theta_rad = math.acos(dot)
+        return math.degrees(theta_rad)
+
+    def get_description(self) -> str:
+        return "Ray3D using gaze direction vectors (acos(dir0·dir1))"

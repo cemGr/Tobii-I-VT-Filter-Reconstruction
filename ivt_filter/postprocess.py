@@ -8,6 +8,7 @@ import pandas as pd
 
 from .config import SaccadeMergeConfig, FixationPostConfig
 from .velocity import visual_angle_deg
+from .velocity_calculation import Ray3DAngle, Olsen2DApproximation
 
 
 # -------------------------------------------------------------------
@@ -101,8 +102,7 @@ def merge_short_saccade_blocks(
     if "time_ms" not in df.columns:
         raise ValueError("DataFrame must contain 'time_ms' column.")
 
-    # Ground Truth-Spalte finden
-    gt_col = _find_gt_column(df)
+    # GT-Spalte wird nicht mehr benötigt - Post-Smoothing basiert nur auf IVT-Kontext
 
     event_col = "ivt_event_type"
     if event_col not in df.columns:
@@ -118,12 +118,12 @@ def merge_short_saccade_blocks(
     work_col = sample_col if sample_col is not None else event_col
 
     times = df["time_ms"].to_numpy()
-    gt = df[gt_col].astype(str).to_numpy()
+    # GT no longer needed - Post-Smoothing basiert nur auf IVT-Kontext und Dauer
     ivt = df[work_col].astype(str).to_numpy()
 
     n = len(df)
 
-    # Saccade-Bloecke finden (zusammenhängende "Saccade"-Segmente)
+    # Find saccade blocks (zusammenhängende "Saccade"-Segmente)
     blocks: List[Tuple[int, int]] = []
     in_block = False
     start_idx = 0
@@ -150,17 +150,14 @@ def merge_short_saccade_blocks(
         if duration_ms >= cfg.max_saccade_block_duration_ms:
             continue
 
-        # GT innerhalb des Blocks prüfen: muss komplett Fixation sein
-        gt_block = gt[b_start : b_end + 1]
-        if not all(label == "Fixation" for label in gt_block):
-            continue
+        # GT check skipped - merge basierend nur auf Dauer und IVT-Kontext
+        # (Original: prüfte ob GT innerhalb des Blocks komplett Fixation ist)
 
         if cfg.require_fixation_context:
-            # linker Nachbar
-            if b_start > 0 and gt[b_start - 1] != "Fixation":
+            # Prüfe IVT-Kontext (nicht GT): linker und rechter Nachbar müssen IVT-Fixation sein
+            if b_start > 0 and ivt[b_start - 1] != "Fixation":
                 continue
-            # rechter Nachbar
-            if b_end < n - 1 and gt[b_end + 1] != "Fixation":
+            if b_end < n - 1 and ivt[b_end + 1] != "Fixation":
                 continue
 
         for j in range(b_start, b_end + 1):
@@ -217,6 +214,7 @@ def _merge_adjacent_fixations_internal(
     x_col: str,
     y_col: str,
     eye_z_col: str,
+    use_ray3d: bool = False,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
     Benachbarte Fixationen mergen, wenn:
@@ -235,14 +233,35 @@ def _merge_adjacent_fixations_internal(
             "gap_samples_to_fixation": 0,
             "original_fixation_events": 0,
         }
-
     labels = df[sample_col].astype(str).to_numpy()
     times = df[time_col].to_numpy()
     x = df[x_col].to_numpy()
     y = df[y_col].to_numpy()
     eye_z = df[eye_z_col].to_numpy() if eye_z_col in df.columns else None
+    
+    # Get velocity for intelligent gap-filling (optional but recommended)
+    velocity = None
+    if "velocity_deg_per_sec" in df.columns:
+        velocity = df["velocity_deg_per_sec"].to_numpy()
+    
+    # For Ray3D we need auch eye_x und eye_y
+    eye_x = None
+    eye_y = None
+    if use_ray3d:
+        if "eye_x_mm" in df.columns:
+            eye_x = df["eye_x_mm"].to_numpy()
+        if "eye_y_mm" in df.columns:
+            eye_y = df["eye_y_mm"].to_numpy()
 
     n = len(df)
+    
+    # Select strategy
+    if use_ray3d:
+        angle_calculator = Ray3DAngle()
+        print("[MergeFixations] Using Ray3D angle calculation")
+    else:
+        angle_calculator = Olsen2DApproximation()
+        print("[MergeFixations] Using Olsen 2D approximation")
 
     # Fixations-Bloecke aus den Labels bestimmen
     events: List[Tuple[int, int]] = []
@@ -281,23 +300,54 @@ def _merge_adjacent_fixations_internal(
         if any(pd.isna(v) for v in (x1, y1, x2, y2)):
             continue
 
-        if eye_z is not None:
-            z1 = float(np.nanmean(eye_z[s1 : e1 + 1]))
-            z2 = float(np.nanmean(eye_z[s2 : e2 + 1]))
-            z = float(np.nanmean([z1, z2]))
+        # Calculate angle mit gewählter Strategie
+        if use_ray3d and eye_x is not None and eye_y is not None and eye_z is not None:
+            # Ray3D: Verwende volle 3D-Geometrie
+            ex1 = float(np.nanmean(eye_x[s1 : e1 + 1]))
+            ey1 = float(np.nanmean(eye_y[s1 : e1 + 1]))
+            ez1 = float(np.nanmean(eye_z[s1 : e1 + 1]))
+            ex2 = float(np.nanmean(eye_x[s2 : e2 + 1]))
+            ey2 = float(np.nanmean(eye_y[s2 : e2 + 1]))
+            ez2 = float(np.nanmean(eye_z[s2 : e2 + 1]))
+            
+            # Mittelwerte der Eye-Position
+            ex = float(np.nanmean([ex1, ex2]))
+            ey = float(np.nanmean([ey1, ey2]))
+            ez = float(np.nanmean([ez1, ez2]))
+            
+            angle = angle_calculator.calculate_visual_angle(x1, y1, x2, y2, ex, ey, ez)
         else:
-            z = None
-
-        angle = visual_angle_deg(x1, y1, x2, y2, z)
+            # Olsen 2D: Verwende nur Z-Distanz
+            if eye_z is not None:
+                z1 = float(np.nanmean(eye_z[s1 : e1 + 1]))
+                z2 = float(np.nanmean(eye_z[s2 : e2 + 1]))
+                z = float(np.nanmean([z1, z2]))
+            else:
+                z = None
+            
+            angle = angle_calculator.calculate_visual_angle(x1, y1, x2, y2, None, None, z)
+        
         if angle > cfg.max_angle_deg:
             continue
 
         # Luecke zwischen den beiden Fixationen als Fixation umlabeln
+        # WICHTIG: EyesNotFound darf NICHT zu Fixation werden
+        # OPTIMIERUNG: Keine Saccade-Samples einbeziehen (Velocity-Check)
         if s2 > e1 + 1:
             for j in range(e1 + 1, s2):
-                if labels[j] != "Fixation":
-                    labels[j] = "Fixation"
-                    gap_samples_to_fix += 1
+                if labels[j] == "Fixation" or labels[j] == "EyesNotFound":
+                    continue
+                
+                # Velocity-basiertes Gap-Filling:
+                # Nur Samples mit niedriger Velocity (<= 35°/s) werden gemerged
+                # Rational: IVT-Threshold ist 30°/s, +5°/s Puffer für Grenzfälle
+                # Verhindert echte Saccade-Samples (> 35°/s) in Fixations
+                if velocity is not None and not pd.isna(velocity[j]):
+                    if velocity[j] > 35.0:
+                        continue
+                
+                labels[j] = "Fixation"
+                gap_samples_to_fix += 1
 
         merged_pairs += 1
 
@@ -313,72 +363,204 @@ def _merge_adjacent_fixations_internal(
 def _discard_short_fixations_internal(
     df: pd.DataFrame,
     cfg: FixationPostConfig,
-    sample_col: str,
+    event_type_col: str,
+    event_index_col: str,
     time_col: str,
+    discard_target: str = "Unclassified",
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
-    Fixationen, deren Dauer < min_fixation_duration_ms, zu 'Unclassified'
-    umlabeln.
+    Methodisch korrekte Implementierung von "Discard Short Fixations".
+    
+    Arbeitet auf Event-Level (nicht Sample-Level):
+    - Nutzt event_type und event_index um Fixation-Events zu identifizieren
+    - Berechnet Duration pro Event
+    - Verwirft kurze Events durch Umlabeln aller Samples
+    
+    Definitionen:
+    1) Fixation-Event: zusammenhängende Samples mit gleichem event_index und event_type == "Fixation"
+    
+    2) Robust dt aus time_ms:
+       - dt_ms = median(positive_diffs)
+       - Nicht hardcoded
+    
+    3) Eventdauer (inklusive Endsample):
+       - duration_ms = (t_last - t_first) + dt_ms
+       - +dt_ms ist verpflichtend (verhindert Off-by-one)
+    
+    Args:
+        df: DataFrame mit Events
+        cfg: FixationPostConfig mit min_fixation_duration_ms
+        event_type_col: Name der Event-Type-Spalte
+        event_index_col: Name der Event-Index-Spalte
+        time_col: Name der Zeit-Spalte
+        discard_target: Ziel-Label für verworfene Fixationen
+    
+    Returns:
+        (df, stats): Modifizierter DataFrame und Statistiken
     """
     df = df.copy()
-    if sample_col not in df.columns:
-        return df, {"discarded_fixations": 0, "discarded_samples": 0}
-
-    labels = df[sample_col].astype(str).to_numpy()
+    
+    if event_type_col not in df.columns:
+        return df, {
+            "discarded_fixations": 0,
+            "discarded_samples": 0,
+            "fixation_events": [],
+        }
+    
+    if event_index_col not in df.columns:
+        return df, {
+            "discarded_fixations": 0,
+            "discarded_samples": 0,
+            "fixation_events": [],
+        }
+    
+    if time_col not in df.columns:
+        raise ValueError(f"Time column '{time_col}' not found in DataFrame")
+    
+    # Validate discard_target
+    if discard_target not in ("Unclassified", "Saccade"):
+        raise ValueError(f"discard_target must be 'Unclassified' or 'Saccade', got '{discard_target}'")
+    
+    event_types = df[event_type_col].astype(str).to_numpy()
+    event_indices = df[event_index_col].to_numpy()
     times = df[time_col].to_numpy()
     n = len(df)
-
+    
+    # 1) Berechne robustes dt_ms aus time_ms (Median der positiven Differenzen)
+    diffs = np.diff(times)
+    positive_diffs = diffs[diffs > 0]
+    
+    if len(positive_diffs) == 0:
+        dt_ms = 1.0
+    else:
+        dt_ms = float(np.median(positive_diffs))
+    
+    # 2) Finde alle Fixation-Events anhand von event_type und event_index
+    fixation_events: List[Dict[str, Any]] = []
+    
+    # Gruppiere Fixation-Events
+    current_event_index = None
+    start_idx = None
+    
+    for i in range(n):
+        is_fixation = event_types[i] == "Fixation"
+        event_idx = event_indices[i]
+        
+        if is_fixation and event_idx is not None and not pd.isna(event_idx):
+            event_idx_int = int(event_idx)
+            
+            if current_event_index is None or current_event_index != event_idx_int:
+                # Neues Event beginnt
+                if start_idx is not None:
+                    # Vorheriges Event abschließen
+                    end_idx = i - 1
+                    t_first = float(times[start_idx])
+                    t_last = float(times[end_idx])
+                    duration_ms = (t_last - t_first) + dt_ms
+                    
+                    fixation_events.append({
+                        "event_index": current_event_index,
+                        "start_idx": start_idx,
+                        "end_idx": end_idx,
+                        "t_first": t_first,
+                        "t_last": t_last,
+                        "duration_ms": duration_ms,
+                        "num_samples": end_idx - start_idx + 1,
+                    })
+                
+                # Neues Event starten
+                current_event_index = event_idx_int
+                start_idx = i
+        else:
+            # Kein Fixation-Sample oder kein Index
+            if start_idx is not None:
+                # Vorheriges Event abschließen
+                end_idx = i - 1
+                t_first = float(times[start_idx])
+                t_last = float(times[end_idx])
+                duration_ms = (t_last - t_first) + dt_ms
+                
+                fixation_events.append({
+                    "event_index": current_event_index,
+                    "start_idx": start_idx,
+                    "end_idx": end_idx,
+                    "t_first": t_first,
+                    "t_last": t_last,
+                    "duration_ms": duration_ms,
+                    "num_samples": end_idx - start_idx + 1,
+                })
+                
+                current_event_index = None
+                start_idx = None
+    
+    # Letztes Event behandeln
+    if start_idx is not None:
+        end_idx = n - 1
+        t_first = float(times[start_idx])
+        t_last = float(times[end_idx])
+        duration_ms = (t_last - t_first) + dt_ms
+        
+        fixation_events.append({
+            "event_index": current_event_index,
+            "start_idx": start_idx,
+            "end_idx": end_idx,
+            "t_first": t_first,
+            "t_last": t_last,
+            "duration_ms": duration_ms,
+            "num_samples": end_idx - start_idx + 1,
+        })
+    
+    # 3) Verwerfe kurze Fixationen
     discarded_fixations = 0
     discarded_samples = 0
-
-    in_fix = False
-    start = 0
-    for i in range(n):
-        if labels[i] == "Fixation":
-            if not in_fix:
-                in_fix = True
-                start = i
-        else:
-            if in_fix:
-                end = i - 1
-                duration = float(times[end]) - float(times[start])
-                if duration < cfg.min_fixation_duration_ms:
-                    for j in range(start, end + 1):
-                        if labels[j] == "Fixation":
-                            labels[j] = "Unclassified"
-                            discarded_samples += 1
-                    discarded_fixations += 1
-                in_fix = False
-
-    # letzter Block bis zum Ende
-    if in_fix:
-        end = n - 1
-        duration = float(times[end]) - float(times[start])
-        if duration < cfg.min_fixation_duration_ms:
+    threshold_ms = cfg.min_fixation_duration_ms
+    
+    for event in fixation_events:
+        if event["duration_ms"] < threshold_ms:
+            # Verwerfe dieses Event: setze alle Samples auf discard_target
+            start = event["start_idx"]
+            end = event["end_idx"]
+            
             for j in range(start, end + 1):
-                if labels[j] == "Fixation":
-                    labels[j] = "Unclassified"
+                if event_types[j] == "Fixation":
+                    event_types[j] = discard_target
+                    event_indices[j] = None  # Event-Index entfernen
                     discarded_samples += 1
+            
             discarded_fixations += 1
-
-    df[sample_col] = labels
+            event["discarded"] = True
+        else:
+            event["discarded"] = False
+    
+    # 4) Aktualisiere DataFrame
+    df[event_type_col] = event_types
+    df[event_index_col] = event_indices
+    
+    # 5) Statistiken
     stats = {
         "discarded_fixations": discarded_fixations,
         "discarded_samples": discarded_samples,
+        "total_fixation_events": len(fixation_events),
+        "dt_ms": dt_ms,
+        "threshold_ms": threshold_ms,
+        "discard_target": discard_target,
+        "fixation_events": fixation_events,
     }
+    
     return df, stats
 
 
 def apply_fixation_postprocessing(
     df: pd.DataFrame,
     cfg: FixationPostConfig,
-    sample_col: str,
+    sample_col: str = "ivt_sample_type_smoothed",
     time_col: str = "time_ms",
     x_col: str = "smoothed_x_mm",
     y_col: str = "smoothed_y_mm",
     eye_z_col: str = "eye_z_mm",
     event_type_col: str = "ivt_event_type_post",
     event_index_col: str = "ivt_event_index_post",
+    use_ray3d: bool = False,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
     Tobii-aehnliches Fixations-Postprocessing auf IVT-Predictions:
@@ -421,24 +603,27 @@ def apply_fixation_postprocessing(
             x_col=x_col,
             y_col=y_col,
             eye_z_col=eye_z_col,
+            use_ray3d=use_ray3d,
         )
 
-    # 2) Kurze Fixationen verwerfen
-    if cfg.discard_short_fixations:
-        df, discard_stats = _discard_short_fixations_internal(
-            df,
-            cfg,
-            sample_col=sample_col,
-            time_col=time_col,
-        )
-
-    # Events neu aus der (ggf. modifizierten) Sample-Spalte aufbauen
+    # 2) Events aus Sample-Spalte aufbauen (für Discard benötigt)
     df = _rebuild_ivt_events_from_sample_types(
         df,
         sample_col=sample_col,
         event_type_col=event_type_col,
         event_index_col=event_index_col,
     )
+
+    # 3) Kurze Fixationen verwerfen (arbeitet auf Events)
+    if cfg.discard_short_fixations:
+        df, discard_stats = _discard_short_fixations_internal(
+            df,
+            cfg,
+            event_type_col=event_type_col,
+            event_index_col=event_index_col,
+            time_col=time_col,
+            discard_target=cfg.discard_target,
+        )
 
     stats: Dict[str, Any] = {}
     stats.update(merge_stats)

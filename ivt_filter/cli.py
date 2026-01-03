@@ -1,35 +1,24 @@
 # ivt_filter/cli.py
+"""Command-line interface for IVT filter pipeline.
+
+Entry point for the IVT processing pipeline. Delegates to specialized modules:
+    - arg_parser: CLI argument definitions
+    - config_builder: Configuration object construction
+    - pipeline: Processing orchestration
+"""
 from __future__ import annotations
 
 import argparse
-from typing import Optional
 
-import pandas as pd
-
-from .config import (
-    OlsenVelocityConfig,
-    IVTClassifierConfig,
-    SaccadeMergeConfig,
-    FixationPostConfig,
-)
-from .io import read_tsv, write_tsv
-from .velocity import compute_olsen_velocity
-from .classification import apply_ivt_classifier, expand_gt_events_to_samples
-from .postprocess import merge_short_saccade_blocks, apply_fixation_postprocessing
-from .evaluation import evaluate_ivt_vs_ground_truth
-from .plotting import (
-    plot_velocity_only,
-    plot_velocity_and_classification,
-)
+from .config_builder import ConfigBuilder
+from .pipeline import IVTPipeline
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    """
-    CLI-Parser fuer die I-VT-Pipeline.
-
-    Verantwortlichkeit:
-      - Nur Parsing & Beschreibung der Optionen.
-      - Keine Business-Logik (SOLID: SRP).
+    """Build CLI argument parser.
+    
+    Responsibility: Only parsing and describing options (SRP).
+    No business logic.
     """
     parser = argparse.ArgumentParser(
         description=(
@@ -70,15 +59,33 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--smoothing",
-        choices=["none", "median", "moving_average"],
+        choices=[
+            "none", "median", "moving_average", 
+            "median_strict", "moving_average_strict",
+            "median_adaptive", "moving_average_adaptive"
+        ],
         default="none",
-        help="Raeumliches Smoothing auf kombinierten Gaze-Koordinaten (default: none).",
+        help="Raeumliches Smoothing auf kombinierten Gaze-Koordinaten. "
+             "_strict Varianten ueberspringen Smoothing wenn invalide Samples im Fenster, "
+             "_adaptive sammelt nur gueltige Samples und kann Suche erweitern (default: none).",
     )
     parser.add_argument(
         "--smooth-window-samples",
         type=int,
         default=5,
         help="Fensterbreite in Samples fuer Smoothing (default: 5).",
+    )
+    parser.add_argument(
+        "--smoothing-min-samples",
+        type=int,
+        default=1,
+        help="(Nur adaptive) Mindestanzahl gueltiger Samples fuer Smoothing (default: 1).",
+    )
+    parser.add_argument(
+        "--smoothing-expansion-radius",
+        type=int,
+        default=0,
+        help="(Nur adaptive) Samples ueber Standard-Fenster hinaus durchsuchen (default: 0).",
     )
 
     # Fenster-Strategien
@@ -105,6 +112,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--fixed-window-edge-fallback",
+        action="store_true",
+        help=(
+            "Bei fixed-window-samples: wenn Fensterrand ungültige Samples hat, "
+            "verwende Geschwindigkeit vom nächsten Sample mit gültigem Fenster."
+        ),
+    )
+    parser.add_argument(
         "--symmetric-round-window",
         action="store_true",
         help=(
@@ -119,6 +134,42 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help=(
             "Asymmetrische Fensterbreite erlauben: per_side = round(window_size / 2). "
             "Erlaubt auch gerade Fenstergrößen ohne Aufrunden auf ungerade."
+        ),
+    )
+    parser.add_argument(
+        "--asymmetric-neighbor-window",
+        action="store_true",
+        help=(
+            "Nutze asymmetrisches 2-Sample Nachbar-Fenster. "
+            "Priorität: Backward (i-1 → i), Fallback: Forward (i → i+1). "
+            "Gap-Regel: 2 samples = radius 1."
+        ),
+    )
+
+    # Shifted valid window (konstante Fensterlaenge, verschieben bei Invalids)
+    parser.add_argument(
+        "--shifted-valid-window",
+        action="store_true",
+        help=(
+            "Halte feste Fensterlaenge (fixed_window_samples) und verschiebe das Fenster, "
+            "bis ein zusammenhaengender Block gueltiger Samples gefunden wird."
+        ),
+    )
+    parser.add_argument(
+        "--shifted-valid-fallback",
+        choices=["shrink", "unclassified"],
+        default="shrink",
+        help=(
+            "Fallback falls kein gueltiges Fenster konstanter Laenge existiert: "
+            "'shrink' = altes Shrink-Verhalten nutzen; 'unclassified' = kein Fenster."
+        ),
+    )
+    parser.add_argument(
+        "--use-fixed-dt",
+        action="store_true",
+        help=(
+            "Nutze fixed dt aus Sampling-Rate (dt = 1/Hz) statt time_ms-Differenzen. "
+            "Vermeidet Jitter durch Rundung. Nur mit --asymmetric-neighbor-window."
         ),
     )
     parser.add_argument(
@@ -164,6 +215,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "mit gueltigem Auge imputieren (nur eye_mode=average)."
         ),
     )
+    parser.add_argument(
+        "--average-fallback-single-eye",
+        action="store_true",
+        help=(
+            "Wenn im Fenster oder mittleren Sample nur ein Auge valide ist, "
+            "verwende durchgehend NUR dieses Auge (kein Average). "
+            "Verhindert Parallaxe-Effekte bei Augen-Wechsel."
+        ),
+    )
 
     # Gap-Filling
     parser.add_argument(
@@ -192,12 +252,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--velocity-method",
-        choices=["olsen2d", "ray3d"],
+        choices=["olsen2d", "ray3d", "ray3d_gaze_dir"],
         default="olsen2d",
         help=(
             "Methode zur Berechnung des visuellen Winkels zwischen zwei Gaze-Punkten. "
             "'olsen2d': Olsen's 2D-Approximation (tan(θ)=s/d, nur eye_z nötig, schnell), "
-            "'ray3d': physikalisch korrekte 3D-Winkel-Methode (acos(ray0·ray1), benötigt eye_x/y/z, präziser)."
+            "'ray3d': physikalisch korrekte 3D-Winkel-Methode (acos(ray0·ray1), benötigt eye_x/y/z, präziser), "
+            "'ray3d_gaze_dir': nutzt normalisierte Blickrichtungs-Vektoren (DACS norm), acos(dir0·dir1); benötigt keine Bildschirm- oder Eye-Position."
         ),
     )
 
@@ -216,8 +277,99 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=30.0,
         help="Velocity-Threshold in deg/s fuer I-VT (default: 30).",
     )
+    
+    # Near-threshold hybrid strategy
+    parser.add_argument(
+        "--enable-near-threshold-hybrid",
+        action="store_true",
+        help=(
+            "Enable hybrid near-threshold classification using alternative velocity. "
+            "Applies when |v_base - threshold| <= band."
+        ),
+    )
+    parser.add_argument(
+        "--near-threshold-band",
+        type=float,
+        default=5.0,
+        help="Band around threshold (deg/s) for hybrid classification (default: 5.0).",
+    )
+    parser.add_argument(
+        "--near-threshold-band-lower",
+        type=float,
+        default=None,
+        help="Asymmetric lower band (below threshold). If not set, uses symmetric band.",
+    )
+    parser.add_argument(
+        "--near-threshold-band-upper",
+        type=float,
+        default=None,
+        help="Asymmetric upper band (above threshold). If not set, uses symmetric band.",
+    )
+    parser.add_argument(
+        "--near-threshold-strategy",
+        type=str,
+        choices=['replace', 'inverse'],
+        default='inverse',
+        help=(
+            "Hybrid strategy: 'replace' always uses alternative velocity, "
+            "'inverse' uses velocity farther from threshold (default: inverse)."
+        ),
+    )
+    parser.add_argument(
+        "--near-threshold-confidence-margin",
+        type=float,
+        default=0.3,
+        help=(
+            "Only switch to alternative velocity in inverse strategy if it is at least "
+            "this many deg/s farther from the threshold (default: 0.3)."
+        ),
+    )
+    parser.add_argument(
+        "--near-threshold-require-same-side",
+        action="store_true",
+        help=(
+            "When set, only switch if base and alternative velocity are on the same side of the threshold."
+        ),
+    )
+    parser.add_argument(
+        "--near-threshold-max-delta",
+        type=float,
+        default=2.0,
+        help=(
+            "Maximum allowed |alt-base| (deg/s) to switch in inverse strategy (default: 2.0)."
+        ),
+    )
+    parser.add_argument(
+        "--near-threshold-neighbor-check",
+        action="store_true",
+        help=(
+            "Require neighbor majority support (previous/next base velocity side) when alt crosses the threshold."
+        ),
+    )
+    
+    # Eye-position jump rule
+    parser.add_argument(
+        "--enable-eye-jump-rule",
+        action="store_true",
+        help=(
+            "Enable eye-position jump correction. Uses alternative velocity when "
+            "eye position shifts significantly within the window."
+        ),
+    )
+    parser.add_argument(
+        "--eye-jump-threshold",
+        type=float,
+        default=10.0,
+        help="Eye position displacement threshold (mm) to trigger jump rule (default: 10.0).",
+    )
+    parser.add_argument(
+        "--eye-jump-velocity-threshold",
+        type=float,
+        default=50.0,
+        help="Velocity threshold (deg/s) for 'clear saccade' in jump rule (default: 50.0).",
+    )
 
-    # GT-basierte Saccaden-Glättung
+    # GT-based Saccaden-Glättung
     parser.add_argument(
         "--post-smoothing-ms",
         type=float,
@@ -267,6 +419,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=60.0,
         help="Minimale Fixationsdauer in ms (default: 60).",
     )
+    parser.add_argument(
+        "--discard-fixation-target",
+        choices=["Unclassified", "Saccade"],
+        default="Unclassified",
+        help="Ziel-Label fuer verworfene kurze Fixationen (default: Unclassified).",
+    )
 
     # Evaluation
     parser.add_argument(
@@ -290,158 +448,44 @@ def build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def build_velocity_config(args: argparse.Namespace) -> OlsenVelocityConfig:
-    """
-    Velocity-Konfiguration aus CLI-Argumenten ableiten.
-
-    (GRASP: Information Expert - diese Funktion kennt die Mapping-Details)
-    """
-    return OlsenVelocityConfig(
-        window_length_ms=args.window,
-        eye_mode=args.eye,
-        smoothing_mode=args.smoothing,
-        smoothing_window_samples=args.smooth_window_samples,
-        sample_symmetric_window=args.sample_symmetric_window,
-        fixed_window_samples=args.fixed_window_samples,
-        auto_fixed_window_from_ms=args.auto_fixed_window_from_ms,
-        symmetric_round_window=args.symmetric_round_window,
-        allow_asymmetric_window=args.allow_asymmetric_window,
-        sampling_rate_method=args.sampling_rate_method,
-        dt_calculation_method=args.dt_calculation_method,
-        use_fallback_valid_samples=not args.no_fallback_valid_samples,
-        average_window_single_eye=args.average_window_single_eye,
-        average_window_impute_neighbor=args.average_window_impute_neighbor,
-        gap_fill_enabled=args.gap_fill,
-        gap_fill_max_gap_ms=args.gap_fill_max_ms,
-        coordinate_rounding=args.coordinate_rounding,
-        velocity_method=args.velocity_method,
-    )
 
 
 def main() -> None:
-    """
-    Orchestriert die komplette Pipeline:
-
-      1) TSV laden
-      2) Velocity berechnen
-      3) optional: klassifizieren
-      4) optional: Saccaden-Postprocessing mit GT
-      5) optional: Fixations-Postprocessing ohne GT (Tobii-like)
-      6) optional: Evaluation
-      7) optional: Plotting
-      8) optional: TSV schreiben
-
-    Die Logik pro Step liegt in eigenen Modulen/Funktionen (SOLID).
+    """Main entry point for CLI.
+    
+    Orchestrates:
+        1. Parse arguments
+        2. Build configurations
+        3. Create and run pipeline
     """
     parser = build_arg_parser()
     args = parser.parse_args()
-
-    # 1) Daten laden
-    df = read_tsv(args.input)
-
-    # 2) Velocity berechnen
-    vel_cfg = build_velocity_config(args)
-    df = compute_olsen_velocity(df, vel_cfg)
-
-    pred_sample_col: Optional[str] = None
-    pred_col_for_eval: Optional[str] = None
-
-    # 3) I-VT Klassifikation (Sample + Events)
-    if args.classify or args.evaluate or args.merge_close_fixations or args.discard_short_fixations:
-        cls_cfg = IVTClassifierConfig(velocity_threshold_deg_per_sec=args.threshold)
-        df = apply_ivt_classifier(df, cls_cfg)
-        
-        # Expandiere GT Events zu GT Samples (für Sample-Level Evaluation)
-        df = expand_gt_events_to_samples(df)
-        
-        pred_sample_col = "ivt_sample_type"
-        pred_col_for_eval = pred_sample_col
-
-    # 4) GT-gestuetzte Saccaden-Glättung (optional)
-    if (
-        args.post_smoothing_ms
-        and args.post_smoothing_ms > 0
-        and pred_sample_col is not None
-    ):
-        sm_cfg = SaccadeMergeConfig(
-            max_saccade_block_duration_ms=args.post_smoothing_ms,
-            require_fixation_context=not args.post_smoothing_no_context,
-            use_sample_type_column=None if args.post_smoothing_no_sample_col else "ivt_sample_type",
-        )
-        df, merge_stats = merge_short_saccade_blocks(df, cfg=sm_cfg)
-
-        # welche Spalte als Prediction benutzen?
-        if sm_cfg.use_sample_type_column is not None:
-            # sample-basiert -> <sample_col>_smoothed
-            pred_sample_col = sm_cfg.use_sample_type_column + "_smoothed"
-        else:
-            # event-basiert -> 'ivt_event_type_smoothed'
-            pred_sample_col = "ivt_event_type_smoothed"
-
-        pred_col_for_eval = pred_sample_col
-
-        print(
-            "[Post-Processing] merged short saccade blocks: "
-            f"{merge_stats['n_blocks_merged']} / {merge_stats['n_blocks_total']} blocks, "
-            f"{merge_stats['n_samples_merged']} samples."
-        )
-
-    # 5) Tobii-aehnliches Fixations-Postprocessing (optional, ohne GT)
-    if (
-        pred_sample_col is not None
-        and (args.merge_close_fixations or args.discard_short_fixations)
-    ):
-        fix_cfg = FixationPostConfig(
-            merge_adjacent_fixations=args.merge_close_fixations,
-            max_time_gap_ms=args.merge_fix_max_gap_ms,
-            max_angle_deg=args.merge_fix_max_angle_deg,
-            discard_short_fixations=args.discard_short_fixations,
-            min_fixation_duration_ms=args.min_fixation_duration_ms,
-        )
-        df, fix_stats = apply_fixation_postprocessing(
-            df,
-            cfg=fix_cfg,
-            sample_col=pred_sample_col,
-            time_col="time_ms",
-            x_col="smoothed_x_mm",
-            y_col="smoothed_y_mm",
-            eye_z_col="eye_z_mm",
-            event_type_col="ivt_event_type_post",
-            event_index_col="ivt_event_index_post",
-        )
-
-        # Pred-Spalte fuer Evaluation bleibt pred_sample_col,
-        # das wurde in-place modifiziert.
-        pred_col_for_eval = pred_sample_col
-
-        print(
-            "[FixationPost] merged_pairs="
-            f"{fix_stats.get('merged_pairs', 0)}, "
-            "gap_samples_to_fixation="
-            f"{fix_stats.get('gap_samples_to_fixation', 0)}, "
-            "discarded_fixations="
-            f"{fix_stats.get('discarded_fixations', 0)}, "
-            "discarded_samples="
-            f"{fix_stats.get('discarded_samples', 0)}"
-        )
-
-    # 6) TSV schreiben (falls gewuenscht)
-    if args.output is not None:
-        write_tsv(df, args.output)
-
-    # 7) Evaluation (falls gewuenscht)
-    if args.evaluate and pred_col_for_eval is not None:
-        evaluate_ivt_vs_ground_truth(df, pred_col=pred_col_for_eval)
-
-    # 8) Plotting (nur, wenn nicht --no-plot)
-    if not args.no_plot:
-        if args.with_events:
-            # Velocity + GT-Ereignisse
-            plot_velocity_and_classification(df, vel_cfg)
-        else:
-            # Nur Velocity
-            plot_velocity_only(df, vel_cfg)
+    
+    # Build all configurations
+    vel_cfg, cls_cfg, sac_cfg, fix_cfg = ConfigBuilder.build_all_configs(args)
+    
+    # Create pipeline
+    pipeline = IVTPipeline(
+        velocity_config=vel_cfg,
+        classifier_config=cls_cfg,
+        saccade_merge_config=sac_cfg if args.post_smoothing_ms else None,
+        fixation_post_config=fix_cfg if (args.merge_close_fixations or args.discard_short_fixations) else None,
+    )
+    
+    # Run pipeline
+    pipeline.run(
+        input_path=args.input,
+        output_path=args.output,
+        classify=args.classify,
+        evaluate=args.evaluate,
+        post_smoothing_ms=args.post_smoothing_ms,
+        merge_close_fixations=args.merge_close_fixations,
+        discard_short_fixations=args.discard_short_fixations,
+        plot=not args.no_plot,
+        with_events=args.with_events,
+    )
 
 
 if __name__ == "__main__":
     main()
+

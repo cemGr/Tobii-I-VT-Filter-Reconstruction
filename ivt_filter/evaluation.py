@@ -36,7 +36,7 @@ def compute_ivt_metrics(
 
     total_all = len(gt)
     
-    # Für traditionelle Metriken: nur GT Fixation/Saccade berücksichtigen
+    # For traditional metrics: nur GT Fixation/Saccade berücksichtigen
     mask_traditional = gt.isin(["Fixation", "Saccade"])
     gt_trad = gt.loc[mask_traditional]
     pred_trad = pred.loc[mask_traditional]
@@ -45,7 +45,7 @@ def compute_ivt_metrics(
     if total_traditional == 0:
         raise ValueError("No samples with ground truth Fixation/Saccade found.")
 
-    # Basis-Agreement für traditionelle Metriken (nur GT Fix/Sac)
+    # Base agreement für traditionelle Metriken (nur GT Fix/Sac)
     agree_mask = gt_trad == pred_trad
     agree = int(agree_mask.sum())
     agreement = agree / total_traditional
@@ -66,7 +66,7 @@ def compute_ivt_metrics(
     recall_fix = tp_fix / n_fix if n_fix > 0 else float("nan")
     recall_sac = tp_sac / n_sac if n_sac > 0 else float("nan")
 
-    # Volle Konfusionsmatrix über alle Labels und alle Samples
+    # Full confusion matrix über alle Labels und alle Samples
     labels: List[str] = sorted(set(gt) | set(pred))
     label_to_idx = {lab: i for i, lab in enumerate(labels)}
     k = len(labels)
@@ -169,7 +169,7 @@ def compute_event_agreement(
         # Event-basiert Daten (von events expandiert)
         events = df.drop_duplicates(subset=["event_start_idx"], keep="first").copy()
     else:
-        # Sample-basierte Daten - Events müssen rekonstruiert werden
+        # Sample-based data - Events müssen rekonstruiert werden
         events = []
         current_event = None
         
