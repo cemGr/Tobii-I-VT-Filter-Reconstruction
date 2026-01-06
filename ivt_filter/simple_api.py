@@ -23,9 +23,9 @@ from typing import Optional, Literal
 import pandas as pd
 
 from .config import OlsenVelocityConfig, IVTClassifierConfig
-from .pipeline import IVTPipeline
+from .io.pipeline import IVTPipeline
 from .window_utils import create_time_based_config, create_adaptive_config
-from .io import read_tsv
+from .io.io import read_tsv
 
 
 def process_eye_tracking(
