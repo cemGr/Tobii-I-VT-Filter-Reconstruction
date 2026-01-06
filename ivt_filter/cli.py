@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import argparse
 
-from .config_builder import ConfigBuilder
-from .pipeline import IVTPipeline
+from .config.config_builder import ConfigBuilder
+from .io.pipeline import IVTPipeline
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -42,6 +42,22 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "Optionaler Output-TSV-Pfad. Falls gesetzt, wird das Ergebnis-DataFrame "
             "mit Velocity/IVT/Postprocessing-Spalten dort geschrieben."
         ),
+    )
+
+    # Zeitstempel-Optionen
+    parser.add_argument(
+        "--time-column",
+        choices=["time_ms", "time_us"],
+        default="time_ms",
+        help=(
+            "Spalte mit Zeitstempeln. time_us erlaubt Mikrosekunden-Präzision."
+        ),
+    )
+    parser.add_argument(
+        "--time-unit",
+        choices=["ms", "us", "ns"],
+        default="ms",
+        help="Einheit der gewählten Zeitspalte (default: ms).",
     )
 
     # Velocity / Fenster-Konfiguration
@@ -346,6 +362,28 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "Require neighbor majority support (previous/next base velocity side) when alt crosses the threshold."
         ),
     )
+
+    # Confident mismatch switch (far from threshold)
+    parser.add_argument(
+        "--confident-switch-enabled",
+        action="store_true",
+        help=(
+            "Enable confident mismatch switch: when base velocity is far from threshold (|v-th| >= margin) "
+            "and alternative method disagrees, use the alternative label."
+        ),
+    )
+    parser.add_argument(
+        "--confident-switch-margin-deg",
+        type=float,
+        default=4.0,
+        help="Margin in deg/s away from threshold to consider a mismatch confident (default: 4.0).",
+    )
+    parser.add_argument(
+        "--confident-switch-method",
+        choices=["olsen2d", "ray3d", "ray3d_gaze_dir"],
+        default="ray3d_gaze_dir",
+        help="Alternative velocity method to consult for confident switches (default: ray3d_gaze_dir).",
+    )
     
     # Eye-position jump rule
     parser.add_argument(
@@ -432,6 +470,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Vergleiche Klassifikation gegen Ground Truth und gib Metriken aus.",
     )
+    parser.add_argument(
+        "--exclude-calibration",
+        action="store_true",
+        help="Exclude samples whose presented stimulus name is 'Eyetracker Calibration' during evaluation.",
+    )
 
     # Plotting
     parser.add_argument(
@@ -483,6 +526,7 @@ def main() -> None:
         discard_short_fixations=args.discard_short_fixations,
         plot=not args.no_plot,
         with_events=args.with_events,
+        evaluate_exclude_calibration=args.exclude_calibration,
     )
 
 
