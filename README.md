@@ -128,7 +128,7 @@ python -m ivt_filter.cli \
   --window 20 \
   --auto-fixed-window-from-ms \
   --threshold 30 \
-  --smoothing-mode median \
+  --smoothing-mode median_strict \
   --smoothing-window-samples 3 \
   --shifted-valid-window \
   --shifted-valid-fallback shrink \
@@ -222,7 +222,7 @@ python -m ivt_filter.cli \
 
 **Median Filter** (recommended):
 ```bash
---smoothing-mode median --smoothing-window-samples 3
+--smoothing-mode median_strict --smoothing-window-samples 3
 ```
 - Reduces jitter without blurring saccades
 - Robust to outliers
@@ -230,7 +230,7 @@ python -m ivt_filter.cli \
 
 **Moving Average**:
 ```bash
---smoothing-mode moving_average --smoothing-window-samples 5
+--smoothing-mode moving_average_strict --smoothing-window-samples 5
 ```
 - Simple but aggressive
 - Blurs saccades slightly
@@ -370,7 +370,7 @@ Adapts to your actual sampling rate automatically.
 
 Real eye-trackers are noisy. Median filter helps:
 ```bash
---smoothing-mode median --smoothing-window-samples 3
+--smoothing-mode median_strict --smoothing-window-samples 3
 ```
 
 ### 4. Post-Process to Clean Up
@@ -417,7 +417,7 @@ Tobii uses Olsen 2D with 3-sample window by default. Match it:
 Increase minimum fixation duration or smoothing:
 ```bash
 --discard-short-fixations --min-fixation-duration-ms 100 \
---smoothing-mode median --smoothing-window-samples 5
+--smoothing-mode median_strict --smoothing-window-samples 5
 ```
 
 
@@ -441,7 +441,7 @@ python -m ivt_filter.cli \
   --window 20 \
   --auto-fixed-window-from-ms \
   --threshold 30 \
-  --smoothing-mode median \
+  --smoothing-mode median_strict \
   --smoothing-window-samples 3 \
   --shifted-valid-window \
   --shifted-valid-fallback shrink \
