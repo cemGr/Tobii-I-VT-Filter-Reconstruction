@@ -1,3 +1,5 @@
 pytest
 numpy 
 pandas 
+matplotlib
+joblib  # Optional: for parallel processing (recommended for large datasets)
