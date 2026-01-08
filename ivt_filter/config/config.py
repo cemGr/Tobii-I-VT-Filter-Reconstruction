@@ -137,7 +137,7 @@ class OlsenVelocityConfig:
     # Methode zur Berechnung der Zeitdifferenzen
     # - "median": Robuster gegenüber Ausreißern (Standard)
     # - "mean": Arithmetisches Mittel (wie im Tobii-Paper erwähnt)
-    dt_calculation_method: Literal["median", "mean"] = "median"
+    dt_calculation_method: Literal["median", "mean"] = "mean"
 
     # Bei ungültigen first/last Samples im Fenster: nächstes gültiges Sample verwenden
     use_fallback_valid_samples: bool = True
