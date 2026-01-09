@@ -364,7 +364,7 @@ class ExperimentManager:
         if best_name is None:
             raise ValueError(f"No experiments found with metric '{metric}'")
         
-        return best_name, best_value, best_config
+        return best_name, best_value, best_config  # type: ignore[return-value]
     
     def _make_serializable(self, obj: Any) -> Any:
         """Convert non-JSON-serializable objects to serializable format."""
