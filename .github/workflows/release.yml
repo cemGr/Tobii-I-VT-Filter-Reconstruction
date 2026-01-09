@@ -25,6 +25,20 @@ jobs:
         run: |
           python -m build
 
+      - name: Upload dists as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-packages
+          path: dist/*
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.5.1
         with:
