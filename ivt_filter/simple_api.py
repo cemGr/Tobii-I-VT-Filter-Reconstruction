@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import Optional, Literal
 import pandas as pd
 
-from .config import OlsenVelocityConfig, IVTClassifierConfig
 from .io.pipeline import IVTPipeline
 from .window_utils import create_time_based_config, create_adaptive_config
 from .io.io import read_tsv
@@ -246,7 +245,7 @@ def print_statistics(df: pd.DataFrame) -> None:
     print(f"Saccades: {stats['saccade_count']} ({stats['saccade_percentage']:.1f}%)")
     
     if "avg_velocity" in stats:
-        print(f"\nVelocity:")
+        print("\nVelocity:")
         print(f"  Average: {stats['avg_velocity']:.1f} deg/s")
         print(f"  Median: {stats['median_velocity']:.1f} deg/s")
         print(f"  Maximum: {stats['max_velocity']:.1f} deg/s")

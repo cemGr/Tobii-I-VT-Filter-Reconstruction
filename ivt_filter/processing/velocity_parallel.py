@@ -28,7 +28,6 @@ from .velocity import (
     _get_velocity_calculation_strategy,
 )
 from ..strategies import (
-    FixedSampleSymmetricWindowSelector,
     AsymmetricNeighborWindowSelector,
 )
 
@@ -80,7 +79,7 @@ def _compute_velocity_for_chunk(
     velocity_strategy = _get_velocity_calculation_strategy(cfg.velocity_method)
     
     # Fallback selector if needed
-    from ..strategies import TimeSymmetricWindowSelector, SampleSymmetricWindowSelector
+    from ..strategies import TimeSymmetricWindowSelector
     fallback_selector = None
     if fallback_available:
         fallback_selector = TimeSymmetricWindowSelector()
