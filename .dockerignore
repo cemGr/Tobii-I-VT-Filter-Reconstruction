@@ -1,0 +1,20 @@
+.git
+.gitignore
+.venv/
+__pycache__/
+.vscode/
+.pytest_cache/
+htmlcov/
+notebooks/
+experiments/
+examples/
+old_scripts/
+app/__pycache__/
+*.ipynb
+*.pytest_cache/
+*.log
+*.tmp
+*.tsv
+*.csv
+# Exclude local test data; mount via volumes when needed
+test_data/
