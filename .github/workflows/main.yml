@@ -1,5 +1,9 @@
 name: Python CI
 
+concurrency:
+  group: python-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:          
   pull_request:  
@@ -7,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - name: Checkout repository
@@ -15,7 +22,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -23,6 +31,24 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
-      - name: Run tests
+      - name: Install dev tools
         run: |
-          pytest
+          pip install pytest-cov ruff mypy
+
+      - name: Run tests with coverage
+        run: |
+          pytest -q --cov=ivt_filter --cov-report=xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Lint (ruff, blocking on core)
+        run: |
+          ruff check ivt_filter
+
+      - name: Type check (mypy)
+        run: |
+          mypy ivt_filter
