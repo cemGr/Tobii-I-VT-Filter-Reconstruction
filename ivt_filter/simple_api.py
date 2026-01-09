@@ -203,8 +203,8 @@ def get_statistics(df: pd.DataFrame) -> dict:
     stats["saccade_count"] = (df["ivt_sample_type"] == "Saccade").sum()
     
     # Percentages
-    stats["fixation_percentage"] = (stats["fixation_count"] / stats["total_samples"]) * 100
-    stats["saccade_percentage"] = (stats["saccade_count"] / stats["total_samples"]) * 100
+    stats["fixation_percentage"] = (stats["fixation_count"] / stats["total_samples"]) * 100  # type: ignore[assignment]
+    stats["saccade_percentage"] = (stats["saccade_count"] / stats["total_samples"]) * 100  # type: ignore[assignment]
     
     # Velocity statistics  
     vel_col = "velocity_deg_per_sec"  # Standard column name from velocity.py

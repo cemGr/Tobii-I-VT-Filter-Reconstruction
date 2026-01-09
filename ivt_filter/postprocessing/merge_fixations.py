@@ -66,7 +66,7 @@ def merge_adjacent_fixations(
         angle_calculator = Ray3DAngle()
         print("[MergeFixations] Using Ray3D angle calculation")
     else:
-        angle_calculator = Olsen2DApproximation()
+        angle_calculator = Olsen2DApproximation()  # type: ignore[assignment]
         print("[MergeFixations] Using Olsen 2D approximation")
 
     # Fixations-Bloecke aus den Labels bestimmen

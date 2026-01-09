@@ -201,9 +201,9 @@ class IVTClassifierConfig:
     # Band around threshold (deg/s) where alternative velocity is used
     near_threshold_band: float = 5.0
     # Asymmetric band: lower band (below threshold) - None means use symmetric band
-    near_threshold_band_lower: float = None
+    near_threshold_band_lower: float | None = None
     # Asymmetric band: upper band (above threshold) - None means use symmetric band
-    near_threshold_band_upper: float = None
+    near_threshold_band_upper: float | None = None
     # Hybrid strategy: 'replace' (always use alt), 'inverse' (use velocity farther from threshold)
     near_threshold_strategy: str = 'inverse'
     # Minimum confidence margin (deg/s) required to switch in inverse strategy
