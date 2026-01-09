@@ -36,5 +36,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
-            ghcr.io/${{ github.repository_owner | lower }}/tobii-i-vt-filter-reconstruction:latest
-            ghcr.io/${{ github.repository_owner | lower }}/tobii-i-vt-filter-reconstruction:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/tobii-i-vt-filter-reconstruction:latest
+            ghcr.io/${{ github.repository_owner }}/tobii-i-vt-filter-reconstruction:${{ github.ref_name }}
