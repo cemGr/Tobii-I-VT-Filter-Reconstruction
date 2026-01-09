@@ -1,7 +1,7 @@
 # ivt_filter/evaluation/plotting.py
 from __future__ import annotations
 
-from typing import Optional, Dict
+from typing import Optional
 import pandas as pd
 import matplotlib.pyplot as plt
 

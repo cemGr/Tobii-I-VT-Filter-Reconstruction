@@ -13,10 +13,9 @@ import numpy as np
 import pandas as pd
 
 from ..config import OlsenVelocityConfig
-from ..config import PhysicalConstants
 from ..preprocessing import prepare_combined_columns, smooth_combined_gaze, gap_fill_gaze
-from ..utils import window_utils
 from .velocity import make_window_selector, _get_coordinate_rounding_strategy, _get_velocity_calculation_strategy
+from ..strategies import FixedSampleSymmetricWindowSelector, AsymmetricNeighborWindowSelector
 
 
 class SamplingAnalyzer:
@@ -248,7 +247,7 @@ class VelocityComputer:
         if isinstance(window_selector, FixedSampleSymmetricWindowSelector):
             print(f"[Window] Fixed sample window: {self.cfg.fixed_window_samples} samples")
         elif isinstance(window_selector, AsymmetricNeighborWindowSelector):
-            print(f"[Window] Asymmetric neighbor window: 2 samples (backward/forward)")
+            print("[Window] Asymmetric neighbor window: 2 samples (backward/forward)")
 
     def _compute_all_velocities(
         self,

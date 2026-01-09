@@ -234,14 +234,14 @@ def print_window_info(
     sample_duration_ms = 1000.0 / sampling_rate_hz
     
     if verbose:
-        print(f"Window Information:")
+        print("Window Information:")
         print(f"  Window size: {window_ms:.2f} ms")
         print(f"  Sampling rate: {sampling_rate_hz:.1f} Hz")
         print(f"  Number of samples: {n_samples_rounded} ({n_samples_actual:.2f} actual)")
         print(f"  Sample duration: {sample_duration_ms:.2f} ms")
         
         if abs(n_samples_actual - n_samples_rounded) > 0.1:
-            print(f"  ⚠️  Warning: Window not aligned with sample rate!")
+            print("  ⚠️  Warning: Window not aligned with sample rate!")
             print(f"     Consider using {n_samples_rounded} samples exactly:")
             optimal_ms = samples_to_milliseconds(n_samples_rounded, sampling_rate_hz)
             print(f"     → {optimal_ms:.2f} ms for {n_samples_rounded} samples")

@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
 import pandas as pd
-import json
 
 from ..evaluation.experiment import ExperimentConfig, ExperimentManager
 
@@ -121,7 +120,7 @@ class ConsoleReporter(PipelineObserver):
         print(f"   Processed {len(results_df)} samples")
         
         if metrics and self.verbose:
-            print(f"\n   Key Metrics:")
+            print("\n   Key Metrics:")
             if "percentage_agreement" in metrics:
                 print(f"   - Agreement: {metrics['percentage_agreement']:.2f}%")
             if "fixation_recall" in metrics:

@@ -6,7 +6,6 @@ Implements Observer Pattern for automatic experiment tracking.
 """
 from __future__ import annotations
 
-import argparse
 from typing import Optional, List, Dict, Any
 
 import pandas as pd

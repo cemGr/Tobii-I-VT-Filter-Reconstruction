@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any, List
 
 import numpy as np
 import pandas as pd

@@ -478,7 +478,6 @@ def compute_olsen_velocity(
         logger.info("Gap-based Unclassified enabled: max_gap_samples=%s", gap_max)
 
     # Precompute nächster ungültiger Index links/rechts für jedes Sample
-    invalid = ~valid
     prev_invalid_idx = np.full(n, -1, dtype=int)
     next_invalid_idx = np.full(n, -1, dtype=int)
     last_inv = -1
@@ -631,7 +630,6 @@ def compute_olsen_velocity(
             x2, y2 = cx[last_idx], cy[last_idx]
 
         # Speichere finalen dt und wende min_dt-Prüfung an (außer beim späteren Single-Eye-Fallback)
-        original_dt_ms = dt_ms
         skip_dt_check = cfg.eye_mode == "average" and cfg.average_fallback_single_eye and not eye_consistent_override
         if not skip_dt_check:
             if dt_ms < cfg.min_dt_ms:
