@@ -330,6 +330,21 @@ def apply_tobii_eye_offset_interpolation(
     vl_arr = df["validity_left"].to_numpy() if "validity_left" in df.columns else np.zeros(len(df))
     vr_arr = df["validity_right"].to_numpy() if "validity_right" in df.columns else np.zeros(len(df))
 
+    # Validity-Arrays als object-dtype für Rückschreiben (erlaubt gemischte Typen)
+    vl_out = vl_arr.copy().astype(object)
+    vr_out = vr_arr.copy().astype(object)
+
+    # "Valid"-Marker: "Valid" (String) wenn Spalte String-Werte enthält, sonst 0
+    def _valid_marker(arr: np.ndarray) -> object:
+        """Gibt den passenden 'valid'-Wert zurück (String oder int)."""
+        for v in arr:
+            if isinstance(v, str):
+                return "Valid"
+        return 0
+
+    valid_marker_l = _valid_marker(vl_arr)
+    valid_marker_r = _valid_marker(vr_arr)
+
     # Explizite Kopien (writable=True) – to_numpy() kann read-only zurückgeben
     lx = df["gaze_left_x_mm"].to_numpy(dtype=float).copy()
     ly = df["gaze_left_y_mm"].to_numpy(dtype=float).copy()
@@ -372,6 +387,9 @@ def apply_tobii_eye_offset_interpolation(
                 lex[i] = rex_[i] - last_eye_offset[0]   # type: ignore[index]
                 ley[i] = rey_[i] - last_eye_offset[1]   # type: ignore[index]
                 lez[i] = rez_[i] - last_eye_offset[2]   # type: ignore[index]
+            # Validity auf gültigen Marker setzen, damit prepare_combined_columns
+            # das interpolierte Auge als gleichwertig behandelt
+            vl_out[i] = valid_marker_l
 
         elif left_valid and not right_valid and last_gaze_offset is not None:
             # Nur linkes Auge → schätze rechtes Auge via gespeichertem Offset
@@ -383,6 +401,8 @@ def apply_tobii_eye_offset_interpolation(
                 rex_[i] = lex[i] + last_eye_offset[0]   # type: ignore[index]
                 rey_[i] = ley[i] + last_eye_offset[1]   # type: ignore[index]
                 rez_[i] = lez[i] + last_eye_offset[2]   # type: ignore[index]
+            # Validity auf gültigen Marker setzen
+            vr_out[i] = valid_marker_r
         # else: beide ungültig → keine Schätzung, Daten bleiben NaN
 
     # Zurückschreiben
@@ -398,5 +418,10 @@ def apply_tobii_eye_offset_interpolation(
         df["eye_right_x_mm"] = rex_
         df["eye_right_y_mm"] = rey_
         df["eye_right_z_mm"] = rez_
+    # Validity-Flags zurückschreiben (interpolierte Augen sind jetzt "Valid")
+    if "validity_left" in df.columns:
+        df["validity_left"] = vl_out
+    if "validity_right" in df.columns:
+        df["validity_right"] = vr_out
 
     return df
