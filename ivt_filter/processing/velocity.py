@@ -798,7 +798,7 @@ def compute_olsen_velocity(
 
         # Optional direction vectors for gaze-dir strategy
         dir_first = dir_last = None
-        if isinstance(velocity_strategy, Ray3DGazeDir):
+        if isinstance(velocity_strategy, (Ray3DGazeDir, TobiiGazeDirAngle)):
             dir_first, dir_last = _get_direction_vectors(
                 actual_first_idx, actual_last_idx, eye_mode, used_eye, eye_consistent_override,
                 ldx, ldy, ldz, rdx, rdy, rdz, combined_dir_x, combined_dir_y, combined_dir_z
