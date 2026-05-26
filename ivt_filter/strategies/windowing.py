@@ -309,6 +309,87 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 		return None, None
 
 
+class TobiiGazeVelocityWindowSelector(WindowSelector):
+	"""Tobii-exakte Fensterstrategie nach ``GazeVelocityCalculator`` (Tobii C#).
+
+	Rekonstruiert aus der dekompilierten Tobii-Implementierung.
+
+	Fenstergröße (``GazeVelocityCalculatorHelper.CalculateWindowSizeFromSamplingInterval``):
+
+	.. code-block:: text
+
+	    window_samples = floor(window_ms / sample_interval_ms * 1.01) + 1
+
+	Der Faktor 1.01 kompensiert Sampling-Unregelmäßigkeiten (laut Tobii-Sourcecode).
+
+	Verhalten:
+	- Symmetrisches Sample-Fenster um idx: [idx − half, idx + half]
+	- half = (window_samples − 1) // 2
+	- Erfordert gültige Endpunkte (first_idx und last_idx müssen valide sein)
+	- Velocity wird dem mittleren Sample zugewiesen (= idx bei symmetrischem Fenster)
+	- Bei invaliden Samples im Fenster: sucht nächstes gültiges an Fensterenden
+	"""
+
+	def __init__(self, sample_interval_ms: float):
+		"""
+		Args:
+		    sample_interval_ms: Nominelles Abtastintervall in ms.
+		        Beispiele: 16.67 für 60 Hz, 8.33 für 120 Hz, 4.17 für 240 Hz.
+		        Wird zur Berechnung der Fenstergröße nach Tobii-Formel verwendet.
+		"""
+		if sample_interval_ms <= 0:
+			raise ValueError("sample_interval_ms must be > 0.")
+		self.sample_interval_ms = float(sample_interval_ms)
+
+	def _compute_half_size(self, half_window_ms: float) -> int:
+		"""Berechnet half_size nach Tobii-Formel (GazeVelocityCalculatorHelper).
+
+		Args:
+		    half_window_ms: Halbe Fensterlänge in ms (aus ``window_length_ms / 2``).
+
+		Returns:
+		    Ganzzahlige Hälfte der Fenstergröße in Samples.
+		"""
+		window_ms = half_window_ms * 2.0  # volle Fensterlänge
+		# Tobii-Formel: floor(window_ms / sample_ms * 1.01) + 1
+		window_samples = int(window_ms / self.sample_interval_ms * 1.01) + 1
+		window_samples = max(1, window_samples)
+		return (window_samples - 1) // 2
+
+	def select(
+		self,
+		idx: int,
+		times: np.ndarray,
+		valid: np.ndarray,
+		half_window_ms: float,
+	) -> IndexPair:
+		if not bool(valid[idx]):
+			return None, None
+
+		half = self._compute_half_size(half_window_ms)
+		n = len(times)
+		window_start = max(0, idx - half)
+		window_end = min(n - 1, idx + half)
+
+		# Suche erstes gültiges Sample von links (innerhalb des Fensters)
+		first_idx = None
+		for j in range(window_start, idx + 1):
+			if bool(valid[j]):
+				first_idx = j
+				break
+
+		# Suche letztes gültiges Sample von rechts (innerhalb des Fensters)
+		last_idx = None
+		for k in range(window_end, idx - 1, -1):
+			if bool(valid[k]):
+				last_idx = k
+				break
+
+		if first_idx is None or last_idx is None or first_idx >= last_idx:
+			return None, None
+		return first_idx, last_idx
+
+
 class ShiftedValidWindowSelector(WindowSelector):
 	"""Shift fixed-length window to find contiguous valid block containing anchor.
 	

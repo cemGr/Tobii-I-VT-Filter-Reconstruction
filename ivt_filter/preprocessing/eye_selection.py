@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import Optional, Tuple, List
 
+import numpy as np
 import pandas as pd
 
 from ..config import OlsenVelocityConfig
@@ -266,4 +267,136 @@ def prepare_combined_columns(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.D
     df["combined_valid"] = combined_valid
     df["left_eye_valid"] = left_eye_valid
     df["right_eye_valid"] = right_eye_valid
+    return df
+
+
+def apply_tobii_eye_offset_interpolation(
+    df: pd.DataFrame,
+    cfg: OlsenVelocityConfig,
+) -> pd.DataFrame:
+    """Tobii-exakte Auge-Offset-Interpolation für fehlende Augen-Daten.
+
+    Rekonstruiert aus ``RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter``
+    aus der dekompilierten Tobii C#-Implementierung.
+
+    Wenn ein Auge fehlt (ungültig), wird der zuletzt bekannte räumliche Versatz
+    zwischen linkem und rechtem Auge (Gaze-Punkt-Offset und Eye-Origin-Offset)
+    verwendet, um das fehlende Auge zu schätzen. Das ist präziser als einfacher
+    Fallback auf ein einzelnes Auge, da Parallaxe-Effekte kompensiert werden.
+
+    Funktionsweise:
+    - ``BothEyesFound``:  Offsets werden aktualisiert, echte Daten verwendet.
+    - ``OnlyRightEyeFound``: left_gaze = right_gaze − last_gaze_offset
+                             left_eye  = right_eye  − last_eye_offset
+    - ``OnlyLeftEyeFound``:  right_gaze = left_gaze + last_gaze_offset
+                             right_eye  = left_eye  + last_eye_offset
+    - ``NoEyesFound``: Keine Schätzung möglich (Daten bleiben NaN).
+
+    Modifiziert die Spalten ``gaze_left_x_mm``, ``gaze_left_y_mm``,
+    ``gaze_right_x_mm``, ``gaze_right_y_mm`` sowie die Eye-Origin-Spalten
+    ``eye_left_x_mm``, ``eye_left_y_mm``, ``eye_left_z_mm`` etc. in-place
+    (auf einer Kopie).
+
+    Args:
+        df: DataFrame mit Tobii-Rohdaten (muss gaze_left_*, gaze_right_*,
+            validity_left, validity_right enthalten).
+        cfg: Velocity-Konfiguration (für ``max_validity``).
+
+    Returns:
+        Kopie des DataFrames mit interpolierten Gaze-/Eye-Spalten.
+    """
+    df = df.copy()
+
+    # Erforderliche Gaze-Spalten
+    gaze_cols_left = ["gaze_left_x_mm", "gaze_left_y_mm"]
+    gaze_cols_right = ["gaze_right_x_mm", "gaze_right_y_mm"]
+    eye_cols_left = ["eye_left_x_mm", "eye_left_y_mm", "eye_left_z_mm"]
+    eye_cols_right = ["eye_right_x_mm", "eye_right_y_mm", "eye_right_z_mm"]
+
+    has_gaze_left = all(c in df.columns for c in gaze_cols_left)
+    has_gaze_right = all(c in df.columns for c in gaze_cols_right)
+    has_eye_left = all(c in df.columns for c in eye_cols_left)
+    has_eye_right = all(c in df.columns for c in eye_cols_right)
+
+    if not (has_gaze_left and has_gaze_right):
+        # Ohne beide Gaze-Spalten ist keine Interpolation möglich
+        return df
+
+    # Gespeicherte Offsets (right − left); initialisiert mit None
+    last_gaze_offset: Optional[np.ndarray] = None   # shape (2,): [Δx, Δy]
+    last_eye_offset: Optional[np.ndarray] = None    # shape (3,): [Δx, Δy, Δz]
+
+    # Numpy-Arrays für schnellen Zugriff
+    vl_arr = df["validity_left"].to_numpy() if "validity_left" in df.columns else np.zeros(len(df))
+    vr_arr = df["validity_right"].to_numpy() if "validity_right" in df.columns else np.zeros(len(df))
+
+    # Explizite Kopien (writable=True) – to_numpy() kann read-only zurückgeben
+    lx = df["gaze_left_x_mm"].to_numpy(dtype=float).copy()
+    ly = df["gaze_left_y_mm"].to_numpy(dtype=float).copy()
+    rx = df["gaze_right_x_mm"].to_numpy(dtype=float).copy()
+    ry = df["gaze_right_y_mm"].to_numpy(dtype=float).copy()
+
+    lex = df["eye_left_x_mm"].to_numpy(dtype=float).copy() if has_eye_left else None
+    ley = df["eye_left_y_mm"].to_numpy(dtype=float).copy() if has_eye_left else None
+    lez = df["eye_left_z_mm"].to_numpy(dtype=float).copy() if has_eye_left else None
+    rex_ = df["eye_right_x_mm"].to_numpy(dtype=float).copy() if has_eye_right else None
+    rey_ = df["eye_right_y_mm"].to_numpy(dtype=float).copy() if has_eye_right else None
+    rez_ = df["eye_right_z_mm"].to_numpy(dtype=float).copy() if has_eye_right else None
+
+    max_v = cfg.max_validity
+
+    for i in range(len(df)):
+        left_valid = (_parse_validity(vl_arr[i]) <= max_v
+                      and np.isfinite(lx[i]) and np.isfinite(ly[i]))
+        right_valid = (_parse_validity(vr_arr[i]) <= max_v
+                       and np.isfinite(rx[i]) and np.isfinite(ry[i]))
+
+        if left_valid and right_valid:
+            # Beide Augen valide → Offsets aktualisieren
+            last_gaze_offset = np.array([rx[i] - lx[i], ry[i] - ly[i]])
+            if (has_eye_left and has_eye_right
+                    and np.isfinite(lex[i]) and np.isfinite(rex_[i])):  # type: ignore[index]
+                last_eye_offset = np.array([
+                    rex_[i] - lex[i],   # type: ignore[index]
+                    rey_[i] - ley[i],   # type: ignore[index]
+                    rez_[i] - lez[i],   # type: ignore[index]
+                ])
+
+        elif right_valid and not left_valid and last_gaze_offset is not None:
+            # Nur rechtes Auge → schätze linkes Auge via gespeichertem Offset
+            # left_gaze = right_gaze − offset  (offset = right − left)
+            lx[i] = rx[i] - last_gaze_offset[0]
+            ly[i] = ry[i] - last_gaze_offset[1]
+            if (has_eye_left and has_eye_right and last_eye_offset is not None
+                    and np.isfinite(rex_[i])):  # type: ignore[index]
+                lex[i] = rex_[i] - last_eye_offset[0]   # type: ignore[index]
+                ley[i] = rey_[i] - last_eye_offset[1]   # type: ignore[index]
+                lez[i] = rez_[i] - last_eye_offset[2]   # type: ignore[index]
+
+        elif left_valid and not right_valid and last_gaze_offset is not None:
+            # Nur linkes Auge → schätze rechtes Auge via gespeichertem Offset
+            # right_gaze = left_gaze + offset
+            rx[i] = lx[i] + last_gaze_offset[0]
+            ry[i] = ly[i] + last_gaze_offset[1]
+            if (has_eye_right and has_eye_left and last_eye_offset is not None
+                    and np.isfinite(lex[i])):  # type: ignore[index]
+                rex_[i] = lex[i] + last_eye_offset[0]   # type: ignore[index]
+                rey_[i] = ley[i] + last_eye_offset[1]   # type: ignore[index]
+                rez_[i] = lez[i] + last_eye_offset[2]   # type: ignore[index]
+        # else: beide ungültig → keine Schätzung, Daten bleiben NaN
+
+    # Zurückschreiben
+    df["gaze_left_x_mm"] = lx
+    df["gaze_left_y_mm"] = ly
+    df["gaze_right_x_mm"] = rx
+    df["gaze_right_y_mm"] = ry
+    if has_eye_left:
+        df["eye_left_x_mm"] = lex
+        df["eye_left_y_mm"] = ley
+        df["eye_left_z_mm"] = lez
+    if has_eye_right:
+        df["eye_right_x_mm"] = rex_
+        df["eye_right_y_mm"] = rey_
+        df["eye_right_z_mm"] = rez_
+
     return df
