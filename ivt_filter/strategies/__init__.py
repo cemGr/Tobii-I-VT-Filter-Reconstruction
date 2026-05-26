@@ -6,6 +6,7 @@ from .velocity_calculation import (
     Olsen2DApproximation,
     Ray3DAngle,
     Ray3DGazeDir,
+    TobiiGazeDirAngle,
 )
 from .windowing import (
     WindowSelector,
@@ -15,6 +16,7 @@ from .windowing import (
     AsymmetricNeighborWindowSelector,
     ShiftedValidWindowSelector,
     TimeBasedShiftedValidWindowSelector,
+    TobiiGazeVelocityWindowSelector,
 )
 from .coordinate_rounding import CoordinateRoundingStrategy
 from .window_rounding import WindowRoundingStrategy
@@ -35,6 +37,7 @@ __all__ = [
     "Olsen2DApproximation",
     "Ray3DAngle",
     "Ray3DGazeDir",
+    "TobiiGazeDirAngle",
     "WindowSelector",
     "TimeSymmetricWindowSelector",
     "SampleSymmetricWindowSelector",
@@ -42,6 +45,7 @@ __all__ = [
     "AsymmetricNeighborWindowSelector",
     "ShiftedValidWindowSelector",
     "TimeBasedShiftedValidWindowSelector",
+    "TobiiGazeVelocityWindowSelector",
     "CoordinateRoundingStrategy",
     "WindowRoundingStrategy",
     "SmoothingStrategy",

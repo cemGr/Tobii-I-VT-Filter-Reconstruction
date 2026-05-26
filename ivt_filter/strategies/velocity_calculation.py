@@ -258,3 +258,77 @@ class Ray3DGazeDir(VelocityCalculationStrategy):
 
     def get_description(self) -> str:
         return "Ray3D using gaze direction vectors (acos(dir0·dir1))"
+
+
+class TobiiGazeDirAngle(VelocityCalculationStrategy):
+    """Tobii-exakte Winkelberechnung zwischen normierten Blickrichtungsvektoren.
+
+    Rekonstruiert aus ``Point3DVectorExtensions.AngleInDegreesToNormalized``
+    aus der dekompilierten Tobii C#-Implementierung.
+
+    Die asin-basierte Formel ist numerisch stabiler als ``acos(dot product)``,
+    insbesondere bei sehr kleinen (<0.1°) und sehr großen (>170°) Winkeln,
+    wo ``acos`` aufgrund von Floating-Point-Ungenauigkeiten leicht in den
+    nicht-definierten Bereich geraten kann.
+
+    Formel:
+        Spitzer Winkel  (dot ≥ 0):  θ = 2 · asin(‖v₁ − v₂‖ / 2)
+        Stumpfer Winkel (dot < 0):  θ = π − 2 · asin(‖−v₁ − v₂‖ / 2)
+
+    Beide Vektoren müssen normiert übergeben werden (werden intern normiert,
+    falls nicht bereits der Fall).
+    """
+
+    @staticmethod
+    def _angle_between_normalized(v1: np.ndarray, v2: np.ndarray) -> float:
+        """Winkel in Grad zwischen zwei normierten 3D-Vektoren (Tobii-Formel)."""
+        dot = float(np.dot(v1, v2))
+        if dot < 0.0:
+            # Stumpfer Winkel: komplementäre asin-Formel
+            # Origin(0,0,0) - v1 - v2 → Length / 2
+            vec = -v1 - v2
+            angle_rad = math.pi - 2.0 * math.asin(
+                min(float(np.linalg.norm(vec)) / 2.0, 1.0)
+            )
+        else:
+            # Spitzer Winkel: direkte asin-Formel
+            diff_len = float(np.linalg.norm(v1 - v2))
+            angle_rad = 2.0 * math.asin(min(diff_len / 2.0, 1.0))
+        return math.degrees(angle_rad)
+
+    def calculate_visual_angle_ctx(self, ctx: VelocityContext) -> float:
+        """Berechnet den Winkel aus den normierten Richtungsvektoren im Kontext."""
+        dir1 = ctx.dir1
+        dir2 = ctx.dir2
+        if dir1 is None or dir2 is None:
+            return 0.0
+
+        v1 = np.asarray(dir1, dtype=float)
+        v2 = np.asarray(dir2, dtype=float)
+
+        n1 = float(np.linalg.norm(v1))
+        n2 = float(np.linalg.norm(v2))
+
+        if n1 == 0.0 or n2 == 0.0 or not math.isfinite(n1) or not math.isfinite(n2):
+            return 0.0
+
+        return self._angle_between_normalized(v1 / n1, v2 / n2)
+
+    def calculate_visual_angle(
+        self,
+        x1_mm: float,
+        y1_mm: float,
+        x2_mm: float,
+        y2_mm: float,
+        eye_x_mm: Optional[float],
+        eye_y_mm: Optional[float],
+        eye_z_mm: Optional[float],
+    ) -> float:
+        # Ohne Richtungsvektoren (dir1/dir2) nicht berechenbar; Fallback: 0°
+        return 0.0
+
+    def get_description(self) -> str:
+        return (
+            "Tobii asin-formula: θ = 2·asin(‖v₁−v₂‖/2) "
+            "[numerically stable, from Tobii decompilation]"
+        )
