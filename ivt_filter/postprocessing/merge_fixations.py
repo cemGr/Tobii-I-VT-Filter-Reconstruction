@@ -12,6 +12,33 @@ from ..config import FixationPostConfig
 from ..strategies import Ray3DAngle, Olsen2DApproximation
 
 
+def _weighted_fixation_center(
+    arr: np.ndarray,
+    start: int,
+    end: int,
+    n_samples: int,
+    total_samples: int,
+    weighting: str,
+) -> float:
+    """Berechnet das gewichtete Zentrum einer Fixation.
+
+    Args:
+        arr: Koordinaten-Array (x oder y).
+        start: Startindex des Fixationsblocks.
+        end: Endindex des Fixationsblocks (inklusive).
+        n_samples: Anzahl Samples in diesem Block (für sample_count-Gewichtung).
+        total_samples: Gesamtzahl Samples über alle gemergten Blöcke.
+        weighting: "uniform" für np.nanmean, "sample_count" für gewichtetes Mittel.
+
+    Returns:
+        Gewichtetes Zentrum (float).
+    """
+    if weighting == "sample_count":
+        block_mean = float(np.nanmean(arr[start : end + 1]))
+        return block_mean * n_samples / total_samples
+    return float(np.nanmean(arr[start : end + 1]))
+
+
 def merge_adjacent_fixations(
     df: pd.DataFrame,
     cfg: FixationPostConfig,
@@ -97,11 +124,31 @@ def merge_adjacent_fixations(
         if time_gap <= 0 or time_gap > cfg.max_time_gap_ms:
             continue
 
-        # Zentren der Fixationen (gemitteltes smoothed_x_mm / smoothed_y_mm)
-        x1 = float(np.nanmean(x[s1 : e1 + 1]))
-        y1 = float(np.nanmean(y[s1 : e1 + 1]))
-        x2 = float(np.nanmean(x[s2 : e2 + 1]))
-        y2 = float(np.nanmean(y[s2 : e2 + 1]))
+        # Zentren der Fixationen (gemittelt nach gewählter Strategie)
+        weighting = getattr(cfg, "merge_weighting", "uniform")
+        n1_samples = e1 - s1 + 1
+        n2_samples = e2 - s2 + 1
+        total_samples = n1_samples + n2_samples
+
+        if weighting == "sample_count":
+            # Tobii-Referenz: Sample-Anzahl-gewichtetes Mittel
+            # x_merged = (mean(x_fix1) * n1 + mean(x_fix2) * n2) / (n1 + n2)
+            x1_mean = float(np.nanmean(x[s1 : e1 + 1]))
+            y1_mean = float(np.nanmean(y[s1 : e1 + 1]))
+            x2_mean = float(np.nanmean(x[s2 : e2 + 1]))
+            y2_mean = float(np.nanmean(y[s2 : e2 + 1]))
+            x1 = (x1_mean * n1_samples + x2_mean * n2_samples) / total_samples
+            y1 = (y1_mean * n1_samples + y2_mean * n2_samples) / total_samples
+            # Für den Winkeltest repräsentiert x1/y1 nun das gemischte Zentrum;
+            # x2/y2 verwenden wir als zweites Fixationszentrum (ungemittelt)
+            x2 = x2_mean
+            y2 = y2_mean
+        else:
+            # Standard: einfaches nanmean
+            x1 = float(np.nanmean(x[s1 : e1 + 1]))
+            y1 = float(np.nanmean(y[s1 : e1 + 1]))
+            x2 = float(np.nanmean(x[s2 : e2 + 1]))
+            y2 = float(np.nanmean(y[s2 : e2 + 1]))
 
         if any(pd.isna(v) for v in (x1, y1, x2, y2)):
             continue
