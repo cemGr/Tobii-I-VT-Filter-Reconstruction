@@ -56,6 +56,7 @@ class ConfigBuilder:
             gap_fill_max_gap_ms=args.gap_fill_max_ms,
             coordinate_rounding=args.coordinate_rounding,
             velocity_method=args.velocity_method,
+            tobii_eye_offset_interpolation=args.tobii_eye_offset_interpolation,
         )
 
     @staticmethod

@@ -267,8 +267,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--tobii-eye-offset-interpolation",
+        action="store_true",
+        help=(
+            "Rekonstruiert fehlendes Auge via zuletzt bekanntem L→R Versatz "
+            "(Tobii-Referenzlogik). Verhindert Phantom-Velocities an Gap-Rändern "
+            "wenn ein Auge kurzzeitig ausfällt."
+        ),
+    )
+    parser.add_argument(
         "--velocity-method",
-        choices=["olsen2d", "ray3d", "ray3d_gaze_dir"],
+        choices=["olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"],
         default="olsen2d",
         help=(
             "Methode zur Berechnung des visuellen Winkels zwischen zwei Gaze-Punkten. "
