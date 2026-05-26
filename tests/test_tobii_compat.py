@@ -25,7 +25,10 @@ from ivt_filter.strategies.velocity_calculation import (
     VelocityContext,
 )
 from ivt_filter.strategies.windowing import TobiiGazeVelocityWindowSelector
-from ivt_filter.preprocessing.eye_selection import apply_tobii_eye_offset_interpolation
+from ivt_filter.preprocessing.eye_selection import (
+    apply_tobii_eye_offset_interpolation,
+    _parse_validity,
+)
 from ivt_filter.postprocessing.merge_fixations import merge_adjacent_fixations
 from ivt_filter.config import OlsenVelocityConfig, FixationPostConfig
 
@@ -393,6 +396,127 @@ class TestTobiiEyeOffsetInterpolation:
         # Rekonstruiertes rechtes Auge = linkes Auge + IPD-Offset
         expected_rex = df.loc[1, "eye_left_x_mm"] + 65.0
         assert result.loc[1, "eye_right_x_mm"] == pytest.approx(expected_rex, abs=1e-6)
+
+    def test_validity_flag_updated_after_interpolation(self):
+        """Kritisch: validity_right wird nach erfolgreicher Interpolation auf den
+        gültigen Marker gesetzt (0 für int-Spalten), damit prepare_combined_columns
+        das interpolierte Auge in den Average einbezieht."""
+        df = self._make_df(5)  # nutzt int-Validity (0 = valid, 2 = invalid)
+        cfg = self._cfg()
+
+        # Sample 2: rechtes Auge ungültig → soll interpoliert werden
+        df.loc[2, "validity_right"] = 2
+        df.loc[2, "gaze_right_x_mm"] = float("nan")
+        df.loc[2, "gaze_right_y_mm"] = float("nan")
+
+        result = apply_tobii_eye_offset_interpolation(df, cfg)
+
+        # Koordinaten müssen rekonstruiert sein
+        assert pd.notna(result.loc[2, "gaze_right_x_mm"])
+        # Validity muss als "gültig" erkannt werden (int→0, str→"Valid")
+        parsed = _parse_validity(result.loc[2, "validity_right"])
+        assert parsed <= cfg.max_validity, (
+            f"Nach Interpolation muss validity gültig sein (≤{cfg.max_validity}), "
+            f"got: {result.loc[2, 'validity_right']!r} → parsed={parsed}"
+        )
+        # Unberührte Samples bleiben unverändert
+        assert result.loc[0, "validity_right"] == df.loc[0, "validity_right"]
+
+    def test_validity_flag_left_updated_after_interpolation(self):
+        """validity_left wird auf gültigen Marker gesetzt wenn linkes Auge interpoliert."""
+        df = self._make_df(5)
+        cfg = self._cfg()
+
+        df.loc[2, "validity_left"] = 2
+        df.loc[2, "gaze_left_x_mm"] = float("nan")
+        df.loc[2, "gaze_left_y_mm"] = float("nan")
+
+        result = apply_tobii_eye_offset_interpolation(df, cfg)
+
+        assert pd.notna(result.loc[2, "gaze_left_x_mm"])
+        parsed = _parse_validity(result.loc[2, "validity_left"])
+        assert parsed <= cfg.max_validity
+
+    def test_no_validity_update_when_no_offset_known(self):
+        """Wenn kein Offset bekannt → Validity bleibt ungültig."""
+        df = self._make_df(5)
+        cfg = self._cfg()
+
+        # Alle Samples: rechtes Auge ungültig (nie ein valid-Paar → kein Offset)
+        df["validity_right"] = 2
+        df["gaze_right_x_mm"] = float("nan")
+        df["gaze_right_y_mm"] = float("nan")
+
+        result = apply_tobii_eye_offset_interpolation(df, cfg)
+
+        # Kein Offset → bleibt ungültig
+        for v in result["validity_right"]:
+            assert _parse_validity(v) > cfg.max_validity
+
+    def test_velocity_artifact_reduced_with_interpolation(self):
+        """Phantom-Velocity an Gap-Rändern wird durch Offset-Interpolation reduziert.
+
+        Szenario: linkes Auge springt zwischen valid/invalid – ohne Interpolation
+        entsteht am Gap-Rand eine hohe Phantom-Velocity (Positions-Sprung wegen
+        einseitigem Average). Mit Interpolation bleibt die Velocity niedrig.
+        """
+        from ivt_filter.processing.velocity import compute_olsen_velocity
+
+        rng = np.random.default_rng(42)
+        n = 30
+        hz = 120.0
+        dt = 1000.0 / hz  # ~8.33 ms
+
+        # Stabile Fixation auf konstantem Punkt
+        lx = np.full(n, 260.0)  # linkes Auge immer ~260 mm
+        rx = np.full(n, 265.0)  # rechtes Auge immer ~265 mm  (IPD-Offset=5mm)
+        ly = np.full(n, 133.0)
+        ry = np.full(n, 133.0)
+
+        df = pd.DataFrame({
+            "time_ms": np.arange(n) * dt,
+            "gaze_left_x_mm":  lx,  "gaze_left_y_mm":  ly,
+            "gaze_right_x_mm": rx,  "gaze_right_y_mm": ry,
+            "validity_left":  ["Valid"] * n,
+            "validity_right": ["Valid"] * n,
+            "eye_left_z_mm":  np.full(n, 600.0),
+            "eye_right_z_mm": np.full(n, 600.0),
+        })
+
+        # Gap: Sample 10-12 linkes Auge invalid
+        for i in [10, 11, 12]:
+            df.loc[i, "validity_left"] = "Invalid"
+            df.loc[i, "gaze_left_x_mm"] = float("nan")
+            df.loc[i, "gaze_left_y_mm"] = float("nan")
+
+        cfg_base = OlsenVelocityConfig(
+            window_length_ms=20.0, eye_mode="average",
+            velocity_method="olsen2d", smoothing_mode="none",
+            tobii_eye_offset_interpolation=False,
+        )
+        cfg_interp = OlsenVelocityConfig(
+            window_length_ms=20.0, eye_mode="average",
+            velocity_method="olsen2d", smoothing_mode="none",
+            tobii_eye_offset_interpolation=True,
+        )
+
+        df_base   = compute_olsen_velocity(df.copy(), cfg_base)
+        df_interp = compute_olsen_velocity(df.copy(), cfg_interp)
+
+        # Samples direkt nach dem Gap (idx 13-15) – hier entsteht Phantom-Velocity
+        post_gap = slice(13, 16)
+        max_vel_base   = df_base.loc[post_gap, "velocity_deg_per_sec"].max()
+        max_vel_interp = df_interp.loc[post_gap, "velocity_deg_per_sec"].max()
+
+        # Mit Interpolation muss die Phantom-Velocity deutlich kleiner sein
+        assert max_vel_interp < max_vel_base, (
+            f"Interpolation sollte Phantom-Velocity reduzieren: "
+            f"base={max_vel_base:.1f}, interp={max_vel_interp:.1f}"
+        )
+        # Und unter 30 deg/s bleiben (kein falscher Saccade-Alarm)
+        assert max_vel_interp < 30.0, (
+            f"Nach Interpolation keine Phantom-Saccade: vel={max_vel_interp:.1f} deg/s"
+        )
 
 
 # ---------------------------------------------------------------------------
