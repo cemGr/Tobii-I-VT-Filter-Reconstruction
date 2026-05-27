@@ -11,7 +11,12 @@ import numpy as np
 import pandas as pd
 
 from ..config import OlsenVelocityConfig, PhysicalConstants
-from ..preprocessing import prepare_combined_columns, smooth_combined_gaze, gap_fill_gaze
+from ..preprocessing import (
+    prepare_combined_columns,
+    smooth_combined_gaze,
+    gap_fill_gaze,
+    apply_tobii_eye_offset_interpolation,
+)
 
 from ..strategies import (
     WindowSelector,
@@ -21,6 +26,7 @@ from ..strategies import (
     AsymmetricNeighborWindowSelector,
     ShiftedValidWindowSelector,
     TimeBasedShiftedValidWindowSelector,
+    TobiiGazeVelocityWindowSelector,
     WindowRoundingStrategy,
     CoordinateRoundingStrategy,
     VelocityCalculationStrategy,
@@ -28,6 +34,7 @@ from ..strategies import (
     Olsen2DApproximation,
     Ray3DAngle,
     Ray3DGazeDir,
+    TobiiGazeDirAngle,
 )
 from ..strategies.window_rounding import StandardWindowRounding, SymmetricRoundWindowStrategy
 from ..strategies.coordinate_rounding import (
@@ -50,6 +57,8 @@ def _get_velocity_calculation_strategy(method: str) -> VelocityCalculationStrate
         return Ray3DAngle()
     elif method == "ray3d_gaze_dir":
         return Ray3DGazeDir()
+    elif method == "tobii_gaze_dir":
+        return TobiiGazeDirAngle()
     else:
         raise ValueError(f"Unknown velocity calculation method: {method}")
 
@@ -82,13 +91,24 @@ def make_window_selector(cfg: OlsenVelocityConfig) -> WindowSelector:
     """
     Waehlt die passende Fenster-Strategie basierend auf der Config.
     Prioritaet:
-      0) asymmetric_neighbor_window (2-Sample asymmetrisch, Backward/Forward)
-      1) fixed_window_samples (reines Sample-Fenster)
-      2) sample_symmetric_window (Zeit + sample-symmetrisch)
-      3) reines Zeitfenster
-    
+      0) tobii_window_mode (Tobii-exakter GazeVelocityCalculator, höchste Priorität)
+      1) asymmetric_neighbor_window (2-Sample asymmetrisch, Backward/Forward)
+      2) fixed_window_samples (reines Sample-Fenster)
+      3) sample_symmetric_window (Zeit + sample-symmetrisch)
+      4) reines Zeitfenster
+
     Nutzt WindowRoundingStrategy zur Bestimmung der half_size.
     """
+    # Tobii-exakter GazeVelocityCalculator (höchste Priorität)
+    if getattr(cfg, "tobii_window_mode", False):
+        sample_interval_ms = getattr(cfg, "tobii_sample_interval_ms", None)
+        if sample_interval_ms is None or sample_interval_ms <= 0:
+            raise ValueError(
+                "tobii_window_mode requires tobii_sample_interval_ms > 0. "
+                "Set e.g. tobii_sample_interval_ms=16.67 for 60 Hz."
+            )
+        return TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
+
     # Asymmetrisches Nachbar-Fenster (2 Samples)
     if cfg.asymmetric_neighbor_window:
         return AsymmetricNeighborWindowSelector()
@@ -295,6 +315,10 @@ def compute_olsen_velocity(
     # NEU: Gap Filling vor der Augen-Kombination
     df = gap_fill_gaze(df, cfg)
 
+    # Tobii-exakte Auge-Offset-Interpolation (optional)
+    if getattr(cfg, "tobii_eye_offset_interpolation", False):
+        df = apply_tobii_eye_offset_interpolation(df, cfg)
+
     df = prepare_combined_columns(df, cfg)
     df = smooth_combined_gaze(df, cfg)
 
@@ -478,7 +502,6 @@ def compute_olsen_velocity(
         logger.info("Gap-based Unclassified enabled: max_gap_samples=%s", gap_max)
 
     # Precompute nächster ungültiger Index links/rechts für jedes Sample
-    invalid = ~valid
     prev_invalid_idx = np.full(n, -1, dtype=int)
     next_invalid_idx = np.full(n, -1, dtype=int)
     last_inv = -1
@@ -631,7 +654,6 @@ def compute_olsen_velocity(
             x2, y2 = cx[last_idx], cy[last_idx]
 
         # Speichere finalen dt und wende min_dt-Prüfung an (außer beim späteren Single-Eye-Fallback)
-        original_dt_ms = dt_ms
         skip_dt_check = cfg.eye_mode == "average" and cfg.average_fallback_single_eye and not eye_consistent_override
         if not skip_dt_check:
             if dt_ms < cfg.min_dt_ms:
@@ -776,7 +798,7 @@ def compute_olsen_velocity(
 
         # Optional direction vectors for gaze-dir strategy
         dir_first = dir_last = None
-        if isinstance(velocity_strategy, Ray3DGazeDir):
+        if isinstance(velocity_strategy, (Ray3DGazeDir, TobiiGazeDirAngle)):
             dir_first, dir_last = _get_direction_vectors(
                 actual_first_idx, actual_last_idx, eye_mode, used_eye, eye_consistent_override,
                 ldx, ldy, ldz, rdx, rdy, rdz, combined_dir_x, combined_dir_y, combined_dir_z

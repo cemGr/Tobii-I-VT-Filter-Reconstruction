@@ -470,6 +470,37 @@ EOF
 
 ---
 
+## Docker Usage
+
+Build a minimal runtime image and run the CLI inside the container.
+
+```bash
+# Build locally
+docker build -t ivt-filter:latest .
+
+# Run with a mounted data folder
+docker run --rm \
+    -v "$(pwd)/data:/data" \
+    ivt-filter:latest \
+    --input /data/input.tsv \
+    --output /data/output.tsv \
+    --eye average \
+    --velocity-method ray3d_gaze_dir \
+    --window 20 --auto-fixed-window-from-ms \
+    --threshold 30 \
+    --smoothing-mode median_strict --smoothing-window-samples 3 \
+    --shifted-valid-window --shifted-valid-fallback shrink \
+    --classify --with-events \
+    --time-column time_us --time-unit us
+```
+
+Notes:
+- The container entrypoint is `python -m ivt_filter.cli`; pass flags as shown.
+- Mount input/output via `-v` to persist results on the host.
+- For GHCR, images are published under `ghcr.io/<owner>/tobii-i-vt-filter-reconstruction`.
+
+---
+
 ## Architecture
 
 The code is organized by processing stage:

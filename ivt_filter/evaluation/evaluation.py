@@ -5,6 +5,8 @@ from typing import Optional, List, Dict, Any
 import math
 import pandas as pd
 
+from .event_iou import compute_event_iou_metrics, format_event_iou_report
+
 
 def compute_ivt_metrics(
     df: pd.DataFrame,
@@ -283,20 +285,30 @@ def evaluate_ivt_vs_ground_truth(
     print(f"  Unclassified in GT: {metrics['n_gt_uncl']}")
     print(f"  EyesNotFound in GT: {metrics['n_gt_eynf']}")
     print()
-    
-    # Event-basierte Metriken berechnen und ausgeben
-    event_metrics = compute_event_agreement(df, event_type_col="ivt_event_type", gt_event_type_col="gt_event_type")
-    if event_metrics['n_events'] > 0:
-        print("=== Event-level Agreement (all event types) ===")
-        print(f"Total events: {event_metrics['n_events']}")
-        print(f"Agreement: {event_metrics['n_agreement']} / {event_metrics['n_events']} = "
-              f"{event_metrics['event_agreement_pct']:.2f}%")
+
+    # Maximum IoU event-level evaluation (Startsev & Zemblys, 2022)
+    # Determine GT column used
+    _gt_col = gt_col
+    if _gt_col is None:
+        if "gt_sample_type" in df.columns:
+            _gt_col = "gt_sample_type"
+        elif "gt_event_type" in df.columns:
+            _gt_col = "gt_event_type"
+        elif "Eye movement type" in df.columns:
+            _gt_col = "Eye movement type"
+
+    _time_col = "time_ms" if "time_ms" in df.columns else None
+
+    if _gt_col is not None and pred_col in df.columns and _time_col is not None:
+        iou_metrics = compute_event_iou_metrics(
+            df,
+            gt_col=_gt_col,
+            pred_col=pred_col,
+            time_col=_time_col,
+        )
+        print(format_event_iou_report(iou_metrics))
         print()
-        print("Agreement by event type:")
-        for evt_type in sorted(event_metrics['agreement_by_type'].keys()):
-            stats = event_metrics['agreement_by_type'][evt_type]
-            print(f"  {evt_type}: {stats['n_correct']}/{stats['n_gt_events']} = {stats['agreement_pct']:.2f}%")
-        print()
+        metrics["event_iou"] = iou_metrics
     
     print(
         "Agreement (sample-level, GT Fix/Sac only): "
