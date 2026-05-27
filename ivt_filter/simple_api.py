@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import Optional, Literal
 import pandas as pd
 
-from .config import OlsenVelocityConfig, IVTClassifierConfig
 from .io.pipeline import IVTPipeline
 from .window_utils import create_time_based_config, create_adaptive_config
 from .io.io import read_tsv
@@ -204,8 +203,8 @@ def get_statistics(df: pd.DataFrame) -> dict:
     stats["saccade_count"] = (df["ivt_sample_type"] == "Saccade").sum()
     
     # Percentages
-    stats["fixation_percentage"] = (stats["fixation_count"] / stats["total_samples"]) * 100
-    stats["saccade_percentage"] = (stats["saccade_count"] / stats["total_samples"]) * 100
+    stats["fixation_percentage"] = (stats["fixation_count"] / stats["total_samples"]) * 100  # type: ignore[assignment]
+    stats["saccade_percentage"] = (stats["saccade_count"] / stats["total_samples"]) * 100  # type: ignore[assignment]
     
     # Velocity statistics  
     vel_col = "velocity_deg_per_sec"  # Standard column name from velocity.py
@@ -246,7 +245,7 @@ def print_statistics(df: pd.DataFrame) -> None:
     print(f"Saccades: {stats['saccade_count']} ({stats['saccade_percentage']:.1f}%)")
     
     if "avg_velocity" in stats:
-        print(f"\nVelocity:")
+        print("\nVelocity:")
         print(f"  Average: {stats['avg_velocity']:.1f} deg/s")
         print(f"  Median: {stats['median_velocity']:.1f} deg/s")
         print(f"  Maximum: {stats['max_velocity']:.1f} deg/s")

@@ -6,7 +6,6 @@ Implements Observer Pattern for automatic experiment tracking.
 """
 from __future__ import annotations
 
-import argparse
 from typing import Optional, List, Dict, Any
 
 import pandas as pd
@@ -263,7 +262,7 @@ class IVTPipeline:
 
     def _apply_classification(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply IVT classification and expand GT events."""
-        df = apply_ivt_classifier(df, self.classifier_config)
+        df = apply_ivt_classifier(df, self.classifier_config)  # type: ignore[arg-type]
         df = expand_gt_events_to_samples(df)
         
         # Add mismatch column: True if GT != Predicted (for valid Fixation/Saccade pairs)

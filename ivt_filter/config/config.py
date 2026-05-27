@@ -178,13 +178,32 @@ class OlsenVelocityConfig:
     # - "olsen2d": Original Olsen 2D-Näherung: θ = atan(screen_distance / eye_z)
     #              Schnell, benötigt nur eye_z, 2D-Approximation
     #              Standard für Backward-Compatibility
-    # - "ray3d": Physikalisch korrekte 3D-Ray-Methode: 
+    # - "ray3d": Physikalisch korrekte 3D-Ray-Methode:
     #            θ = acos(ray0 · ray1 / (|ray0| × |ray1|))
     #            Präziser, benötigt vollständige Eye-Position (x, y, z)
     #            Typisch 1-5% niedrigere Velocities als olsen2d
     # - "ray3d_gaze_dir": Nutzt die normalisierten Blickrichtungs-Vektoren (DACS norm)
     #            θ = acos(dir0 · dir1); benötigt keine Bildschirm- oder Eye-Position
-    velocity_method: Literal["olsen2d", "ray3d", "ray3d_gaze_dir"] = "olsen2d"
+    # - "tobii_gaze_dir": Tobii-exakte Formel aus dekompiliertem Quellcode
+    #            θ = 2·asin(‖v₁−v₂‖/2) — numerisch stabiler als acos(dot product)
+    #            Benötigt normierte Richtungsvektoren (DACS norm), wie ray3d_gaze_dir
+    velocity_method: Literal["olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"] = "olsen2d"
+
+    # Tobii-exaktes Fenster (GazeVelocityCalculator):
+    # Wenn True, wird TobiiGazeVelocityWindowSelector verwendet:
+    #   window_samples = floor(window_length_ms / tobii_sample_interval_ms * 1.01) + 1
+    # Überschreibt alle anderen Fenster-Selektoren (höchste Priorität).
+    tobii_window_mode: bool = False
+    # Nominelles Abtastintervall in ms für Tobii-Fensterberechnung.
+    # Beispiele: 16.67 = 60 Hz, 8.33 = 120 Hz, 4.17 = 240 Hz
+    # Wird automatisch aus Sampling-Rate berechnet, wenn nicht gesetzt (None).
+    tobii_sample_interval_ms: Optional[float] = None
+
+    # Tobii-exakte Auge-Offset-Interpolation:
+    # Wenn True, wird der zuletzt bekannte L→R Gaze-/Eye-Positions-Versatz gespeichert
+    # und verwendet, um das fehlende Auge zu schätzen (statt einfachem Fallback).
+    # Entspricht: RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter (Tobii C#)
+    tobii_eye_offset_interpolation: bool = False
 
 
 @dataclass
@@ -201,9 +220,9 @@ class IVTClassifierConfig:
     # Band around threshold (deg/s) where alternative velocity is used
     near_threshold_band: float = 5.0
     # Asymmetric band: lower band (below threshold) - None means use symmetric band
-    near_threshold_band_lower: float = None
+    near_threshold_band_lower: float | None = None
     # Asymmetric band: upper band (above threshold) - None means use symmetric band
-    near_threshold_band_upper: float = None
+    near_threshold_band_upper: float | None = None
     # Hybrid strategy: 'replace' (always use alt), 'inverse' (use velocity farther from threshold)
     near_threshold_strategy: str = 'inverse'
     # Minimum confidence margin (deg/s) required to switch in inverse strategy
@@ -264,6 +283,12 @@ class FixationPostConfig:
     merge_adjacent_fixations: bool = False
     max_time_gap_ms: float = 75.0   # z.B. 75 ms wie im Tobii-Paper
     max_angle_deg: float = 0.5      # z.B. 0.5 Grad zwischen Fixationszentren
+
+    # Gewichtungsstrategie für gemittelte Fixations-Position beim Merge:
+    # - "uniform": np.nanmean aller Samples (bisheriges Verhalten)
+    # - "sample_count": Sample-Anzahl-gewichteter Mittelwert
+    #   (entspricht Tobii MergeFixationsFilter: vector2Df / num)
+    merge_weighting: Literal["uniform", "sample_count"] = "uniform"
 
     # Schritt 2: zu kurze Fixationen verwerfen
     discard_short_fixations: bool = False

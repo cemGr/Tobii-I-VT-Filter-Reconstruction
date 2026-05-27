@@ -15,3 +15,15 @@ from .processing.classification import apply_ivt_classifier
 from .postprocess import merge_short_saccade_blocks
 from .evaluation.evaluation import evaluate_ivt_vs_ground_truth, compute_ivt_metrics
 from .evaluation.plotting import plot_velocity_only, plot_velocity_and_classification  # optional
+
+__all__ = [
+    "OlsenVelocityConfig",
+    "compute_olsen_velocity",
+    "compute_olsen_velocity_from_slim_tsv",
+    "apply_ivt_classifier",
+    "merge_short_saccade_blocks",
+    "evaluate_ivt_vs_ground_truth",
+    "compute_ivt_metrics",
+    "plot_velocity_only",
+    "plot_velocity_and_classification",
+]
