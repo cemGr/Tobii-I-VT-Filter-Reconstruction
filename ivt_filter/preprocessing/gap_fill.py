@@ -66,13 +66,15 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             continue
 
         # numerische Arrays fuer x/y
-        x_vals = df[x_col].to_numpy()
-        y_vals = df[y_col].to_numpy()
+        # .copy() stellt sicher, dass das Array schreibbar ist –
+        # pandas 2.0+ (Copy-on-Write) kann read-only Arrays aus to_numpy() liefern.
+        x_vals = df[x_col].to_numpy().copy()
+        y_vals = df[y_col].to_numpy().copy()
 
         # optionale Arrays
-        z_vals = df[z_col].to_numpy() if z_col in df.columns else None
-        px_x_vals = df[px_x_col].to_numpy() if px_x_col in df.columns else None
-        px_y_vals = df[px_y_col].to_numpy() if px_y_col in df.columns else None
+        z_vals = df[z_col].to_numpy().copy() if z_col in df.columns else None
+        px_x_vals = df[px_x_col].to_numpy().copy() if px_x_col in df.columns else None
+        px_y_vals = df[px_y_col].to_numpy().copy() if px_y_col in df.columns else None
 
         # Validitaetscodes parsen (falls vorhanden)
         if val_col in df.columns:
