@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from ..config import OlsenVelocityConfig
@@ -61,6 +62,9 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
         z_col = f"eye_{eye}_z_mm"
         px_x_col = f"gaze_{eye}_x_px"
         px_y_col = f"gaze_{eye}_y_px"
+        dir_x_col = f"gaze_dir_{eye}_x"
+        dir_y_col = f"gaze_dir_{eye}_y"
+        dir_z_col = f"gaze_dir_{eye}_z"
 
         if x_col not in df.columns or y_col not in df.columns:
             continue
@@ -75,6 +79,15 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
         z_vals = df[z_col].to_numpy().copy() if z_col in df.columns else None
         px_x_vals = df[px_x_col].to_numpy().copy() if px_x_col in df.columns else None
         px_y_vals = df[px_y_col].to_numpy().copy() if px_y_col in df.columns else None
+
+        # Gaze-Direction-Vektoren (normierte Einheitsvektoren, für ray3d_gaze_dir / tobii_gaze_dir)
+        has_dir = all(c in df.columns for c in (dir_x_col, dir_y_col, dir_z_col))
+        if has_dir:
+            dir_x_vals = df[dir_x_col].to_numpy().copy()
+            dir_y_vals = df[dir_y_col].to_numpy().copy()
+            dir_z_vals = df[dir_z_col].to_numpy().copy()
+        else:
+            dir_x_vals = dir_y_vals = dir_z_vals = None
 
         # Validitaetscodes parsen (falls vorhanden)
         if val_col in df.columns:
@@ -113,9 +126,13 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             if not valid_mask[prev_idx] or not valid_mask[next_idx]:
                 continue
 
-            # Gap-Größe: Zeit vom letzten validen Sample bis zum letzten invaliden Sample
-            gap_ms = float(times[gap_end] - times[prev_idx])
-            if gap_ms <= 0 or gap_ms > max_gap_ms:
+            # Gap-Größe: Spanne des ungültigen Runs (erstes bis letztes ungültiges Sample).
+            # Damit werden Vor-/Nachläufer korrekt behandelt: fällt ein Auge einige Samples
+            # vor dem gemeinsamen Gap aus, verlängert das die boundary-to-boundary-Distanz –
+            # nicht aber die eigentliche Lückenlänge. Strikt < max_gap_ms (Tobii-Spec 3.1.1.1).
+            # gap_ms == 0 (1-Sample-Lücke) ist erlaubt.
+            gap_ms = float(times[gap_end] - times[gap_start])
+            if gap_ms < 0 or gap_ms >= max_gap_ms:
                 continue
 
             # Endpunkte
@@ -136,6 +153,15 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                 px_y_prev, px_y_next = px_y_vals[prev_idx], px_y_vals[next_idx]
             else:
                 px_x_prev = px_x_next = px_y_prev = px_y_next = None
+
+            # Gaze-Direction-Endpunkte
+            if dir_x_vals is not None:
+                dpx = (float(dir_x_vals[prev_idx]), float(dir_y_vals[prev_idx]), float(dir_z_vals[prev_idx]))
+                dnx = (float(dir_x_vals[next_idx]), float(dir_y_vals[next_idx]), float(dir_z_vals[next_idx]))
+                dir_endpoints_valid = all(not pd.isna(v) for v in dpx + dnx)
+            else:
+                dpx = dnx = None
+                dir_endpoints_valid = False
 
             dt_total = float(times[next_idx] - times[prev_idx])
             if dt_total <= 0:
@@ -164,9 +190,20 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                     px_x_vals[j] = (1.0 - alpha) * float(px_x_prev) + alpha * float(px_x_next)
                     px_y_vals[j] = (1.0 - alpha) * float(px_y_prev) + alpha * float(px_y_next)
 
+                # Gaze-Direction-Vektoren interpolieren und renormieren
+                if dir_endpoints_valid:
+                    ix = (1.0 - alpha) * dpx[0] + alpha * dnx[0]
+                    iy = (1.0 - alpha) * dpx[1] + alpha * dnx[1]
+                    iz = (1.0 - alpha) * dpx[2] + alpha * dnx[2]
+                    norm = np.sqrt(ix * ix + iy * iy + iz * iz)
+                    if norm > 0:
+                        dir_x_vals[j] = ix / norm
+                        dir_y_vals[j] = iy / norm
+                        dir_z_vals[j] = iz / norm
+
                 # Validitaetscode fuer imputierte Samples auf "gueltig" setzen
                 if val_series is not None:
-                    val_series.iloc[j] = 0  # numerisch "Valid"
+                    val_series.iloc[j] = val_series.iloc[prev_idx]
 
         # Zurueck ins DataFrame schreiben
         df[x_col] = x_vals
@@ -176,6 +213,10 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
         if px_x_vals is not None and px_y_vals is not None:
             df[px_x_col] = px_x_vals
             df[px_y_col] = px_y_vals
+        if has_dir:
+            df[dir_x_col] = dir_x_vals
+            df[dir_y_col] = dir_y_vals
+            df[dir_z_col] = dir_z_vals
         if val_series is not None:
             df[val_col] = val_series
 

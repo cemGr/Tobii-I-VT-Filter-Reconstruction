@@ -392,6 +392,7 @@ def compute_olsen_velocity(
 
     # Sampling-Analyse (median dt, effektive Hz)
     dt_med = None
+    hz_measured = None
     if n >= 2:
         if cfg.sampling_rate_method == "first_100":
             # Tobii-Paper Methode: nur erste 100 Samples verwenden
