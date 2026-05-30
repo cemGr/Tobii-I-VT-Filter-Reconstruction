@@ -16,37 +16,39 @@ This tool automates that classification using a velocity-based approach: if the 
 
 ## How the Algorithm Works
 
-The filter applies a 7-step processing pipeline to each eye-tracking dataset:
+The filter applies a processing pipeline to each eye-tracking dataset:
 
 ```
 Raw eye-tracking data
     ↓
 [1] Fill temporal gaps (interpolation)
+[2] Tobii eye-offset interpolation (optional)
     ↓
-[2] Select eye (left, right, or average)
+[3] Select eye (left, right, or average)
     ↓
-[3] Reduce noise (smoothing)
+[4] Reduce noise (smoothing)
     ↓
-[4] Calculate velocity (degrees/second)
+[5] Calculate velocity (degrees/second)
     ↓
-[5] Classify (Fixation if v < threshold, else Saccade)
+[6] Classify (Fixation if v < threshold, else Saccade)
     ↓
-[6] Merge nearby fixations (post-processing)
+[7] Merge nearby fixations (post-processing)
     ↓
-[7] Filter short fixations (optional)
+[8] Filter short fixations (optional)
     ↓
 Output: classified eye-tracking events
 ```
 
 ### Key Concepts
 
-**Velocity Calculation**: The algorithm computes how fast the eye is moving in 2D or 3D space. We support three methods:
+**Velocity Calculation**: The algorithm computes how fast the eye is moving in 2D or 3D space. We support four methods:
 
 - **Olsen 2D** (simple, Tobii-compatible): Uses only the Z distance from eye to screen. Fast but less accurate for lateral movements.
 - **Ray 3D** (accurate): Full 3D ray-casting between eye position and gaze point. Most accurate but requires complete eye position data.
-- **Ray 3D with Gaze Direction** (robust): Uses DACS NORM Gaze direction.
+- **Ray 3D with Gaze Direction** (robust): Uses DACS NORM gaze direction vectors.
+- **Tobii Gaze Dir** (Tobii-exact): Uses the same angular formula as Tobii Pro Lab for maximum compatibility.
 
-**Windowing**: Velocity is calculated over a small window of samples (recommended 20 ms (3 samples for 120HZ)). Larger windows = smoother but less responsive; smaller windows = more responsive but noisier. (Always depends on the frequency!)
+**Windowing**: Velocity is calculated over a small window of samples (recommended 20 ms (3 samples for 120 Hz)). Larger windows = smoother but less responsive; smaller windows = more responsive but noisier. (Always depends on the frequency!)
 
 **Smoothing** (optional): Apply median filter or moving average to reduce noise before classification. Helps with micro-fixations caused by measurement jitter.
 
@@ -124,18 +126,18 @@ python -m ivt_filter.cli \
   --input data.tsv \
   --output data_classified.tsv \
   --eye average \
-  --velocity-method ray3d_gaze_dir \
+  --velocity-method tobii_gaze_dir \
   --window 20 \
   --auto-fixed-window-from-ms \
   --threshold 30 \
-  --smoothing-mode median_strict \
-  --smoothing-window-samples 3 \
+  --smoothing median_strict \
+  --smooth-window-samples 3 \
   --shifted-valid-window \
   --shifted-valid-fallback shrink \
   --classify \
-  --merge-adjacent-fixations \
-  --max-time-gap-ms 75 \
-  --max-angle-deg 0.5 \
+  --merge-close-fixations \
+  --merge-fix-max-gap-ms 75 \
+  --merge-fix-max-angle-deg 0.5 \
   --discard-short-fixations \
   --min-fixation-duration-ms 60 \
   --time-column time_us \
@@ -150,16 +152,18 @@ python -m ivt_filter.cli \
 | `--input` | `data.tsv` | Input file path |
 | `--output` | `data_classified.tsv` | Output file path |
 | `--eye` | `average` | Use both eyes (left, right, or average) |
-| `--velocity-method` | `ray3d_gaze_dir` | How to calculate velocity (accurate, handles mixed validity) |
+| `--velocity-method` | `tobii_gaze_dir` | How to calculate velocity (Tobii-exact, maximum compatibility) |
 | `--window` | `20` | Time window in milliseconds |
 | `--auto-fixed-window-from-ms` | - | Auto-convert ms window to sample window |
 | `--threshold` | `30` | Saccade threshold: 30°/s |
-| `--smoothing-mode` | `median` | Apply median smoothing (robust to outliers) |
-| `--smoothing-window-samples` | `3` | Smooth over 3 samples |
+| `--smoothing` | `median_strict` | Apply strict median smoothing (skip if window contains invalid samples) |
+| `--smooth-window-samples` | `3` | Smooth over 3 samples |
 | `--shifted-valid-window` | - | Handle windows that cross validity changes gracefully |
-| `--shifted-valid-fallback` | `shrink` | Shrink window if needed (vs expand/ignore) |
+| `--shifted-valid-fallback` | `shrink` | Shrink window if needed (vs unclassified) |
 | `--classify` | - | Classify samples as Fixation/Saccade |
-| `--merge-adjacent-fixations` | - | Merge saccades <75 ms or 0.5° apart |
+| `--merge-close-fixations` | - | Merge fixations that are temporally/spatially close |
+| `--merge-fix-max-gap-ms` | `75` | Max time gap between fixations to merge (ms) |
+| `--merge-fix-max-angle-deg` | `0.5` | Max angular distance between fixation centers to merge (°) |
 | `--discard-short-fixations` | - | Remove fixations <60 ms (noise) |
 | `--time-column` | `time_us` | Name of your timestamp column |
 | `--time-unit` | `us` | Unit of timestamps (us or ms) |
@@ -172,21 +176,26 @@ python -m ivt_filter.cli \
 
 ### Velocity Method
 
-**Ray 3D with Gaze Direction** (recommended):
-- Uses full 3D geometry of eye position and gaze point
-- Automatically picks the more reliable eye if one is invalid
-- Most robust for real-world data
-- Trade-off: Slightly slower than Olsen 2D (~20% more CPU)
+**Tobii Gaze Dir** (`tobii_gaze_dir`, recommended for Tobii data):
+- Uses the same angular formula as Tobii Pro Lab: θ = 2·asin(‖v₁−v₂‖/2)
+- Numerically more stable than acos(dot product) for small angles
+- Requires normalized gaze direction vectors (DACS norm)
+- Use when you need results that match Tobii Pro Lab exactly
 
-**Ray 3D**:
+**Ray 3D with Gaze Direction** (`ray3d_gaze_dir`):
+- Uses normalized gaze direction vectors (DACS norm), acos(dir₀·dir₁)
+- Does not require screen or eye position data
+- Robust for real-world data where eye positions are incomplete
+
+**Ray 3D** (`ray3d`):
 - Requires both X/Y/Z eye position (not all eye-trackers provide this)
 - Pure 3D calculation, very accurate
 - Falls back to Olsen 2D if eye position is missing
 
-**Olsen 2D**:
+**Olsen 2D** (`olsen2d`):
 - Uses only Z distance; ignores X/Y eye position
 - Fast, but less accurate for side-to-side movements
-- Use only if you need exact Tobii Pro Lab compatibility or eye position data is unavailable
+- Use only if you need compatibility with the Olsen (2012) paper or eye position data is unavailable
 
 ### Window Selection
 
@@ -220,17 +229,26 @@ python -m ivt_filter.cli \
 
 ### Smoothing
 
-**Median Filter** (recommended):
+**Median Filter – Strict** (recommended):
 ```bash
---smoothing-mode median_strict --smoothing-window-samples 3
+--smoothing median_strict --smooth-window-samples 3
 ```
 - Reduces jitter without blurring saccades
 - Robust to outliers
+- Strict variant: skips smoothing entirely if the window contains any invalid samples
 - Good for noisy data
+
+**Median Filter – Adaptive**:
+```bash
+--smoothing median_adaptive --smooth-window-samples 5
+```
+- Collects only valid samples within the window
+- Can search beyond the nominal window if needed (set with `--smoothing-expansion-radius`)
+- Use when invalid samples are frequent and you still want smoothing
 
 **Moving Average**:
 ```bash
---smoothing-mode moving_average_strict --smoothing-window-samples 5
+--smoothing moving_average_strict --smooth-window-samples 5
 ```
 - Simple but aggressive
 - Blurs saccades slightly
@@ -238,10 +256,22 @@ python -m ivt_filter.cli \
 
 **No Smoothing**:
 ```bash
---smoothing-mode none
+--smoothing none
 ```
-- Use when comparing to published Tobii results
+- Use when comparing to published Tobii results or for diagnostics
 - Can be noisier
+
+### Preprocessing: Tobii Eye-Offset Interpolation
+
+```bash
+--tobii-eye-offset-interpolation
+```
+
+When one eye drops out briefly (a common Tobii artifact), the missing eye position is reconstructed using the last known left-to-right eye offset. This prevents phantom velocities that would otherwise appear at the edges of data gaps when running in `average` eye mode.
+
+Use whenever:
+- You are processing Tobii data with `--eye average`
+- Your data has short single-eye outages
 
 ### Shifted Valid Window
 
@@ -249,17 +279,17 @@ python -m ivt_filter.cli \
 --shifted-valid-window --shifted-valid-fallback shrink
 ```
 - Handles windows that span valid→invalid transitions
-- `shrink`: Use shorter window if needed
-- `expand`: Wait for valid data
+- `shrink`: Use shorter window if no constant-length valid block exists
+- `unclassified`: Mark sample as unclassified instead
 - Keeps you from getting NaN velocities due to one bad sample
 
 ### Post-Processing
 
-**Merge Adjacent Fixations**:
+**Merge Close Fixations**:
 ```bash
---merge-adjacent-fixations --max-time-gap-ms 75 --max-angle-deg 0.5
+--merge-close-fixations --merge-fix-max-gap-ms 75 --merge-fix-max-angle-deg 0.5
 ```
-- Two fixations separated by <75 ms or <0.5° difference → merge into one
+- Two fixations separated by <75 ms and <0.5° → merge into one
 - Reduces fragmentation from brief saccades
 - Adjust to your use case (e.g., stricter for precise gaze analysis)
 
@@ -302,6 +332,15 @@ Current ray:  R_new
 
 Angle between them: θ = acos(R_old · R_new / (|R_old| × |R_new|))
 Angular velocity:  v_deg_per_sec = θ / Δt × (180 / π)
+```
+
+**Tobii Gaze Dir / Ray 3D Gaze Dir** (using normalized direction vectors):
+
+```
+dir_old, dir_new: normalized gaze direction vectors
+
+Tobii Gaze Dir:       θ = 2·asin(‖dir_new − dir_old‖ / 2)
+Ray 3D Gaze Dir:      θ = acos(dir_old · dir_new)
 ```
 
 **Olsen 2D Method** (simplified):
@@ -370,14 +409,14 @@ Adapts to your actual sampling rate automatically.
 
 Real eye-trackers are noisy. Median filter helps:
 ```bash
---smoothing-mode median_strict --smoothing-window-samples 3
+--smoothing median_strict --smooth-window-samples 3
 ```
 
 ### 4. Post-Process to Clean Up
 
-Always merge adjacent fixations and discard short ones:
+Always merge close fixations and discard short ones:
 ```bash
---merge-adjacent-fixations --max-time-gap-ms 75 --max-angle-deg 0.5 \
+--merge-close-fixations --merge-fix-max-gap-ms 75 --merge-fix-max-angle-deg 0.5 \
 --discard-short-fixations --min-fixation-duration-ms 60
 ```
 
@@ -390,7 +429,16 @@ If you have labeled data, run with `--evaluate`:
 python -m ivt_filter.cli --input data.tsv --output out.tsv --classify --evaluate
 ```
 
-Check Cohen's Kappa (should be >0.8 for good agreement).
+The evaluation outputs two complementary metrics:
+
+**Sample-level** (Cohen's Kappa): Agreement per sample. A kappa >0.8 indicates good agreement. Fast to compute, but sensitive to fragmentation — a single misclassified sample can split one ground-truth event into three predicted events, inflating the error count.
+
+**Event-level** (Maximum IoU, Startsev & Zemblys 2022): Each ground-truth event is matched 1-to-1 to the best-overlapping predicted event by Intersection-over-Union. Provides:
+- Event confusion matrix (GT class → matched Pred class or FN)
+- False positives (predicted events with no GT match)
+- Timing quality per class: mean onset and offset deviation in ms
+
+Use event-level metrics when fragmentation is a concern or when you care about how well the filter boundaries align with ground truth in time.
 
 ---
 
@@ -405,11 +453,27 @@ Check Cohen's Kappa (should be >0.8 for good agreement).
 --shifted-valid-window --shifted-valid-fallback shrink
 ```
 
+### Phantom Velocities at Gap Edges?
+
+**Cause**: When one eye drops out briefly and you use `--eye average`, the sudden switch between one-eye and two-eye averages creates artificial velocity spikes.
+
+**Fix**:
+```bash
+--tobii-eye-offset-interpolation
+```
+
+Reconstructs the missing eye using the last known left-to-right offset, keeping the averaged position smooth across short outages.
+
 ### Results Don't Match Tobii Pro Lab?
 
-Tobii uses Olsen 2D with 3-sample window by default. Match it:
+Tobii Pro Lab uses `tobii_gaze_dir` with specific windowing. Match it:
 ```bash
---velocity-method olsen2d --fixed-window-samples 3 --smoothing-mode none
+--velocity-method tobii_gaze_dir --fixed-window-samples 3 --smoothing none
+```
+
+For the classic Olsen 2D match:
+```bash
+--velocity-method olsen2d --fixed-window-samples 3 --smoothing none
 ```
 
 ### Too Many Micro-Fixations?
@@ -417,7 +481,7 @@ Tobii uses Olsen 2D with 3-sample window by default. Match it:
 Increase minimum fixation duration or smoothing:
 ```bash
 --discard-short-fixations --min-fixation-duration-ms 100 \
---smoothing-mode median_strict --smoothing-window-samples 5
+--smoothing median_strict --smooth-window-samples 5
 ```
 
 
@@ -437,25 +501,26 @@ python -m ivt_filter.cli \
   --input "$INPUT" \
   --output "$OUTPUT" \
   --eye average \
-  --velocity-method ray3d_gaze_dir \
+  --velocity-method tobii_gaze_dir \
   --window 20 \
   --auto-fixed-window-from-ms \
   --threshold 30 \
-  --smoothing-mode median_strict \
-  --smoothing-window-samples 3 \
+  --smoothing median_strict \
+  --smooth-window-samples 3 \
+  --tobii-eye-offset-interpolation \
   --shifted-valid-window \
   --shifted-valid-fallback shrink \
   --classify \
-  --merge-adjacent-fixations \
-  --max-time-gap-ms 75 \
-  --max-angle-deg 0.5 \
+  --merge-close-fixations \
+  --merge-fix-max-gap-ms 75 \
+  --merge-fix-max-angle-deg 0.5 \
   --discard-short-fixations \
   --min-fixation-duration-ms 60 \
   --time-column time_us \
   --time-unit us \
   --with-events
 
-echo "✓ Classification complete. Saved to $OUTPUT"
+echo "Classification complete. Saved to $OUTPUT"
 
 # Quick statistics
 python3 << 'EOF'
@@ -485,10 +550,11 @@ docker run --rm \
     --input /data/input.tsv \
     --output /data/output.tsv \
     --eye average \
-    --velocity-method ray3d_gaze_dir \
+    --velocity-method tobii_gaze_dir \
     --window 20 --auto-fixed-window-from-ms \
     --threshold 30 \
-    --smoothing-mode median_strict --smoothing-window-samples 3 \
+    --smoothing median_strict --smooth-window-samples 3 \
+    --tobii-eye-offset-interpolation \
     --shifted-valid-window --shifted-valid-fallback shrink \
     --classify --with-events \
     --time-column time_us --time-unit us
@@ -510,7 +576,7 @@ ivt_filter/
 ├── preprocessing/   # Gap fill, eye selection, smoothing
 ├── processing/      # Velocity calculation, classification
 ├── postprocessing/  # Merge fixations, discard short ones
-├── evaluation/      # Metrics against ground truth
+├── evaluation/      # Metrics against ground truth (sample-level + event IoU)
 ├── config/          # Configuration management
 ├── strategies/      # Algorithm implementations
 └── utils/           # Helper functions
@@ -522,6 +588,7 @@ Most users just need the CLI (`python -m ivt_filter.cli`). Developers can import
 from ivt_filter.processing.velocity import compute_ray3d_velocity
 from ivt_filter.processing.classification import classify_ivt
 from ivt_filter.postprocessing.merge_fixations import merge_adjacent_fixations
+from ivt_filter.evaluation.event_iou import compute_event_iou_metrics
 
 # ... use functions directly
 ```
@@ -532,6 +599,7 @@ from ivt_filter.postprocessing.merge_fixations import merge_adjacent_fixations
 
 - Olsen, A. (2012). *The Tobii I-VT Fixation Filter*
 - Salvucci, D. D., & Goldberg, J. H. (2000). *Identifying fixations and saccades in eye-tracking protocols*
+- Startsev, M., & Zemblys, R. (2022). *Evaluating eye movement event detection: A review of the state of the art*. Behavior Research Methods, 54, 1653–1714. https://doi.org/10.3758/s13428-021-01763-7
 
 ---
 
