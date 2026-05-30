@@ -72,9 +72,9 @@ def discard_short_fixations(
     if discard_target not in ("Unclassified", "Saccade"):
         raise ValueError(f"discard_target must be 'Unclassified' or 'Saccade', got '{discard_target}'")
     
-    event_types = df[event_type_col].astype(str).to_numpy()
-    event_indices = df[event_index_col].to_numpy()
-    times = df[time_col].to_numpy()
+    event_types = df[event_type_col].astype(str).to_numpy().copy()
+    event_indices = df[event_index_col].to_numpy(dtype=object).copy()
+    times = df[time_col].to_numpy().copy()
     n = len(df)
     
     # 1) Berechne robustes dt_ms aus time_ms (Median der positiven Differenzen)
