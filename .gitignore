@@ -22,6 +22,15 @@ env/
 ENV/
 env.bak/
 venv.bak/
+.cem/
+
+# Thesis/analysis artifacts
+ACTIONABLE_ROADMAP.md
+CRITICAL_THESIS_ANALYSIS.md
+REQUIREMENTS_ANALYSIS.md
+THESIS_STATUS_SUMMARY.md
+REQ.md
+*.pdf
 
 # Installer logs
 pip-log.txt
