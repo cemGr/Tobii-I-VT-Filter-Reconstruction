@@ -23,7 +23,7 @@ from typing import Optional, Literal
 import pandas as pd
 
 from .io.pipeline import IVTPipeline
-from .window_utils import create_time_based_config, create_adaptive_config
+from .utils.window_utils import create_time_based_config, create_adaptive_config
 from .io.io import read_tsv
 
 
