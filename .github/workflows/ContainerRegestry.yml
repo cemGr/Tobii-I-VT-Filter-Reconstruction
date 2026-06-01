@@ -2,9 +2,6 @@ name: Publish Docker Image
 
 on:
   push:
-    branches:
-      - main
-      - testTDD
     tags:
       - 'v*.*.*'
 
@@ -13,6 +10,7 @@ jobs:
     uses: ./.github/workflows/main.yml
 
   build-and-push:
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: checks
     runs-on: ubuntu-latest
     permissions:
