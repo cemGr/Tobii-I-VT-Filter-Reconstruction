@@ -205,6 +205,65 @@ class OlsenVelocityConfig:
     # Entspricht: RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter (Tobii C#)
     tobii_eye_offset_interpolation: bool = False
 
+    def __post_init__(self) -> None:
+        """Reject window-selector settings hidden by the legacy precedence rules."""
+        # Keep this validation aligned with processing.velocity.make_window_selector().
+        # A later compatibility-preserving migration can translate these legacy
+        # booleans into one explicit window-policy type at the config boundary.
+        fixed_window_modes: list[str] = []
+        if self.fixed_window_samples is not None:
+            fixed_window_modes.append("fixed_window_samples")
+        if self.auto_fixed_window_from_ms:
+            fixed_window_modes.append("auto_fixed_window_from_ms")
+        if self.symmetric_round_window:
+            fixed_window_modes.append("symmetric_round_window")
+
+        non_tobii_selector_modes: list[str] = []
+        if self.asymmetric_neighbor_window:
+            non_tobii_selector_modes.append("asymmetric_neighbor_window")
+        if self.shifted_valid_window:
+            non_tobii_selector_modes.append("shifted_valid_window")
+        non_tobii_selector_modes.extend(fixed_window_modes)
+        if self.sample_symmetric_window:
+            non_tobii_selector_modes.append("sample_symmetric_window")
+
+        if self.tobii_window_mode and non_tobii_selector_modes:
+            self._raise_window_selector_conflict(
+                "tobii_window_mode", non_tobii_selector_modes
+            )
+
+        asymmetric_conflicts: list[str] = []
+        if self.shifted_valid_window:
+            asymmetric_conflicts.append("shifted_valid_window")
+        asymmetric_conflicts.extend(fixed_window_modes)
+        if self.sample_symmetric_window:
+            asymmetric_conflicts.append("sample_symmetric_window")
+        if self.asymmetric_neighbor_window and asymmetric_conflicts:
+            self._raise_window_selector_conflict(
+                "asymmetric_neighbor_window", asymmetric_conflicts
+            )
+
+        if self.shifted_valid_window and self.sample_symmetric_window:
+            self._raise_window_selector_conflict(
+                "shifted_valid_window", ["sample_symmetric_window"]
+            )
+
+        if fixed_window_modes and self.sample_symmetric_window:
+            self._raise_window_selector_conflict(
+                fixed_window_modes[0], ["sample_symmetric_window"]
+            )
+
+    @staticmethod
+    def _raise_window_selector_conflict(
+        selected_mode: str, ignored_modes: list[str]
+    ) -> None:
+        ignored = ", ".join(ignored_modes)
+        raise ValueError(
+            "Window selector configuration is ambiguous: "
+            f"{selected_mode} takes precedence over {ignored}; "
+            "configure only one active selector mode."
+        )
+
 
 @dataclass
 class IVTClassifierConfig:
