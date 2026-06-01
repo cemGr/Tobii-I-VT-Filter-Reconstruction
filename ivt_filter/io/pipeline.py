@@ -7,7 +7,7 @@ Implements Observer Pattern for automatic experiment tracking.
 from __future__ import annotations
 
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, TYPE_CHECKING
 
 import pandas as pd
 from dataclasses import replace
@@ -24,6 +24,10 @@ from ..processing.velocity import compute_olsen_velocity
 from ..processing.classification import apply_ivt_classifier, expand_gt_events_to_samples
 from ..postprocess import merge_short_saccade_blocks, apply_fixation_postprocessing
 from ..evaluation.evaluation import evaluate_ivt_vs_ground_truth, compute_ivt_metrics
+
+if TYPE_CHECKING:
+    from .observers import PipelineObserver
+
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +82,7 @@ class IVTPipeline:
                 saccade_merge=saccade_merge_config,
                 fixation_post=fixation_post_config,
             )
-        self._observers: List[Any] = []  # List of PipelineObserver instances
+        self._observers: List[PipelineObserver] = []
 
     @property
     def velocity_config(self) -> OlsenVelocityConfig:
@@ -96,7 +100,7 @@ class IVTPipeline:
     def fixation_post_config(self) -> Optional[FixationPostConfig]:
         return self.config.fixation_post
     
-    def register_observer(self, observer: Any) -> None:
+    def register_observer(self, observer: PipelineObserver) -> None:
         """
         Register an observer to receive pipeline notifications.
         
@@ -106,7 +110,7 @@ class IVTPipeline:
         if observer not in self._observers:
             self._observers.append(observer)
     
-    def unregister_observer(self, observer: Any) -> None:
+    def unregister_observer(self, observer: PipelineObserver) -> None:
         """
         Unregister an observer.
         
