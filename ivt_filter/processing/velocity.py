@@ -521,12 +521,26 @@ def apply_fixed_window_edge_fallback(
                 if 0 <= candidate < len(df) and bool(valid[candidate]):
                     velocity = df.at[candidate, "velocity_deg_per_sec"]
                     if not pd.isna(velocity):
-                        found = velocity
+                        found = candidate, velocity
                         break
             if found is not None:
                 break
         if found is not None:
-            df.at[i, "velocity_deg_per_sec"] = found
+            source_idx, velocity = found
+            df.at[i, "velocity_deg_per_sec"] = velocity
+            for column in (
+                "dt_ms",
+                "velocity_raw_deg_per_sec",
+                "window_width_samples",
+                "velocity_first_idx",
+                "velocity_last_idx",
+                "velocity_eye_used",
+                "velocity_window_selector",
+            ):
+                if column in df.columns:
+                    df.at[i, column] = df.at[source_idx, column]
+            if "velocity_fallback_applied" in df.columns:
+                df.at[i, "velocity_fallback_applied"] = True
             count += 1
     if count:
         logger.info("Applied fallback velocity to %s samples", count)
@@ -583,7 +597,11 @@ def _compute_olsen_velocity_impl(
     df["dt_ms"] = float("nan")  # Time difference used for velocity calculation
     df["window_width_samples"] = pd.NA  # New column for Fensterbreite
     df["window_any_invalid"] = False  # Track if any eye invalid in the used window
-    df["velocity_eye_used"] = "average"  # Diagnostic: which eye contributed to velocity
+    df["velocity_first_idx"] = pd.NA
+    df["velocity_last_idx"] = pd.NA
+    df["velocity_eye_used"] = pd.NA
+    df["velocity_window_selector"] = pd.NA
+    df["velocity_fallback_applied"] = pd.NA
     # Debug/Transparenz: Umgebung-Validitäts-Flags
     df["env_has_invalid_above"] = pd.NA
     df["env_has_invalid_below"] = pd.NA
@@ -745,7 +763,9 @@ def _compute_olsen_velocity_impl(
             continue
 
         # 1. Versuch: aktueller Selector (z.B. SampleSymmetric oder FixedSample)
+        selected_selector = selector
         first_idx, last_idx = selector.select(i, times, valid, half_window)
+        fallback_applied = bool(getattr(selector, "last_fallback_applied", False))
 
         # 2. Fallback: wenn kein sinnvolles Fenster gefunden wurde,
         #    versuche noch das klassische Zeitfenster
@@ -761,6 +781,8 @@ def _compute_olsen_velocity_impl(
                 and first_idx_fb != last_idx_fb
             ):
                 first_idx, last_idx = first_idx_fb, last_idx_fb
+                selected_selector = fallback_selector
+                fallback_applied = True
 
         # Wenn immer noch kein Fenster: Velocity bleibt NaN -> Sample bleibt Unclassified
         if first_idx is None or last_idx is None or first_idx == last_idx:
@@ -793,6 +815,7 @@ def _compute_olsen_velocity_impl(
                 for j in range(first_idx + 1, last_idx + 1):
                     if valid[j]:
                         first_idx = j
+                        fallback_applied = True
                         break
                 else:
                     continue  # Kein gültiges Sample gefunden
@@ -802,6 +825,7 @@ def _compute_olsen_velocity_impl(
                 for j in range(last_idx - 1, first_idx - 1, -1):
                     if valid[j]:
                         last_idx = j
+                        fallback_applied = True
                         break
                 else:
                     continue  # Kein gültiges Sample gefunden
@@ -817,7 +841,7 @@ def _compute_olsen_velocity_impl(
 
         # Berechne Zeitdifferenz (nutzt Window-Selector-Typ)
         dt_ms = _calculate_dt_ms(
-            first_idx, last_idx, times, selector, hz_measured, cfg.use_fixed_dt
+            first_idx, last_idx, times, selected_selector, hz_measured, cfg.use_fixed_dt
         )
 
         # Track the actual endpoints used for velocity and direction lookup
@@ -852,7 +876,7 @@ def _compute_olsen_velocity_impl(
                 actual_first_idx,
                 actual_last_idx,
                 times,
-                selector,
+                selected_selector,
                 hz_measured,
                 cfg.use_fixed_dt,
             )
@@ -932,6 +956,7 @@ def _compute_olsen_velocity_impl(
                         chosen_eye = "left" if score_left > score_right else "right"
 
                     # Find valid endpoints for chosen eye (with fallback search inside window)
+                    fallback_applied = True
                     if chosen_eye == "left":
                         if left_first is not None:
                             actual_first_idx = left_first
@@ -968,7 +993,7 @@ def _compute_olsen_velocity_impl(
 
                     # Recalculate dt using the chosen eye indices
                     if cfg.use_fixed_dt and isinstance(
-                        selector, AsymmetricNeighborWindowSelector
+                        selected_selector, AsymmetricNeighborWindowSelector
                     ):
                         if hz_measured is not None and hz_measured > 0:
                             dt_ms = 1000.0 / hz_measured
@@ -977,14 +1002,14 @@ def _compute_olsen_velocity_impl(
                             t_last = float(times[actual_last_idx])
                             dt_ms = t_last - t_first
                     elif (
-                        isinstance(selector, FixedSampleSymmetricWindowSelector)
+                        isinstance(selected_selector, FixedSampleSymmetricWindowSelector)
                         and hz_measured is not None
                         and hz_measured > 0
                     ):
                         window_size = actual_last_idx - actual_first_idx + 1
                         window_spans = window_size - 1
                         dt_ms = window_spans * (1000.0 / hz_measured)
-                    elif isinstance(selector, ShiftedValidWindowSelector):
+                    elif isinstance(selected_selector, ShiftedValidWindowSelector):
                         # Shifted valid window: use actual timestamps
                         t_first = float(times[actual_first_idx])
                         t_last = float(times[actual_last_idx])
@@ -1073,10 +1098,14 @@ def _compute_olsen_velocity_impl(
         df.at[i, "velocity_deg_per_sec"] = sample_result.velocity_deg_per_sec
         df.at[i, "dt_ms"] = sample_result.dt_ms
         df.at[i, "velocity_raw_deg_per_sec"] = sample_result.raw_velocity_deg_per_sec
+        df.at[i, "velocity_first_idx"] = actual_first_idx
+        df.at[i, "velocity_last_idx"] = actual_last_idx
         df.at[i, "velocity_eye_used"] = used_eye
+        df.at[i, "velocity_window_selector"] = type(selected_selector).__name__
+        df.at[i, "velocity_fallback_applied"] = fallback_applied
 
         # Speichere die tatsächliche Fensterbreite (in Samples)
-        final_window_size = last_idx - first_idx + 1
+        final_window_size = actual_last_idx - actual_first_idx + 1
         df.at[i, "window_width_samples"] = final_window_size
 
     # Transparenz: Fenster-Statistik ausgeben
