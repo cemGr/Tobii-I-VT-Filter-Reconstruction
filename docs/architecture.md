@@ -425,6 +425,10 @@ graph TB
     Strategy Layer --> Constants
 ```
 
+## Postprocessing API
+
+`ivt_filter.postprocessing` is the canonical postprocessing API. The module `ivt_filter.postprocess` is deprecated and remains temporarily available solely as a compatibility facade. New internal and external callers should use `ivt_filter.postprocessing`.
+
 ## Testing Benefits
 
 The refactored architecture provides excellent testability:
