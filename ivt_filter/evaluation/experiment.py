@@ -33,10 +33,21 @@ Example:
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
+from uuid import uuid4
+import hashlib
 import json
+import os
+import platform
+import shutil
+import subprocess
+import sys
+import tempfile
+
+import numpy as np
 import pandas as pd
 
 from ..config import (
@@ -113,268 +124,329 @@ class ExperimentConfig:
 
 
 class ExperimentManager:
-    """
-    Manages experiment tracking and comparison (GRASP: Information Expert).
-    
-    Responsibilities:
-    - Save/load experiment configurations and results
-    - Compare multiple experiments
-    - Find best configurations based on metrics
-    - Track experiment history
-    
-    Example:
-        >>> manager = ExperimentManager(experiments_dir="experiments")
-        >>> manager.save_experiment(config, results_df, metrics)
-        >>> best = manager.get_best_configuration(metric="fixation_recall")
-    """
-    
+    """Persist immutable experiment runs and their provenance metadata."""
+
+    INDEX_VERSION = 2
+
     def __init__(self, experiments_dir: str = "experiments"):
-        """
-        Initialize experiment manager.
-        
-        Args:
-            experiments_dir: Directory where experiments will be stored
-        """
         self.experiments_dir = Path(experiments_dir)
         self.experiments_dir.mkdir(parents=True, exist_ok=True)
         self._index_file = self.experiments_dir / "experiments_index.json"
         self._load_index()
-    
-    def _load_index(self):
-        """Load experiment index from disk."""
+
+    def _load_index(self) -> None:
+        """Load the index and migrate legacy name-only entries in place."""
         if self._index_file.exists():
             with open(self._index_file, "r", encoding="utf-8") as f:
                 self._index = json.load(f)
         else:
-            self._index = {"experiments": []}
-    
-    def _save_index(self):
-        """Save experiment index to disk."""
-        with open(self._index_file, "w", encoding="utf-8") as f:
-            json.dump(self._index, f, indent=2, ensure_ascii=False)
-    
+            self._index = {"version": self.INDEX_VERSION, "experiments": []}
+            return
+
+        migrated = self._index.get("version") != self.INDEX_VERSION
+        self._index.setdefault("experiments", [])
+        for entry in self._index["experiments"]:
+            if "run_id" not in entry:
+                digest = hashlib.sha256(
+                    json.dumps(entry, sort_keys=True).encode("utf-8")
+                ).hexdigest()[:12]
+                entry["run_id"] = f"legacy-{digest}"
+                migrated = True
+            entry.setdefault("experiment_name", entry.get("name"))
+            entry["name"] = entry["experiment_name"]
+        self._index["version"] = self.INDEX_VERSION
+        if migrated:
+            self._save_index()
+
+    def _atomic_write_json(self, path: Path, value: Any) -> None:
+        """Write JSON by replacement so readers never observe a partial file."""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+        temporary_path = Path(temporary_name)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(value, f, indent=2, ensure_ascii=False)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temporary_path, path)
+        except BaseException:
+            temporary_path.unlink(missing_ok=True)
+            raise
+
+    def _atomic_write_results(self, path: Path, results_df: pd.DataFrame) -> None:
+        """Atomically write a TSV results file."""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+        os.close(fd)
+        temporary_path = Path(temporary_name)
+        try:
+            results_df.to_csv(temporary_path, sep="\t", index=False, decimal=",")
+            os.replace(temporary_path, path)
+        except BaseException:
+            temporary_path.unlink(missing_ok=True)
+            raise
+
+    def _save_index(self) -> None:
+        self._atomic_write_json(self._index_file, self._index)
+
+    def _make_run_id(self, config: ExperimentConfig) -> str:
+        config_digest = hashlib.sha256(
+            json.dumps(config.to_dict(), sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()[:12]
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
+        return f"{timestamp}-{config_digest}-{uuid4().hex[:8]}"
+
+    @staticmethod
+    def _input_checksum(input_path: Optional[str]) -> Optional[str]:
+        if not input_path:
+            return None
+        digest = hashlib.sha256()
+        with open(input_path, "rb") as f:
+            for block in iter(lambda: f.read(1024 * 1024), b""):
+                digest.update(block)
+        return digest.hexdigest()
+
+    @staticmethod
+    def _input_row_count(input_path: Optional[str]) -> Optional[int]:
+        if not input_path:
+            return None
+        with open(input_path, "rb") as f:
+            return max(sum(1 for _ in f) - 1, 0)
+
+    @staticmethod
+    def _git_commit() -> Optional[str]:
+        try:
+            return subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=2,
+            ).stdout.strip() or None
+        except (OSError, subprocess.SubprocessError):
+            return None
+
+    @staticmethod
+    def _package_version() -> str:
+        try:
+            return importlib_metadata.version("tobii-ivt-filter")
+        except importlib_metadata.PackageNotFoundError:
+            return "unknown"
+
+    def _build_provenance(
+        self,
+        config: ExperimentConfig,
+        *,
+        input_path: Optional[str],
+        input_row_count: Optional[int],
+        command: Optional[List[str]],
+        api_parameters: Optional[Dict[str, Any]],
+        reference_system_version: Optional[str],
+        reference_export_identifier: Optional[str],
+        provenance: Optional[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        details = {
+            "input_file": str(input_path) if input_path else None,
+            "input_file_checksum_sha256": self._input_checksum(input_path),
+            "input_row_count": input_row_count if input_row_count is not None else self._input_row_count(input_path),
+            "package_version": self._package_version(),
+            "git_commit": self._git_commit(),
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
+            "dependency_versions": {"numpy": np.__version__, "pandas": pd.__version__},
+            "executed_command": command if command is not None else sys.argv,
+            "api_parameters": api_parameters if api_parameters is not None else config.to_dict(),
+            "reference_system_version": reference_system_version,
+            "reference_export_identifier": reference_export_identifier,
+        }
+        if provenance:
+            details.update(provenance)
+        return self._make_serializable(details)
+
     def save_experiment(
         self,
         config: ExperimentConfig,
         results_df: Optional[pd.DataFrame] = None,
         metrics: Optional[Dict[str, Any]] = None,
         output_path: Optional[str] = None,
+        *,
+        input_path: Optional[str] = None,
+        input_row_count: Optional[int] = None,
+        command: Optional[List[str]] = None,
+        api_parameters: Optional[Dict[str, Any]] = None,
+        reference_system_version: Optional[str] = None,
+        reference_export_identifier: Optional[str] = None,
+        provenance: Optional[Dict[str, Any]] = None,
     ) -> Path:
-        """
-        Save experiment configuration, results, and metrics.
-        
-        Args:
-            config: Experiment configuration
-            results_df: Optional DataFrame with full results
-            metrics: Optional dictionary with evaluation metrics
-            output_path: Optional custom output path (default: experiments/{name}/)
-        
-        Returns:
-            Path to the experiment directory
-        """
-        if output_path:
-            exp_dir = Path(output_path)
-        else:
-            exp_dir = self.experiments_dir / config.name
-        
-        exp_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Save configuration
-        config_path = exp_dir / "config.json"
-        with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(config.to_dict(), f, indent=2, ensure_ascii=False)
-        
-        # Save results DataFrame
-        if results_df is not None:
-            results_path = exp_dir / "results.tsv"
-            results_df.to_csv(results_path, sep="\t", index=False, decimal=",")
-        
-        # Save metrics
-        if metrics is not None:
-            metrics_path = exp_dir / "metrics.json"
-            # Convert non-serializable types
-            serializable_metrics = self._make_serializable(metrics)
-            with open(metrics_path, "w", encoding="utf-8") as f:
-                json.dump(serializable_metrics, f, indent=2, ensure_ascii=False)
-        
-        # Update index
-        exp_entry = {
-            "name": config.name,
-            "description": config.description,
-            "timestamp": config.timestamp.isoformat() if config.timestamp else None,
-            "tags": config.tags,
-            "path": str(exp_dir.relative_to(self.experiments_dir)),
-        }
-        
-        # Remove old entry if exists
-        self._index["experiments"] = [
-            e for e in self._index["experiments"] if e["name"] != config.name
-        ]
-        self._index["experiments"].append(exp_entry)
-        self._save_index()
-        
-        print(f"✓ Experiment '{config.name}' saved to {exp_dir}")
+        """Save one immutable execution and append it to the experiment index."""
+        tracking = (config.metadata or {}).get("tracking", {})
+        input_path = input_path or tracking.get("input_path")
+        input_row_count = input_row_count if input_row_count is not None else tracking.get("input_row_count")
+        command = command if command is not None else tracking.get("command")
+        api_parameters = api_parameters if api_parameters is not None else tracking.get("api_parameters")
+        reference_system_version = reference_system_version or tracking.get("reference_system_version")
+        reference_export_identifier = reference_export_identifier or tracking.get("reference_export_identifier")
+        run_id = self._make_run_id(config)
+        base_dir = Path(output_path) if output_path else self.experiments_dir / config.name
+        exp_dir = base_dir / run_id
+        exp_dir.mkdir(parents=True, exist_ok=False)
+
+        config.metadata = dict(config.metadata or {})
+        config.metadata["provenance"] = self._build_provenance(
+            config,
+            input_path=input_path,
+            input_row_count=input_row_count,
+            command=command,
+            api_parameters=api_parameters,
+            reference_system_version=reference_system_version,
+            reference_export_identifier=reference_export_identifier,
+            provenance=provenance,
+        )
+        try:
+            self._atomic_write_json(exp_dir / "config.json", config.to_dict())
+            if results_df is not None:
+                self._atomic_write_results(exp_dir / "results.tsv", results_df)
+            if metrics is not None:
+                self._atomic_write_json(exp_dir / "metrics.json", self._make_serializable(metrics))
+
+            try:
+                stored_path = str(exp_dir.relative_to(self.experiments_dir))
+            except ValueError:
+                stored_path = str(exp_dir.resolve())
+            entry = {
+                "run_id": run_id,
+                "name": config.name,
+                "experiment_name": config.name,
+                "description": config.description,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "config_timestamp": config.timestamp.isoformat() if config.timestamp else None,
+                "tags": config.tags,
+                "path": stored_path,
+            }
+            self._index["experiments"].append(entry)
+            try:
+                self._save_index()
+            except BaseException:
+                self._index["experiments"].pop()
+                raise
+        except BaseException:
+            shutil.rmtree(exp_dir, ignore_errors=True)
+            raise
+
+        print(f"✓ Experiment '{config.name}' run '{run_id}' saved to {exp_dir}")
         return exp_dir
-    
-    def load_experiment(self, name: str) -> Tuple[ExperimentConfig, Optional[pd.DataFrame], Optional[Dict]]:
-        """
-        Load experiment by name.
-        
-        Args:
-            name: Experiment name
-        
-        Returns:
-            Tuple of (config, results_df, metrics)
-        """
-        exp_entry = next((e for e in self._index["experiments"] if e["name"] == name), None)
-        if not exp_entry:
-            raise ValueError(f"Experiment '{name}' not found")
-        
-        exp_dir = self.experiments_dir / exp_entry["path"]
-        
-        # Load configuration
-        config_path = exp_dir / "config.json"
-        with open(config_path, "r", encoding="utf-8") as f:
-            config_data = json.load(f)
-        config = ExperimentConfig.from_dict(config_data)
-        
-        # Load results
+
+    def _matching_entries(self, identifier: str) -> List[Dict[str, Any]]:
+        exact = [e for e in self._index["experiments"] if e["run_id"] == identifier]
+        if exact:
+            return exact
+        return [e for e in self._index["experiments"] if e.get("experiment_name", e.get("name")) == identifier]
+
+    def _find_entry(self, identifier: str) -> Dict[str, Any]:
+        matches = self._matching_entries(identifier)
+        if not matches:
+            raise ValueError(f"Experiment run or name '{identifier}' not found")
+        return sorted(matches, key=lambda x: x.get("timestamp", ""), reverse=True)[0]
+
+    def load_experiment(self, run_id: str) -> Tuple[ExperimentConfig, Optional[pd.DataFrame], Optional[Dict]]:
+        """Load a run ID; a human-readable name resolves to its latest run."""
+        entry = self._find_entry(run_id)
+        exp_dir = Path(entry["path"])
+        if not exp_dir.is_absolute():
+            exp_dir = self.experiments_dir / exp_dir
+        with open(exp_dir / "config.json", "r", encoding="utf-8") as f:
+            config = ExperimentConfig.from_dict(json.load(f))
         results_path = exp_dir / "results.tsv"
         results_df = pd.read_csv(results_path, sep="\t", decimal=",") if results_path.exists() else None
-        
-        # Load metrics
         metrics_path = exp_dir / "metrics.json"
         if metrics_path.exists():
             with open(metrics_path, "r", encoding="utf-8") as f:
                 metrics = json.load(f)
         else:
             metrics = None
-        
         return config, results_df, metrics
-    
-    def list_experiments(self, tags: Optional[List[str]] = None) -> List[Dict[str, Any]]:
-        """
-        List all experiments, optionally filtered by tags.
-        
-        Args:
-            tags: Optional list of tags to filter by
-        
-        Returns:
-            List of experiment entries
-        """
+
+    def list_experiments(
+        self,
+        tags: Optional[List[str]] = None,
+        names: Optional[List[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """List immutable runs, optionally filtered by tags and readable names."""
         experiments = self._index["experiments"]
-        
         if tags:
-            experiments = [
-                e for e in experiments
-                if any(tag in e.get("tags", []) for tag in tags)
-            ]
-        
+            experiments = [e for e in experiments if any(tag in e.get("tags", []) for tag in tags)]
+        if names:
+            experiments = [e for e in experiments if e.get("experiment_name", e.get("name")) in names]
         return sorted(experiments, key=lambda x: x.get("timestamp", ""), reverse=True)
-    
+
     def compare_experiments(
         self,
-        experiment_names: List[str],
+        experiment_ids: List[str],
         metrics_to_compare: Optional[List[str]] = None,
     ) -> pd.DataFrame:
-        """
-        Compare multiple experiments side-by-side.
-        
-        Args:
-            experiment_names: List of experiment names to compare
-            metrics_to_compare: Optional list of specific metrics to compare
-        
-        Returns:
-            DataFrame with comparison results
-        """
-        if metrics_to_compare is None:
-            metrics_to_compare = [
-                "percentage_agreement",
-                "fixation_recall",
-                "saccade_recall",
-                "cohen_kappa",
-            ]
-        
+        """Compare run IDs; readable names expand to all runs with that name."""
+        metrics_to_compare = metrics_to_compare or [
+            "percentage_agreement", "fixation_recall", "saccade_recall", "cohen_kappa"
+        ]
         comparison_data = []
-        
-        for name in experiment_names:
-            try:
-                config, _, metrics = self.load_experiment(name)
-                
-                row = {
-                    "experiment": name,
-                    "window_ms": config.velocity_config.window_length_ms,
-                    "velocity_method": config.velocity_config.velocity_method,
-                    "eye_mode": config.velocity_config.eye_mode,
-                    "smoothing": config.velocity_config.smoothing_mode,
-                    "threshold": config.classifier_config.velocity_threshold_deg_per_sec,
-                }
-                
-                if metrics:
-                    for metric in metrics_to_compare:
-                        row[metric] = metrics.get(metric, None)
-                
-                comparison_data.append(row)
-            except Exception as e:
-                print(f"Warning: Could not load experiment '{name}': {e}")
-        
+        for identifier in experiment_ids:
+            matches = self._matching_entries(identifier)
+            if not matches:
+                print(f"Warning: Could not load experiment '{identifier}': not found")
+            for entry in matches:
+                try:
+                    config, _, metrics = self.load_experiment(entry["run_id"])
+                    row = {
+                        "experiment": entry["run_id"],
+                        "experiment_name": entry.get("experiment_name", entry.get("name")),
+                        "window_ms": config.velocity_config.window_length_ms,
+                        "velocity_method": config.velocity_config.velocity_method,
+                        "eye_mode": config.velocity_config.eye_mode,
+                        "smoothing": config.velocity_config.smoothing_mode,
+                        "threshold": config.classifier_config.velocity_threshold_deg_per_sec,
+                    }
+                    if metrics:
+                        for metric in metrics_to_compare:
+                            row[metric] = metrics.get(metric)
+                    comparison_data.append(row)
+                except Exception as e:
+                    print(f"Warning: Could not load experiment '{entry['run_id']}': {e}")
         return pd.DataFrame(comparison_data)
-    
+
     def get_best_configuration(
         self,
         metric: str = "percentage_agreement",
         maximize: bool = True,
         tags: Optional[List[str]] = None,
+        names: Optional[List[str]] = None,
     ) -> Tuple[str, float, ExperimentConfig]:
-        """
-        Find the best experiment configuration based on a metric.
-        
-        Args:
-            metric: Metric name to optimize
-            maximize: True to maximize metric, False to minimize
-            tags: Optional tags to filter experiments
-        
-        Returns:
-            Tuple of (experiment_name, metric_value, config)
-        """
-        experiments = self.list_experiments(tags=tags)
-        
-        best_name = None
+        """Return the best immutable run ID, metric value, and configuration."""
+        best_run_id = None
         best_value = float("-inf") if maximize else float("inf")
         best_config = None
-        
-        for exp_entry in experiments:
+        for entry in self.list_experiments(tags=tags, names=names):
             try:
-                config, _, metrics = self.load_experiment(exp_entry["name"])
-                
+                config, _, metrics = self.load_experiment(entry["run_id"])
                 if metrics and metric in metrics:
                     value = metrics[metric]
-                    
-                    if maximize and value > best_value:
-                        best_name = exp_entry["name"]
-                        best_value = value
-                        best_config = config
-                    elif not maximize and value < best_value:
-                        best_name = exp_entry["name"]
-                        best_value = value
-                        best_config = config
+                    if (maximize and value > best_value) or (not maximize and value < best_value):
+                        best_run_id, best_value, best_config = entry["run_id"], value, config
             except Exception as e:
-                print(f"Warning: Could not load experiment '{exp_entry['name']}': {e}")
-        
-        if best_name is None:
+                print(f"Warning: Could not load experiment '{entry['run_id']}': {e}")
+        if best_run_id is None:
             raise ValueError(f"No experiments found with metric '{metric}'")
-        
-        return best_name, best_value, best_config  # type: ignore[return-value]
-    
+        return best_run_id, best_value, best_config  # type: ignore[return-value]
+
     def _make_serializable(self, obj: Any) -> Any:
         """Convert non-JSON-serializable objects to serializable format."""
         if isinstance(obj, dict):
             return {k: self._make_serializable(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
+        if isinstance(obj, (list, tuple)):
             return [self._make_serializable(item) for item in obj]
-        elif isinstance(obj, (int, float, str, bool, type(None))):
+        if isinstance(obj, (int, float, str, bool, type(None))):
             return obj
-        elif hasattr(obj, "__dict__"):
+        if hasattr(obj, "item"):
+            return self._make_serializable(obj.item())
+        if hasattr(obj, "__dict__"):
             return self._make_serializable(obj.__dict__)
-        else:
-            return str(obj)
+        return str(obj)
