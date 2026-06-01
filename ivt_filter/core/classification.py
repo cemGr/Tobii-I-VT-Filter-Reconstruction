@@ -6,7 +6,7 @@ import math
 import pandas as pd
 import numpy as np
 
-from ..config import OlsenVelocityConfig as IVTClassifierConfig
+from ..config import IVTClassifierConfig
 from ..strategies import Ray3DAngle
 from ..strategies.coordinate_rounding import NoRounding
 
