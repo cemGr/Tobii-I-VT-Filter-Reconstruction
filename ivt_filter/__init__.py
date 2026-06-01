@@ -6,7 +6,7 @@ from typing import Any
 from .config import OlsenVelocityConfig, PipelineConfig
 from .processing.velocity import compute_olsen_velocity, compute_olsen_velocity_from_slim_tsv
 from .processing.classification import apply_ivt_classifier
-from .postprocess import merge_short_saccade_blocks
+from .postprocessing import merge_short_saccade_blocks
 from .evaluation.evaluation import evaluate_ivt_vs_ground_truth, compute_ivt_metrics
 
 _PLOTTING_EXPORTS = {"plot_velocity_only", "plot_velocity_and_classification"}
