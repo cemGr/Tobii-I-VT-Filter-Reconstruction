@@ -48,7 +48,8 @@ class Event:
     start_idx:      0-based positional index of the first sample (inclusive).
     end_idx:        0-based positional index of the last sample (inclusive).
     start_time_ms:  Timestamp of the first sample in milliseconds.
-    end_time_ms:    Timestamp of the last sample in milliseconds.
+    end_time_ms:    Timestamp of the last sample in milliseconds. This is a
+                    boundary timestamp, not an inclusive event duration.
     n_samples:      Number of samples = end_idx - start_idx + 1.
     """
 
