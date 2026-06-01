@@ -25,12 +25,17 @@ venv.bak/
 .cem/
 
 # Thesis/analysis artifacts
+# The three root-level PDF files are intentionally versioned domain reference documents.
+# Keep them available for the algorithm reconstruction despite the general PDF rule.
 ACTIONABLE_ROADMAP.md
 CRITICAL_THESIS_ANALYSIS.md
 REQUIREMENTS_ANALYSIS.md
 THESIS_STATUS_SUMMARY.md
 REQ.md
 *.pdf
+!ExposeIVT.pdf
+!Eye_IVT_Filter.pdf
+!TOBII_ivt_filter.pdf
 
 # Installer logs
 pip-log.txt
@@ -68,6 +73,7 @@ test_simple_output.tsv
 
 # Lock files
 .~lock.*
+*~lock*#
 *.tsv
 *.csv
 data/
