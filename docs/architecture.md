@@ -436,10 +436,8 @@ graph TB
 | `ivt_filter.core.classification` | `ivt_filter.processing.classification` |
 | `ivt_filter.core.gaze` | `ivt_filter.preprocessing` |
 
-Die Legacy-Pfade bleiben vorerst kompatibel.
-Neue interne und externe Aufrufer dürfen sie nicht mehr verwenden.
-Eine spätere Major-Version darf die Legacy-Pfade entfernen.
-Diese Entfernung ist eine bewusst getrennte Breaking Change und nicht Bestandteil der aktuellen Migration.
+> **Breaking Change:** Der in der Tabelle aufgeführte alte Postprocessing-Importpfad wurde entfernt. Der neue kanonische Importpfad ist `ivt_filter.postprocessing`.
+> Die Fassaden unter `ivt_filter/core/` bleiben vorerst erhalten. Ihre spätere Entfernung ist ausdrücklich ein separater Breaking Change.
 
 ## Testing Benefits
 
