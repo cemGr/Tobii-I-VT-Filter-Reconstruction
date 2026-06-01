@@ -445,7 +445,7 @@ def _compute_olsen_velocity_impl(
     # Fensterbreite in Samples berechnen für Transparenz
     if isinstance(selector, FixedSampleSymmetricWindowSelector):
         # Bei FixedSample: Fensterbreite ist bekannt
-        fixed_samples = cfg.fixed_window_samples
+        fixed_samples = getattr(cfg.window_policy, "samples", None)
         logger.info("Fixed sample window: %s samples", fixed_samples)
     elif isinstance(selector, AsymmetricNeighborWindowSelector):
         # Bei Asymmetrischem Nachbar-Fenster: 2 Samples
@@ -490,10 +490,10 @@ def _compute_olsen_velocity_impl(
         gap_max = 1
     elif (
         isinstance(selector, FixedSampleSymmetricWindowSelector)
-        and cfg.fixed_window_samples is not None
+        and isinstance(getattr(cfg.window_policy, "samples", None), int)
     ):
         # Ursprüngliche Fenstergröße ohne Asymmetrie-Anpassung
-        original_window_size = int(cfg.fixed_window_samples)
+        original_window_size = int(getattr(cfg.window_policy, "samples"))
         gap_max = max(0, original_window_size - 1)
     elif dt_med is not None and dt_med > 0:
         # Ursprüngliche Zeit-basierte Schätzung ohne Asymmetrie-Anpassung

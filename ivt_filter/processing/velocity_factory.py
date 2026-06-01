@@ -1,7 +1,15 @@
 """Factories for velocity calculation and window-selection strategies."""
 from __future__ import annotations
 
-from ..config import OlsenVelocityConfig
+from ..config import (
+    AsymmetricNeighborWindowPolicy,
+    FixedSampleWindowPolicy,
+    OlsenVelocityConfig,
+    SampleSymmetricWindowPolicy,
+    ShiftedValidWindowPolicy,
+    TimeSymmetricWindowPolicy,
+    TobiiWindowPolicy,
+)
 from ..strategies import (
     AsymmetricNeighborWindowSelector,
     CoordinateRoundingStrategy,
@@ -45,68 +53,47 @@ def _get_velocity_calculation_strategy(method: str) -> VelocityCalculationStrate
         raise ValueError(f"Unknown velocity calculation method: {method}")
 
 def make_window_selector(cfg: OlsenVelocityConfig) -> WindowSelector:
-    """
-    Waehlt die passende Fenster-Strategie basierend auf der Config.
-    Prioritaet:
-      0) tobii_window_mode (Tobii-exakter GazeVelocityCalculator, höchste Priorität)
-      1) asymmetric_neighbor_window (2-Sample asymmetrisch, Backward/Forward)
-      2) fixed_window_samples (reines Sample-Fenster)
-      3) sample_symmetric_window (Zeit + sample-symmetrisch)
-      4) reines Zeitfenster
-
-    Nutzt WindowRoundingStrategy zur Bestimmung der half_size.
-    """
-    # Tobii-exakter GazeVelocityCalculator (höchste Priorität)
-    if getattr(cfg, "tobii_window_mode", False):
-        sample_interval_ms = getattr(cfg, "tobii_sample_interval_ms", None)
+    """Create the selector described by the normalized tagged window policy."""
+    policy = cfg.window_policy
+    if isinstance(policy, TobiiWindowPolicy):
+        sample_interval_ms = policy.sample_interval_ms
         if sample_interval_ms is None or sample_interval_ms <= 0:
             raise ValueError(
-                "tobii_window_mode requires tobii_sample_interval_ms > 0. "
-                "Set e.g. tobii_sample_interval_ms=16.67 for 60 Hz."
+                "TobiiWindowPolicy requires tobii_sample_interval_ms/sample_interval_ms > 0. "
+                "Set e.g. sample_interval_ms=16.67 for 60 Hz."
             )
         return TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
-
-    # Asymmetrisches Nachbar-Fenster (2 Samples)
-    if cfg.asymmetric_neighbor_window:
+    if isinstance(policy, AsymmetricNeighborWindowPolicy):
         return AsymmetricNeighborWindowSelector()
 
-    # Select strategy
     rounding_strategy: WindowRoundingStrategy
-    if cfg.symmetric_round_window:
+    if isinstance(policy, (FixedSampleWindowPolicy, ShiftedValidWindowPolicy)) and policy.symmetric_round:
         rounding_strategy = SymmetricRoundWindowStrategy()
     else:
         rounding_strategy = StandardWindowRounding()
 
-    if cfg.shifted_valid_window:
-        if cfg.fixed_window_samples is not None:
-            # Sample-based shifted valid window
-            n = int(cfg.fixed_window_samples)
-            if n < 3:
-                raise ValueError(
-                    "fixed_window_samples must be >= 3 for shifted_valid_window."
-                )
-            half_size = rounding_strategy.calculate_half_size(n)
-            return ShiftedValidWindowSelector(
-                half_size=half_size, fallback_mode=cfg.shifted_valid_fallback
-            )
-        else:
-            # Time-based shifted valid window
-            return TimeBasedShiftedValidWindowSelector(
-                fallback_mode=cfg.shifted_valid_fallback
-            )
-
-    if cfg.fixed_window_samples is not None:
-        n = int(cfg.fixed_window_samples)
-        if n < 3:
-            raise ValueError("fixed_window_samples must be >= 3.")
-
-        half_size = rounding_strategy.calculate_half_size(n)
-        return FixedSampleSymmetricWindowSelector(half_size=half_size)
-
-    if cfg.sample_symmetric_window:
+    if isinstance(policy, ShiftedValidWindowPolicy):
+        if policy.samples is None:
+            return TimeBasedShiftedValidWindowSelector(fallback_mode=policy.fallback)
+        if policy.samples < 3:
+            raise ValueError("samples must be >= 3 for ShiftedValidWindowPolicy.")
+        return ShiftedValidWindowSelector(
+            half_size=rounding_strategy.calculate_half_size(policy.samples),
+            fallback_mode=policy.fallback,
+        )
+    if isinstance(policy, FixedSampleWindowPolicy):
+        if policy.samples is None:
+            raise ValueError("FixedSampleWindowPolicy requires samples >= 3 after derivation.")
+        if policy.samples < 3:
+            raise ValueError("samples must be >= 3 for FixedSampleWindowPolicy.")
+        return FixedSampleSymmetricWindowSelector(
+            half_size=rounding_strategy.calculate_half_size(policy.samples)
+        )
+    if isinstance(policy, SampleSymmetricWindowPolicy):
         return SampleSymmetricWindowSelector()
-
-    return TimeSymmetricWindowSelector()
+    if isinstance(policy, TimeSymmetricWindowPolicy):
+        return TimeSymmetricWindowSelector()
+    raise TypeError(f"Unsupported window policy: {policy!r}")
 
 
 def _get_coordinate_rounding_strategy(mode: str) -> CoordinateRoundingStrategy:

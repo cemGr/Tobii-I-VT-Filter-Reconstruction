@@ -14,6 +14,7 @@ from .config import (
     FixationPostConfig,
     PipelineConfig,
 )
+from .window_policy import translate_legacy_window_flags
 
 
 class ConfigBuilder:
@@ -28,7 +29,17 @@ class ConfigBuilder:
     @staticmethod
     def build_velocity_config(args: argparse.Namespace) -> OlsenVelocityConfig:
         """Build velocity configuration from CLI arguments."""
+        window_policy = translate_legacy_window_flags(
+            sample_symmetric_window=args.sample_symmetric_window,
+            fixed_window_samples=args.fixed_window_samples,
+            auto_fixed_window_from_ms=args.auto_fixed_window_from_ms,
+            symmetric_round_window=args.symmetric_round_window,
+            asymmetric_neighbor_window=args.asymmetric_neighbor_window,
+            shifted_valid_window=args.shifted_valid_window,
+            shifted_valid_fallback=args.shifted_valid_fallback,
+        )
         return OlsenVelocityConfig(
+            window_policy=window_policy,
             window_length_ms=args.window,
             time_column=args.time_column,
             time_unit=args.time_unit,
@@ -37,15 +48,8 @@ class ConfigBuilder:
             smoothing_window_samples=args.smooth_window_samples,
             smoothing_min_samples=args.smoothing_min_samples,
             smoothing_expansion_radius=args.smoothing_expansion_radius,
-            sample_symmetric_window=args.sample_symmetric_window,
-            fixed_window_samples=args.fixed_window_samples,
-            auto_fixed_window_from_ms=args.auto_fixed_window_from_ms,
             fixed_window_edge_fallback=args.fixed_window_edge_fallback,
-            symmetric_round_window=args.symmetric_round_window,
             allow_asymmetric_window=args.allow_asymmetric_window,
-            asymmetric_neighbor_window=args.asymmetric_neighbor_window,
-            shifted_valid_window=args.shifted_valid_window,
-            shifted_valid_fallback=args.shifted_valid_fallback,
             use_fixed_dt=args.use_fixed_dt,
             sampling_rate_method=args.sampling_rate_method,
             dt_calculation_method=args.dt_calculation_method,
