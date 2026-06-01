@@ -236,6 +236,37 @@ def test_import_get_statistics() -> None:
     assert callable(get_statistics)
 
 
+def test_get_statistics_returns_zero_counts_and_percentages_for_empty_dataframe() -> None:
+    from ivt_filter.simple_api import get_statistics
+
+    stats = get_statistics(pd.DataFrame({"ivt_sample_type": pd.Series(dtype="object")}))
+
+    assert stats == {
+        "total_samples": 0,
+        "fixation_count": 0,
+        "saccade_count": 0,
+        "fixation_percentage": 0.0,
+        "saccade_percentage": 0.0,
+    }
+
+
+def test_get_statistics_returns_nan_velocity_aggregates_for_empty_dataframe() -> None:
+    from ivt_filter.simple_api import get_statistics
+
+    stats = get_statistics(
+        pd.DataFrame(
+            {
+                "ivt_sample_type": pd.Series(dtype="object"),
+                "velocity_deg_per_sec": pd.Series(dtype="float64"),
+            }
+        )
+    )
+
+    assert pd.isna(stats["avg_velocity"])
+    assert pd.isna(stats["max_velocity"])
+    assert pd.isna(stats["median_velocity"])
+
+
 def test_import_print_statistics() -> None:
     from ivt_filter.simple_api import print_statistics
 
