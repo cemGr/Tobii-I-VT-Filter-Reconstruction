@@ -427,7 +427,7 @@ graph TB
 
 ## Postprocessing API
 
-`ivt_filter.postprocessing` is the canonical postprocessing API. The module `ivt_filter.postprocess` is deprecated and remains temporarily available solely as a compatibility facade. New internal and external callers should use `ivt_filter.postprocessing`.
+`ivt_filter.postprocessing` is the canonical postprocessing API for new internal and external callers.
 
 | Alter Importpfad | Kanonischer Importpfad |
 | --- | --- |

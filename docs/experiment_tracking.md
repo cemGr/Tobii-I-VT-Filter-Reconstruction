@@ -13,7 +13,7 @@ Dieses System implementiert **automatisches Experiment-Tracking** für systemati
 Definiert eine komplette Experiment-Konfiguration:
 
 ```python
-from ivt_filter.experiment import ExperimentConfig
+from ivt_filter.evaluation.experiment import ExperimentConfig
 from ivt_filter.config import OlsenVelocityConfig, IVTClassifierConfig
 
 config = ExperimentConfig(
@@ -36,7 +36,7 @@ config = ExperimentConfig(
 Verwaltet gespeicherte Experimente (Information Expert Pattern):
 
 ```python
-from ivt_filter.experiment import ExperimentManager
+from ivt_filter.evaluation.experiment import ExperimentManager
 
 manager = ExperimentManager("experiments/")
 
@@ -66,7 +66,7 @@ Automatische Benachrichtigungen bei Pipeline-Events:
 
 **ConsoleReporter** - Konsolen-Ausgabe:
 ```python
-from ivt_filter.observers import ConsoleReporter
+from ivt_filter.io.observers import ConsoleReporter
 
 reporter = ConsoleReporter(verbose=True)
 pipeline.register_observer(reporter)
@@ -74,7 +74,7 @@ pipeline.register_observer(reporter)
 
 **MetricsLogger** - CSV-Logging:
 ```python
-from ivt_filter.observers import MetricsLogger
+from ivt_filter.io.observers import MetricsLogger
 
 logger = MetricsLogger("experiments/metrics_log.csv")
 pipeline.register_observer(logger)
@@ -82,7 +82,7 @@ pipeline.register_observer(logger)
 
 **ExperimentTracker** - Vollständiges Tracking:
 ```python
-from ivt_filter.observers import ExperimentTracker
+from ivt_filter.io.observers import ExperimentTracker
 
 tracker = ExperimentTracker("experiments/")
 pipeline.register_observer(tracker)
@@ -90,7 +90,7 @@ pipeline.register_observer(tracker)
 
 **ResultsPlotter** - Automatische Plots:
 ```python
-from ivt_filter.observers import ResultsPlotter
+from ivt_filter.io.observers import ResultsPlotter
 
 plotter = ResultsPlotter(
     output_dir="plots/",
@@ -105,9 +105,9 @@ pipeline.register_observer(plotter)
 ### Einfaches Experiment
 
 ```python
-from ivt_filter.pipeline import IVTPipeline
-from ivt_filter.experiment import ExperimentConfig
-from ivt_filter.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
+from ivt_filter.io.pipeline import IVTPipeline
+from ivt_filter.evaluation.experiment import ExperimentConfig
+from ivt_filter.io.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
 
 # Pipeline mit Observers erstellen
 pipeline = IVTPipeline(velocity_config, classifier_config)
@@ -168,7 +168,7 @@ for threshold in thresholds:
 ### Experimente vergleichen
 
 ```python
-from ivt_filter.experiment import ExperimentManager
+from ivt_filter.evaluation.experiment import ExperimentManager
 
 manager = ExperimentManager("experiments/")
 
@@ -274,7 +274,7 @@ class PipelineObserver(ABC):
 ### Eigene Observer erstellen
 
 ```python
-from ivt_filter.observers import PipelineObserver
+from ivt_filter.io.observers import PipelineObserver
 
 class SlackNotifier(PipelineObserver):
     """Sendet Benachrichtigungen an Slack."""

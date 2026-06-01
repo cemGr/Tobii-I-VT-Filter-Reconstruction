@@ -160,7 +160,7 @@ python -c "import pandas as pd; \
 
 ```python
 from ivt_filter.config import OlsenVelocityConfig
-from ivt_filter.velocity import compute_olsen_velocity
+from ivt_filter import compute_olsen_velocity
 from ivt_filter.io import read_tsv
 
 df = read_tsv("data.tsv")

@@ -414,7 +414,7 @@ classDiagram
 - **SampleValidator**: Validates eye tracking sample quality
 - **VelocityValidator**: Validates and parses velocity values
 
-### 7. Post-Processing (postprocess.py)
+### 7. Post-Processing (`ivt_filter/postprocessing/`)
 - **PostProcessor**: Saccade merging and fixation filtering
   - `merge_short_saccade_blocks()`: Merges short saccades into fixations
   - `apply_fixation_postprocessing()`: Filters fixations by duration/dispersion
@@ -457,7 +457,7 @@ Four configuration dataclasses control pipeline behavior:
 | Component | Module | Purpose |
 |-----------|--------|---------|
 | Eye data structures | `preprocessing/` | Gap filling, combined columns, smoothing |
-| Ground truth handling | `evaluation.py`, `postprocess.py` | GT column detection, event expansion |
+| Ground truth handling | `ivt_filter/evaluation/`, `ivt_filter/postprocessing/` | GT column detection, event expansion |
 | Sample data | All DataFrames | Row-based representation (time_ms + features) |
 | Evaluation | `evaluation.py` | Statistical comparison, confusion matrix |
 | Constants | `constants.py` | Physical/computational constants |
@@ -501,9 +501,9 @@ Four configuration dataclasses control pipeline behavior:
 For systematic reverse engineering, the system now includes:
 
 ```python
-from ivt_filter.experiment import ExperimentConfig, ExperimentManager
-from ivt_filter.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
-from ivt_filter.pipeline import IVTPipeline
+from ivt_filter.evaluation.experiment import ExperimentConfig, ExperimentManager
+from ivt_filter.io.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
+from ivt_filter.io.pipeline import IVTPipeline
 
 # Create experiment configuration
 exp_config = ExperimentConfig(

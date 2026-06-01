@@ -604,8 +604,7 @@ ivt_filter/
 Most users just need the CLI (`python -m ivt_filter.cli`). Developers can import modules directly:
 
 ```python
-from ivt_filter.processing.velocity import compute_ray3d_velocity
-from ivt_filter.processing.classification import classify_ivt
+from ivt_filter import compute_olsen_velocity, apply_ivt_classifier
 from ivt_filter.postprocessing.merge_fixations import merge_adjacent_fixations
 from ivt_filter.evaluation.event_iou import compute_event_iou_metrics
 

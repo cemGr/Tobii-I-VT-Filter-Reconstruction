@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ivt_filter.config import OlsenVelocityConfig
-from ivt_filter.velocity import compute_olsen_velocity
+from ivt_filter import compute_olsen_velocity
 from ivt_filter.io import read_tsv
 
 
