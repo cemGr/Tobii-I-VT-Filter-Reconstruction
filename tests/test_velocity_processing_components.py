@@ -101,12 +101,12 @@ def test_prepare_velocity_input_runs_preprocessing_steps_in_order(monkeypatch):
 
         return apply
 
-    monkeypatch.setattr("ivt_filter.processing.velocity.gap_fill_gaze", record("gap"))
+    monkeypatch.setattr("ivt_filter.processing.velocity_input.gap_fill_gaze", record("gap"))
     monkeypatch.setattr(
-        "ivt_filter.processing.velocity.prepare_combined_columns", record("combined")
+        "ivt_filter.processing.velocity_input.prepare_combined_columns", record("combined")
     )
     monkeypatch.setattr(
-        "ivt_filter.processing.velocity.smooth_combined_gaze", record("smooth")
+        "ivt_filter.processing.velocity_input.smooth_combined_gaze", record("smooth")
     )
     result = prepare_velocity_input(
         pd.DataFrame(
