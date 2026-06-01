@@ -1,0 +1,34 @@
+# Refresh this lock file with:
+#    uv pip compile pyproject.toml --extra development --output-file requirements/development.txt --python-version 3.10
+#
+# Do not edit dependency pins by hand.
+exceptiongroup==1.3.1 ; python_full_version < '3.11'
+    # via pytest
+iniconfig==2.1.0
+    # via pytest
+numpy==2.2.6
+    # via
+    #   pandas
+    #   tobii-ivt-filter (pyproject.toml)
+packaging==25.0
+    # via pytest
+pandas==2.3.3
+    # via tobii-ivt-filter (pyproject.toml)
+pluggy==1.6.0
+    # via pytest
+pygments==2.19.2
+    # via pytest
+pytest==8.4.2
+    # via tobii-ivt-filter (pyproject.toml)
+python-dateutil==2.9.0.post0
+    # via pandas
+pytz==2025.2
+    # via pandas
+six==1.17.0
+    # via python-dateutil
+tomli==2.3.0 ; python_full_version < '3.11'
+    # via pytest
+typing-extensions==4.15.0 ; python_full_version < '3.11'
+    # via exceptiongroup
+tzdata==2025.3
+    # via pandas

@@ -1,0 +1,4 @@
+# Keep these pins synchronized with [build-system].requires in pyproject.toml.
+# They are installed only in the Docker builder stage.
+setuptools==80.9.0
+wheel==0.45.1

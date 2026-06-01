@@ -67,9 +67,8 @@ cd Tobii-I-VT-Filter-Reconstruction
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+pip install -r requirements/development.txt
+pip install --no-deps -e .
 ```
 
 Plotting is optional. Install the plotting extra only if you want to generate figures:
@@ -559,8 +558,8 @@ EOF
 Build a minimal runtime image and run the CLI inside the container.
 
 ```bash
-# Build locally
-docker build -t ivt-filter:latest .
+# Build locally (see docs/reproducibility.md for lock refresh instructions)
+docker build --pull=false -t ivt-filter:latest .
 
 # Run with a mounted data folder
 docker run --rm \

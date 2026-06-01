@@ -1,5 +1,0 @@
-pytest
-numpy 
-pandas 
-# Optional plotting: pip install tobii-ivt-filter[plot]
-joblib  # Optional: for parallel processing (recommended for large datasets)

@@ -7,6 +7,7 @@ Welcome to the I-VT Filter Reconstruction documentation!
 - **[README.md](../README.md)** - Main project documentation with installation, usage, and examples
 - **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference guide for common commands and configurations
 - **[TECHNICAL_SPECIFICATION.md](TECHNICAL_SPECIFICATION.md)** - Detailed technical specification of velocity calculation methods
+- **[reproducibility.md](reproducibility.md)** - Locked dependencies and reproducible Docker build procedure
 
 ## Documentation Structure
 
