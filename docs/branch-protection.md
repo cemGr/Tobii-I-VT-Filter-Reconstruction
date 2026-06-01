@@ -22,4 +22,4 @@ Require every blocking job exposed by **Python CI**:
 - `package-build`
 - `container-smoke`
 
-The `package-build` job installs the generated wheel into an isolated virtual environment and runs the CLI from that installed artifact. The `container-smoke` job builds the image and verifies both its CLI and package import. Tagged PyPI releases and GHCR publication call the reusable Python CI workflow and cannot publish unless all of these checks succeed for the tagged commit.
+The `package-build` job installs the generated wheel into an isolated virtual environment and runs the CLI from that installed artifact. The `container-smoke` job builds the image and verifies both its CLI and package import. Tagged PyPI releases and GHCR publication call the reusable Python CI workflow and cannot publish unless all of these checks succeed for the tagged commit. GHCR publication is intentionally tag-only: ordinary pushes to `main` do not publish release images.
