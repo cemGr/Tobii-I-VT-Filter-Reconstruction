@@ -71,7 +71,7 @@ class IVTPipeline:
             self.config = PipelineConfig(
                 velocity=velocity_config,
                 classifier=classifier_config,
-                classify=bool(saccade_merge_config or fixation_post_config),
+                classify=True,
                 saccade_merge=saccade_merge_config,
                 fixation_post=fixation_post_config,
             )

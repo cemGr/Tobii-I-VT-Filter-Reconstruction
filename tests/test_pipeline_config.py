@@ -94,6 +94,41 @@ def test_run_and_run_with_tracking_use_equivalent_core_pipeline(
     assert stage_spy == ["velocity", "classify", "saccade", "fixation"] * 2
 
 
+def test_compatibility_constructor_enables_classification_without_postprocessing(
+    monkeypatch: pytest.MonkeyPatch,
+    stage_spy: list[str],
+) -> None:
+    monkeypatch.setattr("ivt_filter.io.pipeline.read_tsv", lambda path: pd.DataFrame({"time_ms": [0.0]}))
+    pipeline = IVTPipeline(OlsenVelocityConfig(), IVTClassifierConfig())
+
+    assert pipeline.config.classify is True
+
+    result = pipeline.run_with_tracking("input.tsv", SimpleNamespace(name="experiment"), evaluate=False)
+
+    assert stage_spy == ["velocity", "classify"]
+    assert "ivt_sample_type" in result.columns
+
+
+def test_explicit_pipeline_config_can_disable_classification(
+    monkeypatch: pytest.MonkeyPatch,
+    stage_spy: list[str],
+) -> None:
+    monkeypatch.setattr("ivt_filter.io.pipeline.read_tsv", lambda path: pd.DataFrame({"time_ms": [0.0]}))
+    pipeline = IVTPipeline(
+        PipelineConfig(
+            velocity=OlsenVelocityConfig(),
+            classifier=IVTClassifierConfig(),
+            classify=False,
+        )
+    )
+
+    result = pipeline.run_with_tracking("input.tsv", SimpleNamespace(name="experiment"), evaluate=False)
+
+    assert pipeline.config.classify is False
+    assert stage_spy == ["velocity"]
+    assert "ivt_sample_type" not in result.columns
+
+
 def test_legacy_run_flags_are_translated_into_pipeline_config(
     monkeypatch: pytest.MonkeyPatch,
     stage_spy: list[str],
