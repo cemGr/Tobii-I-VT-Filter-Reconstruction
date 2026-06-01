@@ -759,12 +759,9 @@ class TestTobiiConfigFields:
         assert cfg.tobii_eye_offset_interpolation is False
 
     def test_tobii_window_mode_requires_sample_interval(self):
-        """make_window_selector() löst ValueError aus wenn tobii_window_mode=True
-        aber tobii_sample_interval_ms nicht gesetzt."""
-        from ivt_filter.processing.velocity import make_window_selector
-        cfg = OlsenVelocityConfig(tobii_window_mode=True, tobii_sample_interval_ms=None)
+        """Die Config lehnt Tobii-Fenster ohne Sample-Intervall ab."""
         with pytest.raises(ValueError, match="tobii_sample_interval_ms"):
-            make_window_selector(cfg)
+            OlsenVelocityConfig(tobii_window_mode=True, tobii_sample_interval_ms=None)
 
     def test_make_window_selector_returns_tobii_selector(self):
         """make_window_selector() gibt TobiiGazeVelocityWindowSelector zurück."""

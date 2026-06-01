@@ -206,3 +206,69 @@ def test_config_builder_translates_legacy_cli_flags_to_one_policy() -> None:
 
     assert config.window_policy == FixedSampleWindowPolicy(samples=5)
     assert config.fixed_window_samples is None
+
+
+@pytest.mark.parametrize(
+    "config_kwargs",
+    [
+        {"window_length_ms": 0.0},
+        {"min_dt_ms": 0.0},
+        {"fixed_window_samples": 2},
+        {"fixed_window_samples": 4},
+        {"smoothing_window_samples": 0},
+        {"smoothing_window_samples": 2},
+        {"smoothing_min_samples": 0},
+        {"smoothing_min_samples": 1.5},
+        {"smoothing_expansion_radius": -1},
+        {"smoothing_expansion_radius": 1.5},
+        {"gap_fill_max_gap_ms": -1.0},
+        {"tobii_window_mode": True, "tobii_sample_interval_ms": 0.0},
+        {"window_policy": TobiiWindowPolicy(sample_interval_ms=-1.0)},
+    ],
+)
+def test_velocity_config_rejects_numeric_boundary_values(
+    config_kwargs: dict[str, object],
+) -> None:
+    with pytest.raises(ValueError):
+        OlsenVelocityConfig(**config_kwargs)
+
+
+@pytest.mark.parametrize(
+    "config_kwargs",
+    [
+        {"time_unit": "seconds"},
+        {"eye_mode": "both"},
+        {"smoothing_mode": "average"},
+        {"sampling_rate_method": "last_100"},
+        {"dt_calculation_method": "minimum"},
+        {"coordinate_rounding": "truncate"},
+        {"velocity_method": "unknown"},
+        {"shifted_valid_fallback": "nearest"},
+    ],
+)
+def test_velocity_config_rejects_unknown_enum_like_values(
+    config_kwargs: dict[str, object],
+) -> None:
+    with pytest.raises(ValueError):
+        OlsenVelocityConfig(**config_kwargs)
+
+
+def test_velocity_config_accepts_minimum_valid_values() -> None:
+    config = OlsenVelocityConfig(
+        window_length_ms=0.001,
+        min_dt_ms=0.001,
+        fixed_window_samples=3,
+        smoothing_window_samples=1,
+        smoothing_min_samples=1,
+        smoothing_expansion_radius=0,
+        gap_fill_max_gap_ms=0.0,
+    )
+
+    assert config.fixed_window_samples == 3
+    assert config.smoothing_window_samples == 1
+
+
+def test_velocity_config_accepts_even_fixed_window_when_asymmetry_is_enabled() -> None:
+    config = OlsenVelocityConfig(fixed_window_samples=4, allow_asymmetric_window=True)
+
+    assert config.fixed_window_samples == 4
