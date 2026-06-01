@@ -1,12 +1,14 @@
 # ivt_filter/core/classification.py
 from __future__ import annotations
 
-from typing import Optional, List
+from typing import Optional
 import math
 import pandas as pd
 import numpy as np
 
 from ..config import IVTClassifierConfig
+from ..domain.events import rebuild_events_from_sample_labels
+from ..domain.schema import validate_classified_frame, validate_velocity_frame
 from ..strategies import Ray3DAngle
 from ..strategies.coordinate_rounding import NoRounding
 
@@ -101,8 +103,7 @@ class IVTClassifier:
         Returns:
             DataFrame with added classification columns
         """
-        if "velocity_deg_per_sec" not in df.columns:
-            raise ValueError("DataFrame must contain 'velocity_deg_per_sec'")
+        validate_velocity_frame(df)
 
         df = df.copy()
         self._df_context = df  # Store for alternative velocity access
@@ -134,13 +135,14 @@ class IVTClassifier:
         
         df["ivt_sample_type"] = df.apply(self._classify_sample, axis=1)
 
-        df = rebuild_ivt_events_from_sample_types(
+        df = rebuild_events_from_sample_labels(
             df,
             sample_col="ivt_sample_type",
             event_type_col="ivt_event_type",
             event_index_col="ivt_event_index",
         )
         
+        validate_classified_frame(df)
         self._df_context = None  # Clean up
         return df
     
@@ -443,40 +445,5 @@ def apply_ivt_classifier(
     return classifier.classify(df)
 
 
-def rebuild_ivt_events_from_sample_types(
-    df: pd.DataFrame,
-    sample_col: str,
-    event_type_col: str,
-    event_index_col: str,
-) -> pd.DataFrame:
-    """
-    Bilde Event Typen und Indizes aus sample basierten Labels.
-
-    - Fixation/Saccade Bloecke bekommen fortlaufende Indizes.
-    - Alles andere (z B Unclassified) bekommt None als Index.
-    """
-    sample_labels = df[sample_col].astype(str).tolist()
-
-    new_event_type: List[str] = []
-    new_event_index: List[Optional[int]] = []
-
-    current_type: Optional[str] = None
-    current_index: int = 0
-
-    for label in sample_labels:
-        if label not in ("Fixation", "Saccade"):
-            new_event_type.append(label)
-            new_event_index.append(None)
-            current_type = None
-            continue
-
-        if label != current_type:
-            current_index += 1
-            current_type = label
-
-        new_event_type.append(label)
-        new_event_index.append(current_index)
-
-    df[event_type_col] = new_event_type
-    df[event_index_col] = new_event_index
-    return df
+# Backward-compatible public alias; event rules live in domain.events.
+rebuild_ivt_events_from_sample_types = rebuild_events_from_sample_labels
