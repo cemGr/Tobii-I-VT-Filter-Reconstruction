@@ -1,6 +1,8 @@
 """Smoke tests for supported public imports and optional plotting behavior."""
 from __future__ import annotations
 
+import ast
+import importlib
 import importlib.util
 import re
 from pathlib import Path
@@ -14,6 +16,44 @@ from ivt_filter.config import OlsenVelocityConfig
 
 
 REPOSITORY_ROOT = Path(__file__).parent.parent
+COMPATIBILITY_FACADES = {
+    "ivt_filter.postprocess": ("ivt_filter.postprocessing",),
+    "ivt_filter.core": (
+        "ivt_filter.postprocessing",
+        "ivt_filter.processing.velocity",
+        "ivt_filter.processing.classification",
+        "ivt_filter.preprocessing",
+    ),
+    "ivt_filter.core.velocity": ("ivt_filter.processing.velocity",),
+    "ivt_filter.core.classification": ("ivt_filter.processing.classification",),
+    "ivt_filter.core.gaze": ("ivt_filter.preprocessing",),
+}
+
+
+def _compatibility_symbol_cases() -> list[object]:
+    cases = []
+    for facade_name, canonical_module_names in COMPATIBILITY_FACADES.items():
+        facade = importlib.import_module(facade_name)
+        for symbol_name in facade.__all__:
+            matching_canonical_modules = [
+                canonical_module_name
+                for canonical_module_name in canonical_module_names
+                if hasattr(importlib.import_module(canonical_module_name), symbol_name)
+            ]
+            assert len(matching_canonical_modules) == 1, (
+                f"{facade_name}.{symbol_name} must have exactly one canonical public source"
+            )
+            cases.append(
+                pytest.param(
+                    facade_name,
+                    matching_canonical_modules[0],
+                    symbol_name,
+                    id=f"{facade_name}-{symbol_name}",
+                )
+            )
+    return cases
+
+
 EXAMPLE_MODULES = [
     "example_experiment_tracking.py",
     "example_sample_based_window.py",
@@ -201,37 +241,45 @@ def test_import_processing_package_uses_canonical_velocity_api() -> None:
     assert not hasattr(processing, "VelocityComputer")
 
 
-def test_legacy_core_imports_delegate_to_canonical_implementations() -> None:
-    from ivt_filter.core.classification import IVTClassifier as legacy_classifier
-    from ivt_filter.core.gaze import gap_fill_gaze as legacy_gap_fill
-    from ivt_filter.core.velocity import SamplingAnalyzer as legacy_sampling_analyzer
-    from ivt_filter.preprocessing import gap_fill_gaze
-    from ivt_filter.processing.classification import IVTClassifier
-    from ivt_filter.processing.velocity import SamplingAnalyzer
+@pytest.mark.parametrize(
+    ("facade_name", "canonical_module_name", "symbol_name"),
+    _compatibility_symbol_cases(),
+)
+def test_compatibility_facade_symbols_delegate_to_canonical_implementations(
+    facade_name: str, canonical_module_name: str, symbol_name: str
+) -> None:
+    facade = importlib.import_module(facade_name)
+    canonical_module = importlib.import_module(canonical_module_name)
 
-    assert legacy_classifier is IVTClassifier
-    assert legacy_gap_fill is gap_fill_gaze
-    assert legacy_sampling_analyzer is SamplingAnalyzer
+    assert getattr(facade, symbol_name) is getattr(canonical_module, symbol_name)
+
+
+@pytest.mark.parametrize("facade_name", COMPATIBILITY_FACADES)
+def test_compatibility_facades_contain_no_implementation_logic(facade_name: str) -> None:
+    facade = importlib.import_module(facade_name)
+    facade_path = Path(facade.__file__)
+    module = ast.parse(facade_path.read_text(encoding="utf-8"), filename=str(facade_path))
+
+    for statement in module.body:
+        if isinstance(statement, ast.Expr):
+            assert isinstance(statement.value, ast.Constant)
+            assert isinstance(statement.value.value, str)
+        elif isinstance(statement, (ast.Import, ast.ImportFrom)):
+            continue
+        elif isinstance(statement, ast.Assign):
+            assert all(
+                isinstance(target, ast.Name) and target.id == "__all__"
+                for target in statement.targets
+            )
+        else:
+            pytest.fail(
+                f"{facade_name} contains implementation logic: "
+                f"{statement.__class__.__name__}"
+            )
 
 
 def test_obsolete_velocity_computer_module_is_removed() -> None:
     assert importlib.util.find_spec("ivt_filter.processing.velocity_computer") is None
-
-
-def test_legacy_postprocess_imports_delegate_to_canonical_implementations() -> None:
-    from ivt_filter.postprocess import (
-        apply_fixation_postprocessing as legacy_apply_fixation_postprocessing,
-    )
-    from ivt_filter.postprocess import (
-        merge_short_saccade_blocks as legacy_merge_short_saccade_blocks,
-    )
-    from ivt_filter.postprocessing import (
-        apply_fixation_postprocessing,
-        merge_short_saccade_blocks,
-    )
-
-    assert legacy_apply_fixation_postprocessing is apply_fixation_postprocessing
-    assert legacy_merge_short_saccade_blocks is merge_short_saccade_blocks
 
 
 def test_internal_modules_do_not_import_legacy_postprocess_facade() -> None:
