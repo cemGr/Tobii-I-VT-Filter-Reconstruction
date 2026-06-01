@@ -32,8 +32,8 @@ n_samples = 3  # Immer 3 Samples
 
 ### 1. Time-Based (einfachste Methode)
 ```python
-from ivt_filter.window_utils import create_time_based_config
-from ivt_filter.pipeline import IVTPipeline
+from ivt_filter.utils.window_utils import create_time_based_config
+from ivt_filter.io.pipeline import IVTPipeline
 
 # Immer 20 ms verwenden
 vel_cfg, clf_cfg = create_time_based_config(window_ms=20.0)
@@ -44,7 +44,7 @@ df = pipeline.run("data.tsv")
 
 ### 2. Sample-Based (empfohlen für Multi-Rate)
 ```python
-from ivt_filter.window_utils import create_sample_based_config
+from ivt_filter.utils.window_utils import create_sample_based_config
 
 # Immer 3 Samples verwenden
 vel_cfg, clf_cfg = create_sample_based_config(
@@ -58,7 +58,7 @@ df = pipeline.run("data.tsv")
 
 ### 3. Adaptive (automatisch)
 ```python
-from ivt_filter.window_utils import create_adaptive_config
+from ivt_filter.utils.window_utils import create_adaptive_config
 from ivt_filter.io import read_tsv
 
 # Automatisch Rate erkennen und anpassen
@@ -73,8 +73,8 @@ df = pipeline.run("data.tsv")
 
 ### Time-Based Window Sweep
 ```python
-from ivt_filter.experiment import ExperimentConfig
-from ivt_filter.observers import ConsoleReporter, ExperimentTracker
+from ivt_filter.evaluation.experiment import ExperimentConfig
+from ivt_filter.io.observers import ConsoleReporter, ExperimentTracker
 
 # Verschiedene Zeit-Fenster testen
 for window_ms in [10.0, 20.0, 40.0, 60.0]:
@@ -120,7 +120,7 @@ for n_samples in [2, 3, 4, 5, 7]:
 
 ### Umrechnung
 ```python
-from ivt_filter.window_utils import samples_to_milliseconds, milliseconds_to_samples
+from ivt_filter.utils.window_utils import samples_to_milliseconds, milliseconds_to_samples
 
 # Samples → Millisekunden
 ms = samples_to_milliseconds(3, 120.0)
@@ -133,7 +133,7 @@ print(n)  # 2 samples
 
 ### Sampling-Rate erkennen
 ```python
-from ivt_filter.window_utils import detect_sampling_rate
+from ivt_filter.utils.window_utils import detect_sampling_rate
 from ivt_filter.io import read_tsv
 
 df = read_tsv("data.tsv")
@@ -143,7 +143,7 @@ print(f"Detected: {rate} Hz")  # z.B. 120.0 Hz
 
 ### Window-Info anzeigen
 ```python
-from ivt_filter.window_utils import print_window_info
+from ivt_filter.utils.window_utils import print_window_info
 
 print_window_info(20.0, 120.0)
 # Output:
@@ -156,7 +156,7 @@ print_window_info(20.0, 120.0)
 
 ### Empfehlungen erhalten
 ```python
-from ivt_filter.window_utils import recommend_window_size
+from ivt_filter.utils.window_utils import recommend_window_size
 
 recommendations = recommend_window_size(120.0)
 for n_samples, window_ms in recommendations:
@@ -201,14 +201,14 @@ vel_cfg, clf_cfg = create_sample_based_config(n_samples=3, sampling_rate_hz=rate
 
 ```python
 from ivt_filter.io import read_tsv
-from ivt_filter.window_utils import (
+from ivt_filter.utils.window_utils import (
     detect_sampling_rate,
     create_sample_based_config,
     recommend_window_size
 )
-from ivt_filter.experiment import ExperimentConfig, ExperimentManager
-from ivt_filter.observers import ConsoleReporter, ExperimentTracker
-from ivt_filter.pipeline import IVTPipeline
+from ivt_filter.evaluation.experiment import ExperimentConfig, ExperimentManager
+from ivt_filter.io.observers import ConsoleReporter, ExperimentTracker
+from ivt_filter.io.pipeline import IVTPipeline
 
 # 1. Daten laden und Rate erkennen
 df = read_tsv("data.tsv")
