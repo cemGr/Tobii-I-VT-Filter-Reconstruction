@@ -34,13 +34,27 @@ Beispiel:
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Literal, Optional
 
 from .window_policy import (
+    TobiiWindowPolicy,
     WindowPolicy,
     translate_legacy_window_flags,
     window_policy_from_dict,
 )
+
+
+def _require_positive(name: str, value: float) -> None:
+    """Reject non-finite or non-positive numeric configuration values."""
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError(f"{name} must be finite and positive")
+
+
+def _require_non_negative(name: str, value: float) -> None:
+    """Reject non-finite or negative numeric configuration values."""
+    if not math.isfinite(value) or value < 0:
+        raise ValueError(f"{name} must be finite and non-negative")
 
 
 @dataclass
@@ -216,7 +230,11 @@ class OlsenVelocityConfig:
     tobii_eye_offset_interpolation: bool = False
 
     def __post_init__(self) -> None:
-        """Normalize deprecated selector flags into one tagged window policy."""
+        """Validate values and normalize deprecated flags into one window policy."""
+        _require_positive("window_length_ms", self.window_length_ms)
+        _require_positive("min_dt_ms", self.min_dt_ms)
+        _require_non_negative("gap_fill_max_gap_ms", self.gap_fill_max_gap_ms)
+
         legacy_policy = translate_legacy_window_flags(
             sample_symmetric_window=self.sample_symmetric_window,
             fixed_window_samples=self.fixed_window_samples,
@@ -235,6 +253,14 @@ class OlsenVelocityConfig:
         elif legacy_policy.kind != "time_symmetric" and self.window_policy != legacy_policy:
             raise ValueError(
                 "window_policy cannot be combined with contradictory deprecated legacy window flags."
+            )
+        if (
+            isinstance(self.window_policy, TobiiWindowPolicy)
+            and self.window_policy.sample_interval_ms is not None
+        ):
+            _require_positive(
+                "tobii_sample_interval_ms/sample_interval_ms",
+                self.window_policy.sample_interval_ms,
             )
 
 
@@ -289,6 +315,11 @@ class IVTClassifierConfig:
     confident_switch_margin_deg: float = 4.0
     confident_switch_method: Literal["olsen2d", "ray3d", "ray3d_gaze_dir"] = "ray3d_gaze_dir"
 
+    def __post_init__(self) -> None:
+        _require_positive(
+            "velocity_threshold_deg_per_sec", self.velocity_threshold_deg_per_sec
+        )
+
 
 @dataclass
 class SaccadeMergeConfig:
@@ -308,6 +339,11 @@ class SaccadeMergeConfig:
     # - "ivt_sample_type": sample-basiert, danach Events neu bauen
     # - None: direkt auf "ivt_event_type"
     use_sample_type_column: Optional[str] = "ivt_sample_type"
+
+    def __post_init__(self) -> None:
+        _require_positive(
+            "max_saccade_block_duration_ms", self.max_saccade_block_duration_ms
+        )
 
 
 @dataclass

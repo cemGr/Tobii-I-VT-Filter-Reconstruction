@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import pytest
 
 from ivt_filter.config import (
     AsymmetricNeighborWindowPolicy,
     FixedSampleWindowPolicy,
+    IVTClassifierConfig,
     OlsenVelocityConfig,
+    SaccadeMergeConfig,
     SampleSymmetricWindowPolicy,
     ShiftedValidWindowPolicy,
     TimeSymmetricWindowPolicy,
@@ -206,3 +210,50 @@ def test_config_builder_translates_legacy_cli_flags_to_one_policy() -> None:
 
     assert config.window_policy == FixedSampleWindowPolicy(samples=5)
     assert config.fixed_window_samples is None
+
+
+@pytest.mark.parametrize(
+    ("config_factory", "field_name"),
+    [
+        (lambda value: OlsenVelocityConfig(window_length_ms=value), "window_length_ms"),
+        (lambda value: OlsenVelocityConfig(min_dt_ms=value), "min_dt_ms"),
+        (
+            lambda value: OlsenVelocityConfig(gap_fill_max_gap_ms=value),
+            "gap_fill_max_gap_ms",
+        ),
+        (
+            lambda value: OlsenVelocityConfig(
+                window_policy=TobiiWindowPolicy(sample_interval_ms=value)
+            ),
+            "tobii_sample_interval_ms/sample_interval_ms",
+        ),
+        (
+            lambda value: IVTClassifierConfig(
+                velocity_threshold_deg_per_sec=value
+            ),
+            "velocity_threshold_deg_per_sec",
+        ),
+        (
+            lambda value: SaccadeMergeConfig(
+                max_saccade_block_duration_ms=value
+            ),
+            "max_saccade_block_duration_ms",
+        ),
+    ],
+)
+def test_velocity_config_rejects_invalid_numeric_values(
+    config_factory: Callable[[float], object], field_name: str
+) -> None:
+    with pytest.raises(ValueError, match=field_name):
+        config_factory(float("nan"))
+
+
+def test_velocity_config_accepts_integer_numeric_values() -> None:
+    config = OlsenVelocityConfig(
+        window_length_ms=20,
+        min_dt_ms=1,
+        gap_fill_max_gap_ms=0,
+        window_policy=TobiiWindowPolicy(sample_interval_ms=8),
+    )
+
+    assert config.window_policy == TobiiWindowPolicy(sample_interval_ms=8)
