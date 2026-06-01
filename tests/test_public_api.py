@@ -283,6 +283,30 @@ def _legacy_imports(module_path: Path) -> list[str]:
     return violations
 
 
+@pytest.mark.parametrize(
+    "legacy_import",
+    [
+        "import ivt_filter.postprocess",
+        "import ivt_filter.core",
+        "from ivt_filter.postprocess import apply_fixation_postprocessing",
+        "from ivt_filter.core import IVTClassifier",
+        "from ivt_filter import postprocess",
+        "from ivt_filter import core",
+        "from .postprocess import apply_fixation_postprocessing",
+        "from .core import IVTClassifier",
+        "from . import postprocess",
+        "from . import core",
+    ],
+)
+def test_legacy_import_scanner_detects_forbidden_variants(
+    legacy_import: str, tmp_path: Path
+) -> None:
+    module_path = tmp_path / "forbidden_import.py"
+    module_path.write_text(f"{legacy_import}\n", encoding="utf-8")
+
+    assert _legacy_imports(module_path)
+
+
 def test_productive_modules_do_not_import_legacy_facades() -> None:
     package_root = REPOSITORY_ROOT / "ivt_filter"
     legacy_postprocess_facade = package_root / "postprocess.py"
