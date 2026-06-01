@@ -228,6 +228,35 @@ Expected Output:
 Explanation: Moderate difference for large movements
 ```
 
+## I-VT Classification Semantics
+
+### Strict Baseline
+
+The default classifier implements the velocity-threshold step independently of the velocity-calculation method. Valid samples with finite velocity use a single inclusive threshold boundary:
+
+```python
+if velocity >= velocity_threshold_deg_per_sec:
+    return "Saccade"
+return "Fixation"
+```
+
+Validity handling precedes the threshold comparison. Invalid eye samples are labeled `EyesNotFound`; missing or non-finite velocities are labeled `Unclassified`. No invalid-window threshold adjustment, neighbor confirmation, or hysteresis is applied in baseline mode.
+
+### Optional Reconstruction Heuristics
+
+The classifier exposes reconstruction rules separately from the strict baseline:
+
+| Configuration field | Default | Effect when enabled |
+|---------------------|---------|---------------------|
+| `enable_invalid_window_neighbor_confirmation` | `False` | An invalid-window sample at or above the threshold becomes a saccade only when an adjacent velocity is also at or above the threshold. |
+| `enable_hysteresis` | `False` | A finite velocity in the band immediately below the saccade threshold retains the previous fixation/saccade label when one exists. |
+| `hysteresis_width_deg_per_sec` | `2.0` | Configures the optional hysteresis band width in degrees per second. |
+| `enable_near_threshold_hybrid` | `False` | Permits alternative-velocity refinement near the threshold. |
+| `enable_eye_jump_rule` | `False` | Permits alternative-velocity correction after eye-position jumps. |
+| `enable_confident_switch` | `False` | Permits confident switching to an alternative velocity method. |
+
+Each classified output frame records active heuristics in `classifier_refinement_rules_enabled`. Dedicated columns also record whether invalid-window neighbor confirmation and hysteresis were enabled and the configured hysteresis width. This keeps exported results self-describing when experiments compare the strict baseline with reconstruction variants.
+
 ## Implementation Notes
 
 ### Performance Optimization
