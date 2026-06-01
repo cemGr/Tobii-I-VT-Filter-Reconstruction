@@ -108,22 +108,33 @@ class IVTClassifier:
         df = df.copy()
         self._df_context = df  # Store for alternative velocity access
 
-        # Pre-compute neighbor support for high velocities in invalid windows
-        # (prevents single-sample spikes from invalid-eye windows turning into saccades)
+        # Record enabled classifier refinements in each result frame so exported
+        # runs remain self-describing even without experiment metadata.
+        enabled_refinements = self._enabled_refinement_rules()
+        df["classifier_refinement_rules_enabled"] = ",".join(enabled_refinements)
+        df["classifier_invalid_window_neighbor_confirmation_enabled"] = (
+            self.cfg.enable_invalid_window_neighbor_confirmation
+        )
+        df["classifier_hysteresis_enabled"] = self.cfg.enable_hysteresis
+        df["classifier_hysteresis_width_deg_per_sec"] = self.cfg.hysteresis_width_deg_per_sec
+
+        # Neighbor support is diagnostic whenever the rule is enabled. Baseline
+        # mode deliberately avoids applying invalid-window reconstruction logic.
         df["window_any_invalid"] = df.get("window_any_invalid", False)
         df["velocity_neighbor_support"] = False
-        velocities = df["velocity_deg_per_sec"].to_numpy()
-        invalid_flags = df["window_any_invalid"].fillna(False).to_numpy().astype(bool)
-        threshold = float(self.cfg.velocity_threshold_deg_per_sec)
-        support = np.zeros(len(df), dtype=bool)
-        for i in range(len(df)):
-            v = velocities[i]
-            if not invalid_flags[i] or not np.isfinite(v) or v < threshold:
-                continue
-            prev_ok = i > 0 and np.isfinite(velocities[i - 1]) and velocities[i - 1] >= threshold
-            next_ok = i + 1 < len(df) and np.isfinite(velocities[i + 1]) and velocities[i + 1] >= threshold
-            support[i] = prev_ok or next_ok
-        df["velocity_neighbor_support"] = support
+        if self.cfg.enable_invalid_window_neighbor_confirmation:
+            velocities = df["velocity_deg_per_sec"].to_numpy()
+            invalid_flags = df["window_any_invalid"].fillna(False).to_numpy().astype(bool)
+            threshold = float(self.cfg.velocity_threshold_deg_per_sec)
+            support = np.zeros(len(df), dtype=bool)
+            for i in range(len(df)):
+                v = velocities[i]
+                if not invalid_flags[i] or not np.isfinite(v) or v < threshold:
+                    continue
+                prev_ok = i > 0 and np.isfinite(velocities[i - 1]) and velocities[i - 1] >= threshold
+                next_ok = i + 1 < len(df) and np.isfinite(velocities[i + 1]) and velocities[i + 1] >= threshold
+                support[i] = prev_ok or next_ok
+            df["velocity_neighbor_support"] = support
         
         # Add diagnostic columns for refinement
         if self.cfg.enable_near_threshold_hybrid or self.cfg.enable_eye_jump_rule:
@@ -133,7 +144,14 @@ class IVTClassifier:
             # Pre-compute alternative velocities where needed
             df = self._precompute_refinements(df)
         
-        df["ivt_sample_type"] = df.apply(self._classify_sample, axis=1)
+        labels = []
+        previous_motion_label: Optional[str] = None
+        for _, row in df.iterrows():
+            label = self._classify_sample(row, previous_motion_label)
+            labels.append(label)
+            if label in ("Fixation", "Saccade"):
+                previous_motion_label = label
+        df["ivt_sample_type"] = labels
 
         df = rebuild_events_from_sample_labels(
             df,
@@ -355,8 +373,25 @@ class IVTClassifier:
         df["refinement_applied"] = refinement_reasons
         return df
 
-    def _classify_sample(self, row: pd.Series) -> str:
-        """Classify a single sample with optional refinement."""
+    def _enabled_refinement_rules(self) -> list[str]:
+        """Return enabled non-baseline classifier rules for run diagnostics."""
+        rules = []
+        if self.cfg.enable_invalid_window_neighbor_confirmation:
+            rules.append("invalid_window_neighbor_confirmation")
+        if self.cfg.enable_hysteresis:
+            rules.append("hysteresis")
+        if self.cfg.enable_near_threshold_hybrid:
+            rules.append("near_threshold_hybrid")
+        if self.cfg.enable_eye_jump_rule:
+            rules.append("eye_jump")
+        if self.cfg.enable_confident_switch:
+            rules.append("confident_switch")
+        return rules
+
+    def _classify_sample(
+        self, row: pd.Series, previous_motion_label: Optional[str] = None
+    ) -> str:
+        """Classify a single sample with explicitly enabled optional refinements."""
         if not self.sample_validator.is_valid(row):
             return "EyesNotFound"
         
@@ -367,54 +402,48 @@ class IVTClassifier:
         if velocity_base is None:
             return "Unclassified"
         
-        # Use refined velocity if available
+        # Use refined velocity if available.
         velocity_final = velocity_base
         if "velocity_refined" in row and pd.notna(row["velocity_refined"]):
             velocity_final = float(row["velocity_refined"])
         
-        # Dynamic threshold: lower for invalid windows only in low-velocity band (<35)
         threshold = self.cfg.velocity_threshold_deg_per_sec
         invalid_window = bool(row.get("window_any_invalid", False))
-        neighbor_support = bool(row.get("velocity_neighbor_support", True))
+        neighbor_support = bool(row.get("velocity_neighbor_support", False))
 
-        # Confident mismatch switch: if base is far from threshold and alternative disagrees, adopt alternative
-        if getattr(self.cfg, "enable_confident_switch", False):
-            alt_v = row.get("velocity_alt_deg_per_sec", None)
-            alt_v = self.velocity_validator.parse_velocity(alt_v)
+        # Confident mismatch switch: if base is far from threshold and alternative
+        # disagrees, adopt the alternative. Invalid-window confirmation remains an
+        # independent option and is never implied by this rule.
+        if self.cfg.enable_confident_switch:
+            alt_v = self.velocity_validator.parse_velocity(
+                row.get("velocity_alt_deg_per_sec", None)
+            )
             if alt_v is not None and math.isfinite(alt_v):
                 base_side = velocity_final >= threshold
                 alt_side = alt_v >= threshold
-                if invalid_window and alt_side and not neighbor_support:
-                    alt_side = False
                 dist_base = abs(velocity_final - threshold)
                 dist_alt = abs(alt_v - threshold)
-                margin = getattr(self.cfg, "confident_switch_margin_deg", 4.0)
+                margin = self.cfg.confident_switch_margin_deg
                 if invalid_window:
-                    # In invalid windows, switch on disagreement; require neighbor support for alt saccades
-                    if alt_side != base_side and not (alt_side and not neighbor_support):
+                    if alt_side != base_side:
                         velocity_final = alt_v
-                else:
-                    # Default confident switch: alt must disagree, be confident, and farther from threshold than base
-                    if dist_alt >= margin and alt_side != base_side and dist_alt > dist_base:
-                        velocity_final = alt_v
-        if invalid_window:
-            if velocity_final < 35.0:
-                threshold = min(threshold, 27.0)
+                elif dist_alt >= margin and alt_side != base_side and dist_alt > dist_base:
+                    velocity_final = alt_v
 
-        # Hysteresis: require stronger drop to switch to Fixation
-        hysteresis_delta = 2.0
-        saccade_cut = threshold
-        fixation_cut = max(0.0, threshold - hysteresis_delta)
+        if velocity_final >= threshold:
+            if (
+                self.cfg.enable_invalid_window_neighbor_confirmation
+                and invalid_window
+                and not neighbor_support
+            ):
+                return "Fixation"
+            return "Saccade"
 
-        if velocity_final >= saccade_cut:
-            if invalid_window and not neighbor_support:
-                # Require neighbor confirmation when window contains invalid eyes
-                pass
-            else:
-                return "Saccade"
-        if velocity_final < fixation_cut:
-            return "Fixation"
-        # In-between band: default to Fixation to avoid propagating stale labels
+        if self.cfg.enable_hysteresis:
+            fixation_cut = max(0.0, threshold - self.cfg.hysteresis_width_deg_per_sec)
+            if velocity_final >= fixation_cut and previous_motion_label is not None:
+                return previous_motion_label
+
         return "Fixation"
 
 

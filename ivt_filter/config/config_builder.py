@@ -65,6 +65,9 @@ class ConfigBuilder:
         """Build classifier configuration from CLI arguments."""
         return IVTClassifierConfig(
             velocity_threshold_deg_per_sec=args.threshold,
+            enable_invalid_window_neighbor_confirmation=args.enable_invalid_window_neighbor_confirmation,
+            enable_hysteresis=args.enable_hysteresis,
+            hysteresis_width_deg_per_sec=args.hysteresis_width,
             enable_near_threshold_hybrid=args.enable_near_threshold_hybrid,
             near_threshold_band=args.near_threshold_band,
             near_threshold_band_lower=args.near_threshold_band_lower,
