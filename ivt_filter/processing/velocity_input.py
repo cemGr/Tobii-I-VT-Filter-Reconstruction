@@ -11,6 +11,11 @@ import pandas as pd
 
 from ..config import OlsenVelocityConfig
 from ..domain.schema import validate_preprocessed_frame, validate_raw_gaze_frame
+from ..utils.sampling import (
+    coerce_finite_timestamps,
+    positive_timestamp_deltas,
+    sort_by_time_with_source_row_id,
+)
 from ..preprocessing import (
     apply_tobii_eye_offset_interpolation,
     gap_fill_gaze,
@@ -74,18 +79,13 @@ class SamplingAnalyzer:
     def analyze(
         self, times: np.ndarray, cfg: OlsenVelocityConfig
     ) -> VelocityComputationResult:
-        if len(times) < 2:
-            return VelocityComputationResult(None, None, cfg)
         if cfg.sampling_rate_method == "first_100":
             sample_count = min(100, len(times) - 1)
-            deltas = np.diff(times[: sample_count + 1])
+            deltas = positive_timestamp_deltas(times[: sample_count + 1])
             method_desc = f"first {sample_count} samples"
         else:
-            deltas = np.diff(times)
+            deltas = positive_timestamp_deltas(times)
             method_desc = "all samples"
-        deltas = deltas[np.isfinite(deltas)]
-        if deltas.size == 0:
-            return VelocityComputationResult(None, None, cfg)
         dt_ms = float(
             np.median(deltas)
             if cfg.dt_calculation_method == "median"
@@ -128,8 +128,9 @@ def normalize_timestamps(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataF
     if time_col not in result.columns:
         raise ValueError(f"DataFrame must contain '{time_col}' column")
     divisor = {"ms": 1.0, "us": 1000.0, "ns": 1_000_000.0}.get(time_unit, 1.0)
-    result["time_ms"] = result[time_col].astype(float) / divisor
-    return result.sort_values("time_ms").reset_index(drop=True)
+    timestamps = coerce_finite_timestamps(result[time_col], time_col=time_col)
+    result["time_ms"] = timestamps / divisor
+    return sort_by_time_with_source_row_id(result)
 
 
 def prepare_velocity_input(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:

@@ -2,6 +2,9 @@ import math
 
 import numpy as np
 import pandas as pd
+import pytest
+
+from extractor import TobiiDataExtractor
 
 from ivt_filter.config import OlsenVelocityConfig
 from ivt_filter.processing.velocity import (
@@ -22,6 +25,7 @@ from ivt_filter.strategies import (
     Olsen2DApproximation,
     VelocityContext,
 )
+from ivt_filter.utils.sampling import estimate_sampling_rate
 
 
 def test_normalize_timestamps_converts_microseconds_and_sorts_copy():
@@ -32,12 +36,79 @@ def test_normalize_timestamps_converts_microseconds_and_sorts_copy():
     assert "time_ms" not in original
 
 
+def test_normalize_timestamps_retains_source_row_provenance_after_sorting():
+    result = normalize_timestamps(
+        pd.DataFrame({"time_ms": [30, 10, 20], "value": ["third", "first", "second"]}),
+        OlsenVelocityConfig(),
+    )
+    assert result["time_ms"].tolist() == [10.0, 20.0, 30.0]
+    assert result["source_row_id"].tolist() == [1, 2, 0]
+    assert result["value"].tolist() == ["first", "second", "third"]
+
+
+def test_normalize_timestamps_preserves_existing_source_row_identifier():
+    result = normalize_timestamps(
+        pd.DataFrame({"time_ms": [20, 10], "source_row_id": ["b", "a"]}),
+        OlsenVelocityConfig(),
+    )
+    assert result["source_row_id"].tolist() == ["a", "b"]
+
+
+def test_normalize_timestamps_rejects_duplicate_timestamps():
+    with pytest.raises(ValueError, match="duplicate timestamps.*rejected"):
+        normalize_timestamps(pd.DataFrame({"time_ms": [10, 10]}), OlsenVelocityConfig())
+
+
+@pytest.mark.parametrize("invalid_timestamp", ["not-a-number", np.nan, np.inf, -np.inf])
+def test_normalize_timestamps_rejects_non_numeric_and_non_finite_values(
+    invalid_timestamp,
+):
+    with pytest.raises(ValueError, match="numeric, finite values"):
+        normalize_timestamps(
+            pd.DataFrame({"time_ms": [0, invalid_timestamp]}), OlsenVelocityConfig()
+        )
+
+
+def test_extractor_sort_by_time_uses_same_duplicate_rejection_policy():
+    with pytest.raises(ValueError, match="duplicate timestamps.*rejected"):
+        TobiiDataExtractor()._sort_by_time(pd.DataFrame({"time_ms": [10, 10]}))
+
+
 def test_sampling_analyzer_derives_odd_fixed_sample_window():
     cfg = OlsenVelocityConfig(window_length_ms=20, auto_fixed_window_from_ms=True)
     result = SamplingAnalyzer().analyze(np.array([0.0, 10.0, 20.0, 30.0]), cfg)
     assert result.dt_ms == 10.0
     assert result.hz_measured == 100.0
     assert result.config.fixed_window_samples == 3
+
+
+def test_sampling_analyzer_uses_only_finite_strictly_positive_intervals():
+    result = SamplingAnalyzer().analyze(
+        np.array([0.0, 10.0, 10.0, 5.0, np.inf, 25.0]), OlsenVelocityConfig()
+    )
+    assert result.dt_ms == 10.0
+    assert result.hz_measured == 100.0
+
+
+def test_sampling_analyzer_rejects_input_without_valid_interval():
+    with pytest.raises(ValueError, match="finite, strictly positive timestamp intervals"):
+        SamplingAnalyzer().analyze(np.array([10.0, 10.0, 5.0, np.inf]), OlsenVelocityConfig())
+
+
+def test_sampling_analyzer_rejects_input_without_any_interval():
+    with pytest.raises(ValueError, match="finite, strictly positive timestamp intervals"):
+        SamplingAnalyzer().analyze(np.array([10.0]), OlsenVelocityConfig())
+
+
+def test_sampling_utility_uses_only_finite_strictly_positive_intervals():
+    result = estimate_sampling_rate(pd.DataFrame({"time_ms": [0, 10, 10, 5, np.inf, 25]}))
+    assert result["median_dt_ms"] == 10.0
+    assert result["mean_dt_ms"] == 10.0
+
+
+def test_sampling_utility_rejects_input_without_valid_interval():
+    with pytest.raises(ValueError, match="finite, strictly positive timestamp intervals"):
+        estimate_sampling_rate(pd.DataFrame({"time_ms": [10, 10, 5, np.inf]}))
 
 
 def test_neighbor_imputer_uses_closest_valid_missing_eye_sample():
