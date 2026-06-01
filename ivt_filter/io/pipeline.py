@@ -16,6 +16,7 @@ from ..config import (
     IVTClassifierConfig,
     SaccadeMergeConfig,
     FixationPostConfig,
+    PipelineConfig,
 )
 from .io import read_tsv, write_tsv
 from ..processing.velocity import compute_olsen_velocity
@@ -50,16 +51,47 @@ class IVTPipeline:
 
     def __init__(
         self,
-        velocity_config: OlsenVelocityConfig,
-        classifier_config: IVTClassifierConfig,
+        velocity_config: OlsenVelocityConfig | PipelineConfig,
+        classifier_config: Optional[IVTClassifierConfig] = None,
         saccade_merge_config: Optional[SaccadeMergeConfig] = None,
         fixation_post_config: Optional[FixationPostConfig] = None,
     ):
-        self.velocity_config = velocity_config
-        self.classifier_config = classifier_config
-        self.saccade_merge_config = saccade_merge_config
-        self.fixation_post_config = fixation_post_config
+        """Create a pipeline.
+
+        Passing the individual stage configurations is a compatibility adapter.
+        New code should pass one :class:`PipelineConfig` as ``velocity_config``.
+        """
+        if isinstance(velocity_config, PipelineConfig):
+            if classifier_config or saccade_merge_config or fixation_post_config:
+                raise ValueError("PipelineConfig cannot be combined with individual stage configs")
+            self.config = velocity_config
+        else:
+            if classifier_config is None:
+                raise ValueError("classifier_config is required with velocity_config")
+            self.config = PipelineConfig(
+                velocity=velocity_config,
+                classifier=classifier_config,
+                classify=bool(saccade_merge_config or fixation_post_config),
+                saccade_merge=saccade_merge_config,
+                fixation_post=fixation_post_config,
+            )
         self._observers: List[Any] = []  # List of PipelineObserver instances
+
+    @property
+    def velocity_config(self) -> OlsenVelocityConfig:
+        return self.config.velocity
+
+    @property
+    def classifier_config(self) -> IVTClassifierConfig:
+        return self.config.classifier
+
+    @property
+    def saccade_merge_config(self) -> Optional[SaccadeMergeConfig]:
+        return self.config.saccade_merge
+
+    @property
+    def fixation_post_config(self) -> Optional[FixationPostConfig]:
+        return self.config.fixation_post
     
     def register_observer(self, observer: Any) -> None:
         """
@@ -150,7 +182,6 @@ class IVTPipeline:
             df = self.run(
                 input_path=input_path,
                 output_path=output_path,
-                classify=True,
                 evaluate=False,  # We'll compute metrics separately
                 plot=False,  # Observers handle plotting
             )
@@ -161,7 +192,7 @@ class IVTPipeline:
                 try:
                     metrics = compute_ivt_metrics(
                         df,
-                        pred_col="ivt_sample_type",
+                        pred_col=self._prediction_column(self.config),
                         exclude_calibration=evaluate_exclude_calibration,
                     )
                 except Exception as e:
@@ -180,88 +211,141 @@ class IVTPipeline:
         self,
         input_path: str,
         output_path: Optional[str] = None,
-        classify: bool = False,
+        classify: Optional[bool] = None,
         evaluate: bool = False,
         post_smoothing_ms: Optional[float] = None,
-        merge_close_fixations: bool = False,
-        discard_short_fixations: bool = False,
+        merge_close_fixations: Optional[bool] = None,
+        discard_short_fixations: Optional[bool] = None,
         plot: bool = True,
         with_events: bool = False,
         evaluate_exclude_calibration: bool = False,
     ) -> pd.DataFrame:
-        """Run the complete IVT pipeline.
-        
-        Args:
-            input_path: Path to input TSV file
-            output_path: Optional path to output TSV file
-            classify: Whether to apply IVT classification
-            evaluate: Whether to evaluate against ground truth
-            post_smoothing_ms: Optional saccade smoothing duration
-            merge_close_fixations: Whether to merge close fixations
-            discard_short_fixations: Whether to discard short fixations
-            plot: Whether to generate plots
-            with_events: Whether to plot with GT events
-            
-        Returns:
-            Processed DataFrame
-        """
-        # Step 1: Load data
-        df = read_tsv(input_path)
-        
-        # Step 2: Compute velocity
-        df = compute_olsen_velocity(df, self.velocity_config)
+        """Run the file pipeline.
 
-        # Optional: compute alternative velocity for confident switch
-        if (
-            getattr(self.classifier_config, "enable_confident_switch", False)
-            and getattr(self.classifier_config, "confident_switch_method", None)
-            and self.classifier_config.confident_switch_method != self.velocity_config.velocity_method
-        ):
-            alt_cfg = replace(self.velocity_config, velocity_method=self.classifier_config.confident_switch_method)
-            df_alt = compute_olsen_velocity(df.copy(), alt_cfg)
-            df["velocity_alt_deg_per_sec"] = df_alt["velocity_deg_per_sec"]
-        
-        pred_sample_col: Optional[str] = None
-        pred_col_for_eval: Optional[str] = None
-        
-        # Step 3: Classification (if requested)
-        if classify or evaluate or merge_close_fixations or discard_short_fixations:
-            df = self._apply_classification(df)
-            pred_sample_col = "ivt_sample_type"
-            pred_col_for_eval = pred_sample_col
-        
-        # Step 4: Saccade smoothing (if configured)
-        if post_smoothing_ms and post_smoothing_ms > 0 and pred_sample_col:
-            df, pred_sample_col = self._apply_saccade_smoothing(
-                df, pred_sample_col, post_smoothing_ms
-            )
-            pred_col_for_eval = pred_sample_col
-        
-        # Step 5: Fixation post-processing (if configured)
-        if pred_sample_col and (merge_close_fixations or discard_short_fixations):
-            df, pred_col_for_eval = self._apply_fixation_postprocessing(df, pred_sample_col)
-        
-        # Step 6: Write output (if requested)
+        ``classify`` and the three post-processing arguments are compatibility
+        adapters for older callers. They are translated into a temporary
+        :class:`PipelineConfig`; contradictory combinations are rejected.
+        New callers should configure stages on ``self.config`` only.
+        """
+        config = self._config_with_legacy_run_arguments(
+            classify=classify,
+            post_smoothing_ms=post_smoothing_ms,
+            merge_close_fixations=merge_close_fixations,
+            discard_short_fixations=discard_short_fixations,
+        )
+        if evaluate and not config.classify:
+            # Compatibility with the historical evaluate=True behavior.
+            config = replace(config, classify=True)
+        df = self.process_dataframe(read_tsv(input_path), config=config)
+
         if output_path:
             write_tsv(df, output_path)
-        
-        # Step 7: Evaluation (if requested)
-        if evaluate and pred_col_for_eval:
-            evaluate_ivt_vs_ground_truth(
-                df,
-                pred_col=pred_col_for_eval,
-                exclude_calibration=evaluate_exclude_calibration,
-            )
-        
-        # Step 8: Plotting (if requested)
+        if evaluate:
+            self._evaluate(df, config, evaluate_exclude_calibration)
         if plot:
             self._generate_plots(df, with_events)
-        
         return df
 
-    def _apply_classification(self, df: pd.DataFrame) -> pd.DataFrame:
+    def process_dataframe(
+        self,
+        df: pd.DataFrame,
+        *,
+        config: Optional[PipelineConfig] = None,
+    ) -> pd.DataFrame:
+        """Execute configured core stages on a DataFrame without I/O or plotting."""
+        config = config or self.config
+        df = compute_olsen_velocity(df, config.velocity)
+        if (
+            config.classifier.enable_confident_switch
+            and config.classifier.confident_switch_method
+            and config.classifier.confident_switch_method != config.velocity.velocity_method
+        ):
+            alt_cfg = replace(config.velocity, velocity_method=config.classifier.confident_switch_method)
+            df_alt = compute_olsen_velocity(df.copy(), alt_cfg)
+            df["velocity_alt_deg_per_sec"] = df_alt["velocity_deg_per_sec"]
+
+        if not config.classify:
+            return df
+
+        df = self._apply_classification(df, config.classifier)
+        pred_sample_col = "ivt_sample_type"
+        if config.saccade_merge:
+            df, pred_sample_col = self._apply_saccade_smoothing(df, pred_sample_col, config.saccade_merge)
+        if config.fixation_post:
+            df, _ = self._apply_fixation_postprocessing(
+                df,
+                pred_sample_col,
+                config.fixation_post,
+                config.velocity,
+            )
+        return df
+
+    def _config_with_legacy_run_arguments(
+        self,
+        *,
+        classify: Optional[bool],
+        post_smoothing_ms: Optional[float],
+        merge_close_fixations: Optional[bool],
+        discard_short_fixations: Optional[bool],
+    ) -> PipelineConfig:
+        """Translate deprecated run-time stage flags into one pipeline config."""
+        config = self.config
+        if classify is not None:
+            if not classify and (config.saccade_merge or config.fixation_post):
+                raise ValueError("classify=False contradicts configured post-processing")
+            config = replace(config, classify=classify)
+
+        if post_smoothing_ms is not None:
+            if post_smoothing_ms <= 0:
+                if config.saccade_merge:
+                    raise ValueError("post_smoothing_ms disables configured saccade merge")
+            elif config.saccade_merge:
+                if config.saccade_merge.max_saccade_block_duration_ms != post_smoothing_ms:
+                    raise ValueError("post_smoothing_ms contradicts configured saccade merge")
+            else:
+                config = replace(
+                    config,
+                    classify=True,
+                    saccade_merge=SaccadeMergeConfig(max_saccade_block_duration_ms=post_smoothing_ms),
+                )
+
+        if merge_close_fixations is not None or discard_short_fixations is not None:
+            fixation = config.fixation_post or FixationPostConfig()
+            for argument, configured, name in (
+                (merge_close_fixations, fixation.merge_adjacent_fixations, "merge_close_fixations"),
+                (discard_short_fixations, fixation.discard_short_fixations, "discard_short_fixations"),
+            ):
+                if argument is False and configured:
+                    raise ValueError(f"{name}=False contradicts configured fixation post-processing")
+            fixation = replace(
+                fixation,
+                merge_adjacent_fixations=fixation.merge_adjacent_fixations if merge_close_fixations is None else merge_close_fixations,
+                discard_short_fixations=fixation.discard_short_fixations if discard_short_fixations is None else discard_short_fixations,
+            )
+            if fixation.merge_adjacent_fixations or fixation.discard_short_fixations:
+                config = replace(config, classify=True, fixation_post=fixation)
+        return config
+
+    def _evaluate(self, df: pd.DataFrame, config: PipelineConfig, exclude_calibration: bool) -> None:
+        """Evaluate the final configured prediction column."""
+        evaluate_ivt_vs_ground_truth(
+            df,
+            pred_col=self._prediction_column(config),
+            exclude_calibration=exclude_calibration,
+        )
+
+    @staticmethod
+    def _prediction_column(config: PipelineConfig) -> str:
+        if config.fixation_post:
+            return "ivt_event_type_post"
+        if config.saccade_merge:
+            sample_col = config.saccade_merge.use_sample_type_column
+            return f"{sample_col}_smoothed" if sample_col else "ivt_event_type_smoothed"
+        return "ivt_sample_type"
+
+    def _apply_classification(self, df: pd.DataFrame, classifier_config: IVTClassifierConfig) -> pd.DataFrame:
         """Apply IVT classification and expand GT events."""
-        df = apply_ivt_classifier(df, self.classifier_config)  # type: ignore[arg-type]
+        df = apply_ivt_classifier(df, classifier_config)
         df = expand_gt_events_to_samples(df)
         
         # Add mismatch column: True if GT != Predicted (for valid Fixation/Saccade pairs)
@@ -284,17 +368,14 @@ class IVTPipeline:
         self,
         df: pd.DataFrame,
         pred_sample_col: str,
-        post_smoothing_ms: float,
+        saccade_merge_config: SaccadeMergeConfig,
     ) -> tuple[pd.DataFrame, str]:
-        """Apply GT-guided saccade smoothing."""
-        if not self.saccade_merge_config:
-            return df, pred_sample_col
-        
-        df, merge_stats = merge_short_saccade_blocks(df, cfg=self.saccade_merge_config)
+        """Apply configured saccade smoothing."""
+        df, merge_stats = merge_short_saccade_blocks(df, cfg=saccade_merge_config)
         
         # Determine which column to use
-        if self.saccade_merge_config.use_sample_type_column:
-            pred_sample_col = self.saccade_merge_config.use_sample_type_column + "_smoothed"
+        if saccade_merge_config.use_sample_type_column:
+            pred_sample_col = saccade_merge_config.use_sample_type_column + "_smoothed"
         else:
             pred_sample_col = "ivt_event_type_smoothed"
         
@@ -310,20 +391,19 @@ class IVTPipeline:
         self,
         df: pd.DataFrame,
         pred_sample_col: str,
+        fixation_post_config: FixationPostConfig,
+        velocity_config: OlsenVelocityConfig,
     ) -> tuple[pd.DataFrame, str]:
         """Apply Tobii-like fixation post-processing.
         
         Returns:
             (df, updated_pred_col): Updated DataFrame and the new prediction column name
         """
-        if not self.fixation_post_config:
-            return df, pred_sample_col
-        
-        use_ray3d = self.velocity_config.velocity_method == "ray3d"
+        use_ray3d = velocity_config.velocity_method == "ray3d"
         
         df, fix_stats = apply_fixation_postprocessing(
             df,
-            cfg=self.fixation_post_config,
+            cfg=fixation_post_config,
             sample_col=pred_sample_col,
             time_col="time_ms",
             x_col="smoothed_x_mm",
