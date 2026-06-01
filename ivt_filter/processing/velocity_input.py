@@ -9,7 +9,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from ..config import OlsenVelocityConfig
+from ..config import FixedSampleWindowPolicy, OlsenVelocityConfig, ShiftedValidWindowPolicy
 from ..domain.schema import validate_preprocessed_frame, validate_raw_gaze_frame
 from ..utils.sampling import (
     coerce_finite_timestamps,
@@ -102,14 +102,31 @@ class SamplingAnalyzer:
         if math.isfinite(hz_measured):
             nearest = min(self.NOMINAL_RATES, key=lambda rate: abs(rate - hz_measured))
             logger.info("[Sampling] nearest nominal rate: %.1f Hz", nearest)
-        should_convert = cfg.auto_fixed_window_from_ms or cfg.symmetric_round_window
-        if should_convert and cfg.fixed_window_samples is None and dt_ms > 0:
+        policy = cfg.window_policy
+        should_convert = isinstance(policy, (FixedSampleWindowPolicy, ShiftedValidWindowPolicy)) and (
+            policy.derive_from_window_ms or policy.symmetric_round
+        )
+        if (
+            isinstance(policy, (FixedSampleWindowPolicy, ShiftedValidWindowPolicy))
+            and should_convert
+            and policy.samples is None
+            and dt_ms > 0
+        ):
             intervals = max(1, int(round(cfg.window_length_ms / dt_ms)))
             samples = max(3, intervals + 1)
             if samples % 2 == 0:
                 samples += 1
             effective_ms = (samples - 1) * dt_ms
-            cfg = dataclasses.replace(cfg, fixed_window_samples=samples)
+            effective_policy = dataclasses.replace(policy, samples=samples)
+            if cfg.auto_fixed_window_from_ms or cfg.symmetric_round_window:
+                # Preserve the deprecated field for direct legacy callers only.
+                cfg = dataclasses.replace(
+                    cfg,
+                    fixed_window_samples=samples,
+                    window_policy=effective_policy,
+                )
+            else:
+                cfg = dataclasses.replace(cfg, window_policy=effective_policy)
             logger.info(
                 "[Window] auto sample window: %s samples total (~%.1f pro Seite um "
                 "das Zentrum, effektive Spannweite ~%.2f ms)",
