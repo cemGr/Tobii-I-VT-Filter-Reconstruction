@@ -33,7 +33,10 @@ def test_normalize_timestamps_rejects_missing_configured_column() -> None:
 
 
 def test_classifier_threshold_is_inclusive_and_invalid_window_spike_needs_support() -> None:
-    cfg = IVTClassifierConfig(velocity_threshold_deg_per_sec=30.0)
+    cfg = IVTClassifierConfig(
+        velocity_threshold_deg_per_sec=30.0,
+        enable_invalid_window_neighbor_confirmation=True,
+    )
     source = pd.DataFrame(
         {
             "velocity_deg_per_sec": [29.999, 30.0, 100.0, 30.0],
@@ -54,7 +57,8 @@ def test_classifier_invalid_window_rejects_isolated_velocity_spike() -> None:
                 "velocity_deg_per_sec": [1.0, 100.0, 1.0],
                 "window_any_invalid": [False, True, False],
             }
-        )
+        ),
+        IVTClassifierConfig(enable_invalid_window_neighbor_confirmation=True),
     )
 
     assert result["ivt_sample_type"].tolist() == ["Fixation", "Fixation", "Fixation"]

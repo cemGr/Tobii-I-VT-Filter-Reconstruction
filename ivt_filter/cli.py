@@ -303,6 +303,30 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Velocity-Threshold in deg/s fuer I-VT (default: 30).",
     )
     
+    # Optional classifier reconstruction heuristics
+    parser.add_argument(
+        "--enable-invalid-window-neighbor-confirmation",
+        action="store_true",
+        help=(
+            "Require an adjacent above-threshold velocity before classifying an "
+            "invalid-window sample as a saccade. Disabled for strict I-VT baseline runs."
+        ),
+    )
+    parser.add_argument(
+        "--enable-hysteresis",
+        action="store_true",
+        help=(
+            "Retain the previous motion label in a band immediately below the threshold. "
+            "Disabled for strict I-VT baseline runs."
+        ),
+    )
+    parser.add_argument(
+        "--hysteresis-width",
+        type=float,
+        default=2.0,
+        help="Width of the optional hysteresis band in deg/s (default: 2.0).",
+    )
+
     # Near-threshold hybrid strategy
     parser.add_argument(
         "--enable-near-threshold-hybrid",
