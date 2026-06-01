@@ -182,9 +182,14 @@ def get_statistics(df: pd.DataFrame) -> dict:
             - total_samples: Number of data points
             - fixation_count: Number of fixations detected
             - saccade_count: Number of saccades detected
-            - fixation_percentage: Percentage of time spent in fixations
-            - avg_velocity: Average eye movement velocity
-            - max_velocity: Maximum velocity observed
+            - fixation_percentage: Percentage of samples classified as fixations
+            - saccade_percentage: Percentage of samples classified as saccades
+            - avg_velocity: Average eye movement velocity, if the velocity column exists
+            - max_velocity: Maximum velocity observed, if the velocity column exists
+            - median_velocity: Median velocity observed, if the velocity column exists
+
+        Empty DataFrames return zero classification percentages. If an empty
+        DataFrame includes the velocity column, its velocity aggregates are NaN.
     
     Example:
         >>> df = process_eye_tracking("data.tsv")
@@ -203,8 +208,12 @@ def get_statistics(df: pd.DataFrame) -> dict:
     stats["saccade_count"] = (df["ivt_sample_type"] == "Saccade").sum()
     
     # Percentages
-    stats["fixation_percentage"] = (stats["fixation_count"] / stats["total_samples"]) * 100  # type: ignore[assignment]
-    stats["saccade_percentage"] = (stats["saccade_count"] / stats["total_samples"]) * 100  # type: ignore[assignment]
+    if stats["total_samples"] == 0:
+        stats["fixation_percentage"] = 0.0
+        stats["saccade_percentage"] = 0.0
+    else:
+        stats["fixation_percentage"] = (stats["fixation_count"] / stats["total_samples"]) * 100
+        stats["saccade_percentage"] = (stats["saccade_count"] / stats["total_samples"]) * 100
     
     # Velocity statistics  
     vel_col = "velocity_deg_per_sec"  # Standard column name from velocity.py
