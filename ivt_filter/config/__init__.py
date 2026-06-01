@@ -8,6 +8,16 @@ from .config import (
     PipelineConfig,
 )
 from .constants import PhysicalConstants
+from .window_policy import (
+    AsymmetricNeighborWindowPolicy,
+    FixedSampleWindowPolicy,
+    SampleSymmetricWindowPolicy,
+    ShiftedValidWindowPolicy,
+    TimeSymmetricWindowPolicy,
+    TobiiWindowPolicy,
+    WindowPolicy,
+    translate_legacy_window_flags,
+)
 from .config_builder import ConfigBuilder
 
 __all__ = [
@@ -18,4 +28,12 @@ __all__ = [
     "PipelineConfig",
     "PhysicalConstants",
     "ConfigBuilder",
+    "AsymmetricNeighborWindowPolicy",
+    "FixedSampleWindowPolicy",
+    "SampleSymmetricWindowPolicy",
+    "ShiftedValidWindowPolicy",
+    "TimeSymmetricWindowPolicy",
+    "TobiiWindowPolicy",
+    "WindowPolicy",
+    "translate_legacy_window_flags",
 ]

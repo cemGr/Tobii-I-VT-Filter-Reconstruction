@@ -34,7 +34,13 @@ Beispiel:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional
+
+from .window_policy import (
+    WindowPolicy,
+    translate_legacy_window_flags,
+    window_policy_from_dict,
+)
 
 
 @dataclass
@@ -82,6 +88,10 @@ class OlsenVelocityConfig:
     # expansion_radius: Search samples beyond standard window (default: 0)
     smoothing_min_samples: int = 1
     smoothing_expansion_radius: int = 0
+
+    # Normalized, tagged selector policy. Legacy flags below remain temporarily
+    # supported for direct callers and are normalized during initialization.
+    window_policy: Optional[WindowPolicy] = None
 
     # Sample-symmetrisches Fenster innerhalb des Zeitfensters
     # (gleich viele Samples links/rechts, aber immer noch durch window_length_ms begrenzt)
@@ -206,77 +216,26 @@ class OlsenVelocityConfig:
     tobii_eye_offset_interpolation: bool = False
 
     def __post_init__(self) -> None:
-        """Reject window-selector settings hidden by the legacy precedence rules."""
-        # Keep this boundary validation aligned with
-        # processing.velocity.make_window_selector(). A later compatibility-
-        # preserving migration can translate these legacy booleans into one
-        # explicit window-policy type here without changing selector behavior.
-        fixed_window_modes = self._active_fixed_window_modes()
-        non_tobii_selector_modes = self._active_non_tobii_window_modes(
-            fixed_window_modes
+        """Normalize deprecated selector flags into one tagged window policy."""
+        legacy_policy = translate_legacy_window_flags(
+            sample_symmetric_window=self.sample_symmetric_window,
+            fixed_window_samples=self.fixed_window_samples,
+            auto_fixed_window_from_ms=self.auto_fixed_window_from_ms,
+            symmetric_round_window=self.symmetric_round_window,
+            asymmetric_neighbor_window=self.asymmetric_neighbor_window,
+            shifted_valid_window=self.shifted_valid_window,
+            shifted_valid_fallback=self.shifted_valid_fallback,
+            tobii_window_mode=self.tobii_window_mode,
+            tobii_sample_interval_ms=self.tobii_sample_interval_ms,
         )
-
-        if self.tobii_window_mode and non_tobii_selector_modes:
-            self._raise_window_selector_conflict(
-                "tobii_window_mode", non_tobii_selector_modes
+        if isinstance(self.window_policy, dict):
+            self.window_policy = window_policy_from_dict(self.window_policy)
+        if self.window_policy is None:
+            self.window_policy = legacy_policy
+        elif legacy_policy.kind != "time_symmetric" and self.window_policy != legacy_policy:
+            raise ValueError(
+                "window_policy cannot be combined with contradictory deprecated legacy window flags."
             )
-
-        asymmetric_conflicts: list[str] = []
-        if self.shifted_valid_window:
-            asymmetric_conflicts.append("shifted_valid_window")
-        asymmetric_conflicts.extend(fixed_window_modes)
-        if self.sample_symmetric_window:
-            asymmetric_conflicts.append("sample_symmetric_window")
-        if self.asymmetric_neighbor_window and asymmetric_conflicts:
-            self._raise_window_selector_conflict(
-                "asymmetric_neighbor_window", asymmetric_conflicts
-            )
-
-        if self.shifted_valid_window and self.sample_symmetric_window:
-            self._raise_window_selector_conflict(
-                "shifted_valid_window", ["sample_symmetric_window"]
-            )
-
-        if fixed_window_modes and self.sample_symmetric_window:
-            self._raise_window_selector_conflict(
-                fixed_window_modes[0], ["sample_symmetric_window"]
-            )
-
-    def _active_fixed_window_modes(self) -> list[str]:
-        """Return legacy settings that activate or derive a fixed sample window."""
-        modes: list[str] = []
-        if self.fixed_window_samples is not None:
-            modes.append("fixed_window_samples")
-        if self.auto_fixed_window_from_ms:
-            modes.append("auto_fixed_window_from_ms")
-        if self.symmetric_round_window:
-            modes.append("symmetric_round_window")
-        return modes
-
-    def _active_non_tobii_window_modes(
-        self, fixed_window_modes: Sequence[str]
-    ) -> list[str]:
-        """Return selector settings hidden when Tobii window mode is active."""
-        modes: list[str] = []
-        if self.asymmetric_neighbor_window:
-            modes.append("asymmetric_neighbor_window")
-        if self.shifted_valid_window:
-            modes.append("shifted_valid_window")
-        modes.extend(fixed_window_modes)
-        if self.sample_symmetric_window:
-            modes.append("sample_symmetric_window")
-        return modes
-
-    @staticmethod
-    def _raise_window_selector_conflict(
-        selected_mode: str, ignored_modes: Sequence[str]
-    ) -> None:
-        ignored = ", ".join(ignored_modes)
-        raise ValueError(
-            "Window selector configuration is ambiguous: "
-            f"{selected_mode} takes precedence over {ignored}; "
-            "configure only one active selector mode."
-        )
 
 
 @dataclass
