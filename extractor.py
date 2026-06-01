@@ -202,13 +202,12 @@ class TobiiDataExtractor:
         """
         recording_col, eyetracker_col = self.timestamp_detector.detect_columns(source)
 
-        # Extract time_ms from Recording timestamp [ms]
-        if recording_col is not None:
-            target["time_ms"] = source[recording_col].copy()
-            print(f"[Extractor] Using Recording timestamp [ms] for time_ms")
-        else:
-            print("[Extractor] Warning: Recording timestamp [ms] not found")
-            target["time_ms"] = pd.NA
+        # Extract required time_ms from Recording timestamp [ms]. Without it,
+        # the slim export cannot be sorted or consumed by the IVT pipeline.
+        if recording_col is None:
+            raise ValueError("Recording timestamp [ms] column not found")
+        target["time_ms"] = source[recording_col].copy()
+        print("[Extractor] Using Recording timestamp [ms] for time_ms")
 
         # Extract time_us from Eyetracker timestamp [μs]
         if eyetracker_col is not None:

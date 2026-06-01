@@ -9,7 +9,11 @@ on:
       - 'v*.*.*'
 
 jobs:
+  checks:
+    uses: ./.github/workflows/main.yml
+
   build-and-push:
+    needs: checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
