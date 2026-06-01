@@ -182,6 +182,17 @@ class IVTPipeline:
             ... )
             >>> df = pipeline.run_with_tracking(input_path, config)
         """
+        if hasattr(config, "metadata"):
+            config.metadata = dict(config.metadata or {})
+            config.metadata["tracking"] = {
+                "input_path": input_path,
+                "api_parameters": {
+                    "input_path": input_path,
+                    "output_path": output_path,
+                    "evaluate": evaluate,
+                    "evaluate_exclude_calibration": evaluate_exclude_calibration,
+                },
+            }
         self._notify_start(config)
         
         try:
