@@ -429,6 +429,18 @@ graph TB
 
 `ivt_filter.postprocessing` is the canonical postprocessing API. The module `ivt_filter.postprocess` is deprecated and remains temporarily available solely as a compatibility facade. New internal and external callers should use `ivt_filter.postprocessing`.
 
+| Alter Importpfad | Kanonischer Importpfad |
+| --- | --- |
+| `ivt_filter.postprocess` | `ivt_filter.postprocessing` |
+| `ivt_filter.core.velocity` | `ivt_filter.processing.velocity` |
+| `ivt_filter.core.classification` | `ivt_filter.processing.classification` |
+| `ivt_filter.core.gaze` | `ivt_filter.preprocessing` |
+
+Die Legacy-Pfade bleiben vorerst kompatibel.
+Neue interne und externe Aufrufer dürfen sie nicht mehr verwenden.
+Eine spätere Major-Version darf die Legacy-Pfade entfernen.
+Diese Entfernung ist eine bewusst getrennte Breaking Change und nicht Bestandteil der aktuellen Migration.
+
 ## Testing Benefits
 
 The refactored architecture provides excellent testability:
