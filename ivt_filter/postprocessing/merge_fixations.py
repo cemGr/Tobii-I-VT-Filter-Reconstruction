@@ -192,11 +192,10 @@ def merge_adjacent_fixations(
                     continue
                 
                 # Velocity-basiertes Gap-Filling:
-                # Nur Samples mit niedriger Velocity (<= 35°/s) werden gemerged
-                # Rational: IVT-Threshold ist 30°/s, +5°/s Puffer für Grenzfälle
-                # Verhindert echte Saccade-Samples (> 35°/s) in Fixations
+                # Nur Samples bis zum konfigurierten Velocity-Cap werden gemerged.
+                # Verhindert echte Saccade-Samples in Fixations.
                 if velocity is not None and not pd.isna(velocity[j]):
-                    if velocity[j] > 35.0:
+                    if velocity[j] > cfg.max_gap_velocity_deg_per_sec:
                         continue
                 
                 labels[j] = "Fixation"
