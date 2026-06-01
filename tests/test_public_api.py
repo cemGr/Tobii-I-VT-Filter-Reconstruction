@@ -1,6 +1,7 @@
 """Smoke tests for supported public imports and optional plotting behavior."""
 from __future__ import annotations
 
+import ast
 import importlib.util
 import re
 from pathlib import Path
@@ -19,6 +20,7 @@ EXAMPLE_MODULES = [
     "example_sample_based_window.py",
     "example_window_sweep.py",
     "quick_window_test.py",
+    "examples/velocity_comparison.py",
 ]
 
 
@@ -234,21 +236,85 @@ def test_legacy_postprocess_imports_delegate_to_canonical_implementations() -> N
     assert legacy_merge_short_saccade_blocks is merge_short_saccade_blocks
 
 
-def test_internal_modules_do_not_import_legacy_postprocess_facade() -> None:
+LEGACY_IMPORT_ROOTS = {"core", "postprocess"}
+LEGACY_MIGRATION_TABLE_ROWS = {
+    "docs/architecture.md": {
+        "| `ivt_filter.core` | Canonical modules under `ivt_filter.preprocessing` and `ivt_filter.processing` |",
+        "| `ivt_filter.postprocess` | `ivt_filter.postprocessing` |",
+    },
+}
+LEGACY_TEXT_PATTERNS = [
+    re.compile(r"ivt_filter\.(?:core|postprocess)(?![A-Za-z0-9_])"),
+    re.compile(r"from\s+\.+(?:core|postprocess)(?![A-Za-z0-9_])"),
+    re.compile(r"from\s+\.+\s+import[^\n]*(?<![A-Za-z0-9_])(?:core|postprocess)(?![A-Za-z0-9_])"),
+    re.compile(r"from\s+ivt_filter\s+import[^\n]*(?<![A-Za-z0-9_])(?:core|postprocess)(?![A-Za-z0-9_])"),
+]
+
+
+def _is_legacy_module(module_name: str) -> bool:
+    return any(
+        module_name == f"ivt_filter.{legacy_root}"
+        or module_name.startswith(f"ivt_filter.{legacy_root}.")
+        for legacy_root in LEGACY_IMPORT_ROOTS
+    )
+
+
+def _legacy_imports(module_path: Path) -> list[str]:
+    tree = ast.parse(module_path.read_text(encoding="utf-8"), filename=str(module_path))
+    violations = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            violations.extend(alias.name for alias in node.names if _is_legacy_module(alias.name))
+        elif isinstance(node, ast.ImportFrom):
+            imported_names = {alias.name for alias in node.names}
+            if node.level:
+                if (
+                    node.module
+                    and any(
+                        node.module == legacy_root or node.module.startswith(f"{legacy_root}.")
+                        for legacy_root in LEGACY_IMPORT_ROOTS
+                    )
+                ) or (node.module is None and imported_names & LEGACY_IMPORT_ROOTS):
+                    violations.append(ast.unparse(node))
+            elif node.module and _is_legacy_module(node.module):
+                violations.append(ast.unparse(node))
+            elif node.module == "ivt_filter" and imported_names & LEGACY_IMPORT_ROOTS:
+                violations.append(ast.unparse(node))
+    return violations
+
+
+def test_productive_modules_do_not_import_legacy_facades() -> None:
     package_root = REPOSITORY_ROOT / "ivt_filter"
-    legacy_facade = package_root / "postprocess.py"
-    forbidden_imports = [
-        r"^\s*from\s+ivt_filter\.postprocess\s+import\b",
-        r"^\s*import\s+ivt_filter\.postprocess(?:\s|,|$)",
-        r"^\s*from\s+\.+postprocess\s+import\b",
-    ]
+    legacy_postprocess_facade = package_root / "postprocess.py"
+    legacy_core_facade = package_root / "core"
 
     for module_path in package_root.rglob("*.py"):
-        if module_path == legacy_facade:
+        if module_path == legacy_postprocess_facade or legacy_core_facade in module_path.parents:
             continue
-        module_source = module_path.read_text(encoding="utf-8")
-        for forbidden_import in forbidden_imports:
-            assert not re.search(forbidden_import, module_source, flags=re.MULTILINE), (
-                f"{module_path.relative_to(REPOSITORY_ROOT)} must import from "
-                "ivt_filter.postprocessing instead of the legacy ivt_filter.postprocess facade"
+        legacy_imports = _legacy_imports(module_path)
+        assert not legacy_imports, (
+            f"{module_path.relative_to(REPOSITORY_ROOT)} must import canonical modules instead "
+            f"of legacy facades: {legacy_imports}"
+        )
+
+
+def _documentation_and_example_files() -> list[Path]:
+    paths = [REPOSITORY_ROOT / "README.md", REPOSITORY_ROOT / "quick_window_test.py"]
+    paths.extend(REPOSITORY_ROOT.glob("example_*.py"))
+    paths.extend((REPOSITORY_ROOT / "docs").rglob("*.md"))
+    paths.extend((REPOSITORY_ROOT / "examples").rglob("*.py"))
+    paths.extend((REPOSITORY_ROOT / "notebooks").rglob("*.ipynb"))
+    return sorted(set(paths))
+
+
+def test_documentation_and_examples_do_not_reference_legacy_facades() -> None:
+    for content_path in _documentation_and_example_files():
+        relative_path = content_path.relative_to(REPOSITORY_ROOT).as_posix()
+        allowed_rows = LEGACY_MIGRATION_TABLE_ROWS.get(relative_path, set())
+        for line_number, line in enumerate(content_path.read_text(encoding="utf-8").splitlines(), 1):
+            if line in allowed_rows:
+                continue
+            assert not any(pattern.search(line) for pattern in LEGACY_TEXT_PATTERNS), (
+                f"{relative_path}:{line_number} references a legacy facade outside the documented "
+                "migration table"
             )

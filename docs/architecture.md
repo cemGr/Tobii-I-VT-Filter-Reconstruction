@@ -427,7 +427,12 @@ graph TB
 
 ## Postprocessing API
 
-`ivt_filter.postprocessing` is the canonical postprocessing API. The module `ivt_filter.postprocess` is deprecated and remains temporarily available solely as a compatibility facade. New internal and external callers should use `ivt_filter.postprocessing`.
+`ivt_filter.postprocessing` is the canonical postprocessing API. Deprecated modules remain temporarily available solely as compatibility facades. New internal and external callers should use the canonical modules listed in this migration table.
+
+| Legacy facade | Canonical API |
+| --- | --- |
+| `ivt_filter.core` | Canonical modules under `ivt_filter.preprocessing` and `ivt_filter.processing` |
+| `ivt_filter.postprocess` | `ivt_filter.postprocessing` |
 
 ## Testing Benefits
 
