@@ -6,6 +6,7 @@ Implements Observer Pattern for automatic experiment tracking.
 """
 from __future__ import annotations
 
+import logging
 from typing import Optional, List, Dict, Any
 
 import pandas as pd
@@ -23,6 +24,8 @@ from ..processing.velocity import compute_olsen_velocity
 from ..processing.classification import apply_ivt_classifier, expand_gt_events_to_samples
 from ..postprocess import merge_short_saccade_blocks, apply_fixation_postprocessing
 from ..evaluation.evaluation import evaluate_ivt_vs_ground_truth, compute_ivt_metrics
+
+logger = logging.getLogger(__name__)
 
 
 class IVTPipeline:
@@ -119,7 +122,7 @@ class IVTPipeline:
             try:
                 observer.on_pipeline_start(config)
             except Exception as e:
-                print(f"Warning: Observer {type(observer).__name__} failed on start: {e}")
+                logger.warning("Observer %s failed on start: %s", type(observer).__name__, e)
     
     def _notify_complete(
         self,
@@ -132,7 +135,7 @@ class IVTPipeline:
             try:
                 observer.on_pipeline_complete(config, results_df, metrics)
             except Exception as e:
-                print(f"Warning: Observer {type(observer).__name__} failed on complete: {e}")
+                logger.warning("Observer %s failed on complete: %s", type(observer).__name__, e)
     
     def _notify_error(self, config: Any, error: Exception) -> None:
         """Notify all observers that pipeline encountered an error."""
@@ -140,7 +143,7 @@ class IVTPipeline:
             try:
                 observer.on_pipeline_error(config, error)
             except Exception as e:
-                print(f"Warning: Observer {type(observer).__name__} failed on error: {e}")
+                logger.warning("Observer %s failed on error: %s", type(observer).__name__, e)
     
     def run_with_tracking(
         self,
@@ -196,7 +199,7 @@ class IVTPipeline:
                         exclude_calibration=evaluate_exclude_calibration,
                     )
                 except Exception as e:
-                    print(f"Warning: Could not compute metrics: {e}")
+                    logger.warning("Could not compute metrics: %s", e)
             
             # Notify observers of success
             self._notify_complete(config, df, metrics)
@@ -379,10 +382,11 @@ class IVTPipeline:
         else:
             pred_sample_col = "ivt_event_type_smoothed"
         
-        print(
-            f"[Post-Processing] merged short saccade blocks: "
-            f"{merge_stats['n_blocks_merged']} / {merge_stats['n_blocks_total']} blocks, "
-            f"{merge_stats['n_samples_merged']} samples."
+        logger.info(
+            "[Post-Processing] merged short saccade blocks: %s / %s blocks, %s samples.",
+            merge_stats["n_blocks_merged"],
+            merge_stats["n_blocks_total"],
+            merge_stats["n_samples_merged"],
         )
         
         return df, pred_sample_col
@@ -414,11 +418,13 @@ class IVTPipeline:
             use_ray3d=use_ray3d,
         )
         
-        print(
-            f"[FixationPost] merged_pairs={fix_stats.get('merged_pairs', 0)}, "
-            f"gap_samples_to_fixation={fix_stats.get('gap_samples_to_fixation', 0)}, "
-            f"discarded_fixations={fix_stats.get('discarded_fixations', 0)}, "
-            f"discarded_samples={fix_stats.get('discarded_samples', 0)}"
+        logger.info(
+            "[FixationPost] merged_pairs=%s, gap_samples_to_fixation=%s, "
+            "discarded_fixations=%s, discarded_samples=%s",
+            fix_stats.get("merged_pairs", 0),
+            fix_stats.get("gap_samples_to_fixation", 0),
+            fix_stats.get("discarded_fixations", 0),
+            fix_stats.get("discarded_samples", 0),
         )
         
         return df, "ivt_event_type_post"
