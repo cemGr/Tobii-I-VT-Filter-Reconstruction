@@ -112,6 +112,7 @@ def test_common_example_tracking_flow_returns_velocity_and_classification_column
     result = pipeline.run_with_tracking("input.tsv", SimpleNamespace(name="experiment"), evaluate=False)
 
     assert {"velocity_deg_per_sec", "ivt_sample_type"} <= set(result.columns)
+    assert list(result.columns) == ["time_ms", "velocity_deg_per_sec", "ivt_sample_type"]
 
 
 def test_explicit_pipeline_config_can_disable_classification(
