@@ -28,8 +28,12 @@ def test_compute_olsen_velocity_parallel_delegates_to_canonical_implementation(
     assert calls == [(df, cfg)]
 
 
-def test_compute_velocity_auto_delegates_to_canonical_implementation(monkeypatch):
-    df = pd.DataFrame({"sample": range(50_001)})
+@pytest.mark.parametrize("sample_count", [1, 50_001])
+@pytest.mark.parametrize("parallel", [False, True])
+def test_compute_velocity_auto_delegates_to_canonical_implementation(
+    monkeypatch, sample_count, parallel
+):
+    df = pd.DataFrame({"sample": range(sample_count)})
     cfg = OlsenVelocityConfig()
     expected = pd.DataFrame({"velocity_deg_per_sec": [45.6]})
     calls = []
@@ -40,7 +44,7 @@ def test_compute_velocity_auto_delegates_to_canonical_implementation(monkeypatch
 
     monkeypatch.setattr(velocity_parallel, "compute_olsen_velocity", canonical)
 
-    result = velocity_parallel.compute_velocity_auto(df, cfg, parallel=True, n_jobs=8)
+    result = velocity_parallel.compute_velocity_auto(df, cfg, parallel=parallel, n_jobs=8)
 
     assert result is expected
     assert calls == [(df, cfg)]
