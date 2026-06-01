@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -215,3 +216,39 @@ def test_legacy_core_imports_delegate_to_canonical_implementations() -> None:
 
 def test_obsolete_velocity_computer_module_is_removed() -> None:
     assert importlib.util.find_spec("ivt_filter.processing.velocity_computer") is None
+
+
+def test_legacy_postprocess_imports_delegate_to_canonical_implementations() -> None:
+    from ivt_filter.postprocess import (
+        apply_fixation_postprocessing as legacy_apply_fixation_postprocessing,
+    )
+    from ivt_filter.postprocess import (
+        merge_short_saccade_blocks as legacy_merge_short_saccade_blocks,
+    )
+    from ivt_filter.postprocessing import (
+        apply_fixation_postprocessing,
+        merge_short_saccade_blocks,
+    )
+
+    assert legacy_apply_fixation_postprocessing is apply_fixation_postprocessing
+    assert legacy_merge_short_saccade_blocks is merge_short_saccade_blocks
+
+
+def test_internal_modules_do_not_import_legacy_postprocess_facade() -> None:
+    package_root = REPOSITORY_ROOT / "ivt_filter"
+    legacy_facade = package_root / "postprocess.py"
+    forbidden_imports = [
+        r"^\s*from\s+ivt_filter\.postprocess\s+import\b",
+        r"^\s*import\s+ivt_filter\.postprocess(?:\s|,|$)",
+        r"^\s*from\s+\.+postprocess\s+import\b",
+    ]
+
+    for module_path in package_root.rglob("*.py"):
+        if module_path == legacy_facade:
+            continue
+        module_source = module_path.read_text(encoding="utf-8")
+        for forbidden_import in forbidden_imports:
+            assert not re.search(forbidden_import, module_source, flags=re.MULTILINE), (
+                f"{module_path.relative_to(REPOSITORY_ROOT)} must import from "
+                "ivt_filter.postprocessing instead of the legacy ivt_filter.postprocess facade"
+            )
