@@ -239,7 +239,7 @@ class Ray3DGazeDir(VelocityCalculationStrategy):
         dir1 = ctx.dir1
         dir2 = ctx.dir2
         if dir1 is None or dir2 is None:
-            return 0.0
+            return float("nan")
 
         v1 = np.array(dir1, dtype=float)
         v2 = np.array(dir2, dtype=float)
@@ -247,7 +247,7 @@ class Ray3DGazeDir(VelocityCalculationStrategy):
         n1 = np.linalg.norm(v1)
         n2 = np.linalg.norm(v2)
         if n1 == 0.0 or n2 == 0.0 or not np.isfinite(n1) or not np.isfinite(n2):
-            return 0.0
+            return float("nan")
 
         v1 /= n1
         v2 /= n2
@@ -301,7 +301,7 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
         dir1 = ctx.dir1
         dir2 = ctx.dir2
         if dir1 is None or dir2 is None:
-            return 0.0
+            return float("nan")
 
         v1 = np.asarray(dir1, dtype=float)
         v2 = np.asarray(dir2, dtype=float)
@@ -310,7 +310,7 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
         n2 = float(np.linalg.norm(v2))
 
         if n1 == 0.0 or n2 == 0.0 or not math.isfinite(n1) or not math.isfinite(n2):
-            return 0.0
+            return float("nan")
 
         return self._angle_between_normalized(v1 / n1, v2 / n2)
 
@@ -324,8 +324,8 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
         eye_y_mm: Optional[float],
         eye_z_mm: Optional[float],
     ) -> float:
-        # Ohne Richtungsvektoren (dir1/dir2) nicht berechenbar; Fallback: 0°
-        return 0.0
+        # Ohne Richtungsvektoren (dir1/dir2) ist der Winkel nicht berechenbar.
+        return float("nan")
 
     def get_description(self) -> str:
         return (
