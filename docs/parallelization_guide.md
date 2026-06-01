@@ -48,7 +48,7 @@ for i in range(n):
 #### 1.1 Olsen2D Vektorisiert
 
 ```python
-# ivt_filter/velocity_calculation.py
+# ivt_filter/strategies/velocity_calculation.py
 import numpy as np
 
 class Olsen2DVectorized(VelocityCalculationStrategy):
@@ -287,7 +287,9 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
 import time
 import numpy as np
 import pandas as pd
-from ivt_filter.velocity_calculation import Olsen2DApproximation, Olsen2DVectorized
+from ivt_filter.strategies.velocity_calculation import Olsen2DApproximation
+
+# Olsen2DVectorized is the proposed class from section 1.1 above.
 
 def benchmark_velocity_calculation():
     # Test-Daten generieren

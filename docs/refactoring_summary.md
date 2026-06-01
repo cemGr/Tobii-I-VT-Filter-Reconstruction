@@ -264,7 +264,7 @@ All changes maintain backward compatibility:
 from extractor import convert_tobii_tsv_to_ivt_tsv
 convert_tobii_tsv_to_ivt_tsv("input.tsv", "output.tsv")
 
-from ivt_filter.classification import apply_ivt_classifier
+from ivt_filter.processing.classification import apply_ivt_classifier
 df = apply_ivt_classifier(df, cfg)
 
 # New code provides better structure
@@ -272,7 +272,7 @@ from extractor import TobiiDataExtractor
 extractor = TobiiDataExtractor()
 extractor.extract("input.tsv", "output.tsv")
 
-from ivt_filter.classification import IVTClassifier
+from ivt_filter.processing.classification import IVTClassifier
 classifier = IVTClassifier(cfg)
 df = classifier.classify(df)
 ```

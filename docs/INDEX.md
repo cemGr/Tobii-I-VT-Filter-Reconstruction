@@ -52,20 +52,20 @@ Start here if you're new to the project:
 
 **Core Modules:**
 
-- **`ivt_filter.velocity_calculation`**
+- **`ivt_filter.strategies.velocity_calculation`**
   - `VelocityCalculationStrategy` (abstract base)
   - `Olsen2DApproximation` (2D method)
   - `Ray3DAngle` (3D method)
   
-- **`ivt_filter.coordinate_rounding`**
+- **`ivt_filter.strategies.coordinate_rounding`**
   - `CoordinateRoundingStrategy` (abstract base)
   - `NoRounding`, `RoundToNearest`, `RoundHalfUp`, `FloorRounding`, `CeilRounding`
   
-- **`ivt_filter.smoothing_strategy`**
+- **`ivt_filter.strategies.smoothing_strategy`**
   - `SmoothingStrategy` (abstract base)
   - `NoSmoothing`, `MedianSmoothing`, `MovingAverageSmoothing`
   
-- **`ivt_filter.window_rounding`**
+- **`ivt_filter.strategies.window_rounding`**
   - `WindowRoundingStrategy` (abstract base)
   - `StandardWindowRounding`, `SymmetricRoundWindowStrategy`
   
@@ -106,7 +106,7 @@ python -m ivt_filter.cli \
 ### Example 4: Compare Methods Programmatically
 ```python
 from ivt_filter.config import OlsenVelocityConfig
-from ivt_filter.velocity import compute_olsen_velocity
+from ivt_filter import compute_olsen_velocity
 from ivt_filter.io import read_tsv
 
 # Load data
