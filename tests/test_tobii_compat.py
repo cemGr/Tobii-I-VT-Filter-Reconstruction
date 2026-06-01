@@ -634,6 +634,103 @@ class TestMergeFixationsSampleCountWeighting:
         assert cfg.merge_weighting == "sample_count"
 
 
+class TestMergeFixationsGapVelocityCap:
+    """Regressionstests fuer den konfigurierbaren Velocity-Cap beim Gap-Relabeling."""
+
+    @staticmethod
+    def _merge_gap_velocities(
+        gap_velocities: list[float],
+        *,
+        max_gap_velocity_deg_per_sec: float = 35.0,
+    ) -> tuple[pd.DataFrame, dict[str, object], slice]:
+        gap = len(gap_velocities)
+        fixation_len = 3
+        n = fixation_len + gap + fixation_len
+        gap_slice = slice(fixation_len, fixation_len + gap)
+        df = pd.DataFrame({
+            "time_ms": np.arange(n, dtype=float),
+            "combined_x_mm": np.zeros(n),
+            "combined_y_mm": np.zeros(n),
+            "eye_z_mm": np.full(n, 600.0),
+            "ivt_sample_type": (
+                ["Fixation"] * fixation_len
+                + ["Unclassified"] * gap
+                + ["Fixation"] * fixation_len
+            ),
+            "velocity_deg_per_sec": (
+                [0.0] * fixation_len
+                + gap_velocities
+                + [0.0] * fixation_len
+            ),
+        })
+        cfg = FixationPostConfig(
+            merge_adjacent_fixations=True,
+            max_time_gap_ms=10.0,
+            max_angle_deg=0.5,
+            max_gap_velocity_deg_per_sec=max_gap_velocity_deg_per_sec,
+        )
+        result, stats = merge_adjacent_fixations(
+            df, cfg,
+            sample_col="ivt_sample_type",
+            time_col="time_ms",
+            x_col="combined_x_mm",
+            y_col="combined_y_mm",
+            eye_z_col="eye_z_mm",
+        )
+        return result, stats, gap_slice
+
+    def test_sample_at_configured_cap_is_eligible_for_relabeling(self):
+        """Der Cap ist inklusiv: Velocity == Cap darf zur Fixation werden."""
+        result, stats, gap_slice = self._merge_gap_velocities(
+            [12.0], max_gap_velocity_deg_per_sec=12.0
+        )
+
+        assert result.iloc[gap_slice]["ivt_sample_type"].tolist() == ["Fixation"]
+        assert stats["gap_samples_to_fixation"] == 1
+
+    def test_sample_above_configured_cap_is_preserved(self):
+        """Velocity > Cap behaelt das urspruengliche Gap-Label."""
+        result, stats, gap_slice = self._merge_gap_velocities(
+            [12.01], max_gap_velocity_deg_per_sec=12.0
+        )
+
+        assert result.iloc[gap_slice]["ivt_sample_type"].tolist() == ["Unclassified"]
+        assert stats["gap_samples_to_fixation"] == 0
+
+    def test_default_cap_preserves_existing_35_deg_per_sec_behavior(self):
+        """Der neue Config-Default entspricht der bisherigen festen 35-Grad-Grenze."""
+        assert FixationPostConfig().max_gap_velocity_deg_per_sec == 35.0
+
+        result, stats, gap_slice = self._merge_gap_velocities([35.0, 35.01])
+
+        assert result.iloc[gap_slice]["ivt_sample_type"].tolist() == [
+            "Fixation",
+            "Unclassified",
+        ]
+        assert stats["gap_samples_to_fixation"] == 1
+
+    def test_custom_cap_changes_only_intended_gap_fill_decision(self):
+        """Ein eigener Cap relabelt nur das zusaetzlich berechtigte Gap-Sample."""
+        default_result, _, gap_slice = self._merge_gap_velocities([34.0, 36.0, 37.0])
+        custom_result, _, _ = self._merge_gap_velocities(
+            [34.0, 36.0, 37.0], max_gap_velocity_deg_per_sec=36.0
+        )
+
+        assert default_result.iloc[gap_slice]["ivt_sample_type"].tolist() == [
+            "Fixation",
+            "Unclassified",
+            "Unclassified",
+        ]
+        assert custom_result.iloc[gap_slice]["ivt_sample_type"].tolist() == [
+            "Fixation",
+            "Fixation",
+            "Unclassified",
+        ]
+        assert custom_result.loc[[0, 1, 2, 6, 7, 8], "ivt_sample_type"].tolist() == [
+            "Fixation",
+        ] * 6
+
+
 # ---------------------------------------------------------------------------
 # 5. Integration: OlsenVelocityConfig mit Tobii-Flags
 # ---------------------------------------------------------------------------

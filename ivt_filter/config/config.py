@@ -342,6 +342,7 @@ class FixationPostConfig:
     merge_adjacent_fixations: bool = False
     max_time_gap_ms: float = 75.0   # z.B. 75 ms wie im Tobii-Paper
     max_angle_deg: float = 0.5      # z.B. 0.5 Grad zwischen Fixationszentren
+    max_gap_velocity_deg_per_sec: float = 35.0  # maximale Velocity fuer Gap-Relabeling
 
     # Gewichtungsstrategie für gemittelte Fixations-Position beim Merge:
     # - "uniform": np.nanmean aller Samples (bisheriges Verhalten)
