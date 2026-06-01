@@ -44,40 +44,51 @@ RAW_COLUMNS = {
     "pupil_right_mm": "Pupil diameter right [mm]",
 }
 
-# Native timestamp columns - no conversion needed
-RECORDING_TIMESTAMP_MS_ALTERNATIVES = [
-    "Recording timestamp [ms]",
-]
-
-EYETRACKER_TIMESTAMP_US_ALTERNATIVES = [
-    "Eyetracker timestamp [μs]",
-    "Eyetracker timestamp [us]",
+# Timestamp headers that can be detected in Tobii exports.  Recording timestamps
+# are preferred when a manual unit override requires choosing one source column.
+TIMESTAMP_ALTERNATIVES = [
+    ("Recording timestamp [ms]", "ms"),
+    ("Recording timestamp [μs]", "us"),
+    ("Recording timestamp [us]", "us"),
+    ("Recording timestamp [ns]", "ns"),
+    ("Eyetracker timestamp [μs]", "us"),
+    ("Eyetracker timestamp [us]", "us"),
 ]
 
 
 class TimestampUnitDetector:
-    """Detects and extracts timestamp columns from Tobii exports (no conversion)."""
+    """Detect timestamp columns and convert their values between supported units."""
 
     def detect_columns(self, df: pd.DataFrame) -> tuple[Optional[str], Optional[str]]:
-        """Find recording (ms) and eyetracker (us) timestamp columns.
-        
-        Returns:
-            (recording_ms_col, eyetracker_us_col) where either can be None
-        """
-        recording_col = None
-        eyetracker_col = None
-        
-        for col_name in RECORDING_TIMESTAMP_MS_ALTERNATIVES:
-            if col_name in df.columns:
-                recording_col = col_name
-                break
-        
-        for col_name in EYETRACKER_TIMESTAMP_US_ALTERNATIVES:
-            if col_name in df.columns:
-                eyetracker_col = col_name
-                break
-        
-        return recording_col, eyetracker_col
+        """Return the first native millisecond and microsecond timestamp columns."""
+        native_ms_col = self._find_column(df, "ms")
+        native_us_col = self._find_column(df, "us")
+        return native_ms_col, native_us_col
+
+    def detect_column(self, df: pd.DataFrame) -> tuple[Optional[str], Optional[str]]:
+        """Return the preferred timestamp column and the unit declared by its header."""
+        for column_name, unit in TIMESTAMP_ALTERNATIVES:
+            if column_name in df.columns:
+                return column_name, unit
+        return None, None
+
+    def _find_column(self, df: pd.DataFrame, unit: str) -> Optional[str]:
+        """Return the first timestamp column whose header declares ``unit``."""
+        for column_name, column_unit in TIMESTAMP_ALTERNATIVES:
+            if column_unit == unit and column_name in df.columns:
+                return column_name
+        return None
+
+    def convert(self, values: pd.Series, from_unit: str, to_unit: str) -> pd.Series:
+        """Convert timestamp ``values`` from one supported unit to another."""
+        scale_in_nanoseconds = {"ms": 1_000_000, "us": 1_000, "ns": 1}
+        try:
+            scale = scale_in_nanoseconds[from_unit] / scale_in_nanoseconds[to_unit]
+        except KeyError as exc:
+            raise ValueError(
+                "timestamp unit must be one of: 'auto', 'ms', 'us', 'ns'"
+            ) from exc
+        return values * scale
 
 
 class TobiiDataExtractor:
@@ -86,7 +97,7 @@ class TobiiDataExtractor:
     Responsibilities:
         - Read Tobii TSV files with correct format settings
         - Filter eye tracker data
-        - Convert timestamps to milliseconds
+        - Detect timestamps and populate millisecond and microsecond columns
         - Map columns to standardized schema
         - Write slim TSV for IVT processing
     """
@@ -193,30 +204,59 @@ class TobiiDataExtractor:
         self,
         source: pd.DataFrame,
         target: pd.DataFrame,
-        unit_override: str,  # Not used anymore, kept for API compatibility
+        unit_override: str,
     ) -> pd.DataFrame:
-        """Extract native timestamp columns without conversion.
-        
-        - time_ms: From Recording timestamp [ms] (native milliseconds)
-        - time_us: From Eyetracker timestamp [μs] (native microseconds)
+        """Populate ``time_ms`` and ``time_us`` using detection or an explicit unit.
+
+        In ``auto`` mode, native millisecond and microsecond timestamps are
+        preserved when both exist.  When only one timestamp exists, the other
+        output column is derived from it.  For an explicit ``ms``, ``us``, or
+        ``ns`` override, the preferred detected source column is interpreted as
+        that unit and converted into both output units.
         """
-        recording_col, eyetracker_col = self.timestamp_detector.detect_columns(source)
+        if unit_override not in {"auto", "ms", "us", "ns"}:
+            raise ValueError("timestamp unit must be one of: 'auto', 'ms', 'us', 'ns'")
 
-        # Extract required time_ms from Recording timestamp [ms]. Without it,
-        # the slim export cannot be sorted or consumed by the IVT pipeline.
-        if recording_col is None:
-            raise ValueError("Recording timestamp [ms] column not found")
-        target["time_ms"] = source[recording_col].copy()
-        print("[Extractor] Using Recording timestamp [ms] for time_ms")
+        if unit_override == "auto":
+            native_ms_col, native_us_col = self.timestamp_detector.detect_columns(source)
+            if native_ms_col is not None or native_us_col is not None:
+                if native_ms_col is not None:
+                    target["time_ms"] = source[native_ms_col].copy()
+                    print(f"[Extractor] Using {native_ms_col} for time_ms")
+                else:
+                    target["time_ms"] = self.timestamp_detector.convert(
+                        source[native_us_col], "us", "ms"
+                    )
+                    print(f"[Extractor] Deriving time_ms from {native_us_col}")
 
-        # Extract time_us from Eyetracker timestamp [μs]
-        if eyetracker_col is not None:
-            target["time_us"] = source[eyetracker_col].copy()
-            print(f"[Extractor] Using Eyetracker timestamp [μs] for time_us")
+                if native_us_col is not None:
+                    target["time_us"] = source[native_us_col].copy()
+                    print(f"[Extractor] Using {native_us_col} for time_us")
+                else:
+                    target["time_us"] = self.timestamp_detector.convert(
+                        source[native_ms_col], "ms", "us"
+                    )
+                    print(f"[Extractor] Deriving time_us from {native_ms_col}")
+                return target
+
+            timestamp_col, detected_unit = self.timestamp_detector.detect_column(source)
+            if timestamp_col is None or detected_unit is None:
+                raise ValueError("No usable timestamp column found")
+            unit_to_use = detected_unit
+            print(f"[Extractor] Auto-detected {timestamp_col} as {unit_to_use}")
         else:
-            print("[Extractor] Warning: Eyetracker timestamp [μs] not found")
-            target["time_us"] = pd.NA
+            timestamp_col, _ = self.timestamp_detector.detect_column(source)
+            if timestamp_col is None:
+                raise ValueError("No usable timestamp column found")
+            unit_to_use = unit_override
+            print(f"[Extractor] Interpreting {timestamp_col} as {unit_to_use}")
 
+        target["time_ms"] = self.timestamp_detector.convert(
+            source[timestamp_col], unit_to_use, "ms"
+        )
+        target["time_us"] = self.timestamp_detector.convert(
+            source[timestamp_col], unit_to_use, "us"
+        )
         return target
 
     def _map_columns(
