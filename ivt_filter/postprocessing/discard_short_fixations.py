@@ -5,10 +5,10 @@ from __future__ import annotations
 
 from typing import Tuple, Dict, Any, List
 
-import numpy as np
 import pandas as pd
 
 from ..config import FixationPostConfig
+from ..domain.durations import event_duration_ms, estimate_sample_interval_ms
 
 
 def discard_short_fixations(
@@ -35,7 +35,7 @@ def discard_short_fixations(
        - Nicht hardcoded
     
     3) Eventdauer (inklusive Endsample):
-       - duration_ms = (t_last - t_first) + dt_ms
+       - duration_ms = event_duration_ms(times[start_idx : end_idx + 1], sample_interval_ms=dt_ms)
        - +dt_ms ist verpflichtend (verhindert Off-by-one)
     
     Args:
@@ -78,13 +78,7 @@ def discard_short_fixations(
     n = len(df)
     
     # 1) Berechne robustes dt_ms aus time_ms (Median der positiven Differenzen)
-    diffs = np.diff(times)
-    positive_diffs = diffs[diffs > 0]
-    
-    if len(positive_diffs) == 0:
-        dt_ms = 1.0
-    else:
-        dt_ms = float(np.median(positive_diffs))
+    dt_ms = estimate_sample_interval_ms(times)
     
     # 2) Finde alle Fixation-Events anhand von event_type und event_index
     fixation_events: List[Dict[str, Any]] = []
@@ -107,7 +101,7 @@ def discard_short_fixations(
                     end_idx = i - 1
                     t_first = float(times[start_idx])
                     t_last = float(times[end_idx])
-                    duration_ms = (t_last - t_first) + dt_ms
+                    duration_ms = event_duration_ms(times[start_idx : end_idx + 1], sample_interval_ms=dt_ms)
                     
                     fixation_events.append({
                         "event_index": current_event_index,
@@ -129,7 +123,7 @@ def discard_short_fixations(
                 end_idx = i - 1
                 t_first = float(times[start_idx])
                 t_last = float(times[end_idx])
-                duration_ms = (t_last - t_first) + dt_ms
+                duration_ms = event_duration_ms(times[start_idx : end_idx + 1], sample_interval_ms=dt_ms)
                 
                 fixation_events.append({
                     "event_index": current_event_index,
@@ -149,7 +143,7 @@ def discard_short_fixations(
         end_idx = n - 1
         t_first = float(times[start_idx])
         t_last = float(times[end_idx])
-        duration_ms = (t_last - t_first) + dt_ms
+        duration_ms = event_duration_ms(times[start_idx : end_idx + 1], sample_interval_ms=dt_ms)
         
         fixation_events.append({
             "event_index": current_event_index,

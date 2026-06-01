@@ -7,6 +7,7 @@ from typing import Optional, List, Tuple, Dict, Any
 import pandas as pd
 
 from ..config import SaccadeMergeConfig
+from ..domain.durations import event_duration_ms, estimate_sample_interval_ms
 from ..domain.events import iter_contiguous_events, rebuild_events_from_sample_labels
 
 
@@ -52,6 +53,7 @@ def merge_short_saccade_blocks(
     work_col = sample_col if sample_col is not None else event_col
 
     times = df["time_ms"].to_numpy()
+    sample_interval_ms = estimate_sample_interval_ms(times)
     # GT no longer needed - Post-Smoothing basiert nur auf IVT-Kontext und Dauer
     ivt = df[work_col].astype(str).to_numpy()
 
@@ -70,7 +72,9 @@ def merge_short_saccade_blocks(
     new_ivt = ivt.copy()
 
     for (b_start, b_end) in blocks:
-        duration_ms = float(times[b_end] - times[b_start])
+        duration_ms = event_duration_ms(
+            times[b_start : b_end + 1], sample_interval_ms=sample_interval_ms
+        )
         if duration_ms >= cfg.max_saccade_block_duration_ms:
             continue
 

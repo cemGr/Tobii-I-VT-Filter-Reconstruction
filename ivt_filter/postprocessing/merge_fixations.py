@@ -122,7 +122,8 @@ def merge_adjacent_fixations(
         s1, e1 = events[idx]
         s2, e2 = events[idx + 1]
 
-        # Zeitabstand zwischen Ende Fix1 und Start Fix2
+        # Zeitabstand zwischen Ende Fix1 und Start Fix2. Dies ist der Abstand
+        # zwischen Event-Grenzen, keine inklusive Eventdauer.
         time_gap = float(times[s2]) - float(times[e1])
         if time_gap <= 0 or time_gap > cfg.max_time_gap_ms:
             continue
