@@ -108,7 +108,25 @@ def test_prepare_velocity_input_runs_preprocessing_steps_in_order(monkeypatch):
     monkeypatch.setattr(
         "ivt_filter.processing.velocity.smooth_combined_gaze", record("smooth")
     )
-    result = prepare_velocity_input(pd.DataFrame({"value": [1]}), OlsenVelocityConfig())
+    result = prepare_velocity_input(
+        pd.DataFrame(
+            {
+                "time_ms": [0.0],
+                "gaze_left_x_mm": [0.0],
+                "gaze_left_y_mm": [0.0],
+                "gaze_right_x_mm": [0.0],
+                "gaze_right_y_mm": [0.0],
+                "validity_left": [0],
+                "validity_right": [0],
+                "combined_x_mm": [0.0],
+                "combined_y_mm": [0.0],
+                "combined_valid": [True],
+                "smoothed_x_mm": [0.0],
+                "smoothed_y_mm": [0.0],
+            }
+        ),
+        OlsenVelocityConfig(),
+    )
     assert calls == ["gap", "combined", "smooth"]
     assert result.at[0, "smooth"]
 

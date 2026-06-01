@@ -8,49 +8,13 @@ from typing import Optional, List, Tuple, Dict, Any
 import pandas as pd
 
 from .config import SaccadeMergeConfig, FixationPostConfig
+from .domain.events import iter_contiguous_events, rebuild_events_from_sample_labels
 from .postprocessing.merge_fixations import merge_adjacent_fixations as _merge_adjacent_fixations_internal
 from .postprocessing.discard_short_fixations import discard_short_fixations as _discard_short_fixations_internal
 
 
-def _rebuild_ivt_events_from_sample_types(
-    df: pd.DataFrame,
-    sample_col: str,
-    event_type_col: str,
-    event_index_col: str,
-) -> pd.DataFrame:
-    """
-    Aus einer Sample-Label-Spalte (Fixation/Saccade/Unclassified)
-    wieder Events (zusammenhängende Blöcke) aufbauen.
-
-    Verantwortlichkeit:
-      - nimmt eine Sample-Spalte (z.B. 'ivt_sample_type_smoothed')
-      - erzeugt Event-Type/Index-Spalten
-    """
-    sample_labels = df[sample_col].astype(str).tolist()
-
-    new_event_type: List[str] = []
-    new_event_index: List[Optional[int]] = []
-
-    current_type: Optional[str] = None
-    current_index: int = 0
-
-    for label in sample_labels:
-        if label not in ("Fixation", "Saccade"):
-            new_event_type.append(label)
-            new_event_index.append(None)
-            current_type = None
-            continue
-
-        if label != current_type:
-            current_index += 1
-            current_type = label
-
-        new_event_type.append(label)
-        new_event_index.append(current_index)
-
-    df[event_type_col] = new_event_type
-    df[event_index_col] = new_event_index
-    return df
+# Backward-compatible private alias; event rules live in domain.events.
+_rebuild_ivt_events_from_sample_types = rebuild_events_from_sample_labels
 
 
 
@@ -98,21 +62,11 @@ def merge_short_saccade_blocks(
     n = len(df)
 
     # Find saccade blocks (zusammenhängende "Saccade"-Segmente)
-    blocks: List[Tuple[int, int]] = []
-    in_block = False
-    start_idx = 0
-
-    for i in range(n):
-        if ivt[i] == "Saccade":
-            if not in_block:
-                in_block = True
-                start_idx = i
-        else:
-            if in_block:
-                blocks.append((start_idx, i - 1))
-                in_block = False
-    if in_block:
-        blocks.append((start_idx, n - 1))
+    blocks: List[Tuple[int, int]] = [
+        (event.start, event.end)
+        for event in iter_contiguous_events(ivt)
+        if event.label == "Saccade"
+    ]
 
     changed_blocks = 0
     changed_samples = 0

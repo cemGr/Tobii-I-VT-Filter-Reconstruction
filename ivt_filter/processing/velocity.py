@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from ..config import OlsenVelocityConfig, PhysicalConstants
+from ..domain.schema import validate_preprocessed_frame, validate_raw_gaze_frame
 from ..preprocessing import (
     prepare_combined_columns,
     smooth_combined_gaze,
@@ -422,11 +423,14 @@ def normalize_timestamps(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataF
 
 def prepare_velocity_input(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
     """Run gaze preprocessing required before velocity sample computation."""
+    validate_raw_gaze_frame(df)
     result = gap_fill_gaze(df, cfg)
     if getattr(cfg, "tobii_eye_offset_interpolation", False):
         result = apply_tobii_eye_offset_interpolation(result, cfg)
     result = prepare_combined_columns(result, cfg)
-    return smooth_combined_gaze(result, cfg)
+    result = smooth_combined_gaze(result, cfg)
+    validate_preprocessed_frame(result)
+    return result
 
 
 def find_single_eye_endpoints(
@@ -580,6 +584,7 @@ class VelocitySampleComputer:
         return ComputedVelocitySample(velocity, raw_velocity, dt_ms)
 
     def compute(self, prepared_df: pd.DataFrame) -> pd.DataFrame:
+        validate_preprocessed_frame(prepared_df)
         return _compute_olsen_velocity_impl(prepared_df, self.cfg)
 
 
