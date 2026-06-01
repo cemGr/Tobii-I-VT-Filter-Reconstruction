@@ -3,9 +3,12 @@ from __future__ import annotations
 
 from typing import Optional
 import pandas as pd
-import matplotlib.pyplot as plt
+from .._optional_dependencies import require_matplotlib_pyplot
 
 from ..config import OlsenVelocityConfig
+
+
+plt = require_matplotlib_pyplot()
 
 
 def plot_velocity_only(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> None:

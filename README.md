@@ -72,6 +72,25 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+Plotting is optional. Install the plotting extra only if you want to generate figures:
+
+```bash
+pip install tobii-ivt-filter[plot]
+```
+
+### Supported Python Import Paths
+
+Use the canonical module paths below in applications and examples. The package does not
+maintain duplicate root-level compatibility modules for these APIs.
+
+| API | Supported import path |
+|-----|-----------------------|
+| `IVTPipeline` | `ivt_filter.io.pipeline` |
+| `PipelineObserver`, `ConsoleReporter`, `MetricsLogger`, `ExperimentTracker`, `ResultsPlotter` | `ivt_filter.io.observers` |
+| `ExperimentConfig`, `ExperimentManager` | `ivt_filter.evaluation.experiment` |
+| `estimate_sampling_rate` | `ivt_filter.utils.sampling` |
+| Window sizing helpers | `ivt_filter.utils.window_utils` |
+
 ### 2. Prepare Your Data
 
 The filter expects TSV (tab-separated values) with these columns:

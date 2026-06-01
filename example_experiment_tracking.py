@@ -14,9 +14,9 @@ Usage:
 from pathlib import Path
 
 from ivt_filter.config import OlsenVelocityConfig, IVTClassifierConfig
-from ivt_filter.experiment import ExperimentConfig, ExperimentManager
-from ivt_filter.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
-from ivt_filter.pipeline import IVTPipeline
+from ivt_filter.evaluation.experiment import ExperimentConfig, ExperimentManager
+from ivt_filter.io.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
+from ivt_filter.io.pipeline import IVTPipeline
 
 
 def run_single_experiment():

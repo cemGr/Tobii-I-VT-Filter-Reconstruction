@@ -17,10 +17,10 @@ from pathlib import Path
 import pandas as pd
 
 from ivt_filter.config import OlsenVelocityConfig, IVTClassifierConfig
-from ivt_filter.experiment import ExperimentConfig, ExperimentManager
-from ivt_filter.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
-from ivt_filter.pipeline import IVTPipeline
-from ivt_filter.sampling import estimate_sampling_rate
+from ivt_filter.evaluation.experiment import ExperimentConfig, ExperimentManager
+from ivt_filter.io.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
+from ivt_filter.io.pipeline import IVTPipeline
+from ivt_filter.utils.sampling import estimate_sampling_rate
 from ivt_filter.io import read_tsv
 
 

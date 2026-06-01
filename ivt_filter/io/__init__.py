@@ -1,14 +1,22 @@
-"""I/O and pipeline utilities."""
+"""I/O, pipeline, and observer utilities."""
 
 from .io import read_tsv, write_tsv
 from .pipeline import IVTPipeline
-from .observers import MetricsLogger, ResultsPlotter, ConsoleReporter
+from .observers import (
+    ConsoleReporter,
+    ExperimentTracker,
+    MetricsLogger,
+    PipelineObserver,
+    ResultsPlotter,
+)
 
 __all__ = [
     "read_tsv",
     "write_tsv",
     "IVTPipeline",
-    "MetricsLogger",
-    "ResultsPlotter",
+    "PipelineObserver",
     "ConsoleReporter",
+    "MetricsLogger",
+    "ExperimentTracker",
+    "ResultsPlotter",
 ]

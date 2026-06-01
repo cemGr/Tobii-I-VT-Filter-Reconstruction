@@ -6,8 +6,8 @@ This module implements the Observer Pattern to decouple pipeline execution
 from logging, visualization, and metric tracking.
 
 Example:
-    >>> from observers import MetricsLogger, ResultsPlotter, ConsoleReporter
-    >>> from pipeline import IVTPipeline
+    >>> from ivt_filter.io.observers import MetricsLogger, ResultsPlotter, ConsoleReporter
+    >>> from ivt_filter.io.pipeline import IVTPipeline
     >>> 
     >>> # Create pipeline
     >>> pipeline = IVTPipeline(velocity_config, classifier_config)
@@ -325,7 +325,9 @@ class ResultsPlotter(PipelineObserver):
         """Generate and save plots."""
         try:
             from ..evaluation.plotting import plot_velocity_only, plot_velocity_and_classification
-            import matplotlib.pyplot as plt
+            from .._optional_dependencies import require_matplotlib_pyplot
+
+            plt = require_matplotlib_pyplot()
             
             for plot_type in self.plot_types:
                 if plot_type == "velocity":
@@ -346,6 +348,8 @@ class ResultsPlotter(PipelineObserver):
             if self.auto_show:
                 plt.show()
         
+        except ImportError:
+            raise
         except Exception as e:
             print(f"Warning: Could not generate plots: {e}")
     
