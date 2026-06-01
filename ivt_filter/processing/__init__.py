@@ -1,14 +1,12 @@
-"""Processing stage: core IVT algorithm and velocity orchestration."""
+"""Processing stage: canonical IVT classification and velocity APIs."""
 
-from .velocity import compute_olsen_velocity, compute_olsen_velocity_from_slim_tsv
 from .classification import apply_ivt_classifier, expand_gt_events_to_samples
-from .velocity_computer import SamplingAnalyzer, VelocityComputer
+from .velocity import SamplingAnalyzer, compute_olsen_velocity, compute_olsen_velocity_from_slim_tsv
 
 __all__ = [
-    'compute_olsen_velocity',
-    'compute_olsen_velocity_from_slim_tsv',
-    'apply_ivt_classifier',
-    'expand_gt_events_to_samples',
-    'SamplingAnalyzer',
-    'VelocityComputer',
+    "SamplingAnalyzer",
+    "apply_ivt_classifier",
+    "compute_olsen_velocity",
+    "compute_olsen_velocity_from_slim_tsv",
+    "expand_gt_events_to_samples",
 ]

@@ -190,3 +190,28 @@ def test_import_print_statistics() -> None:
     from ivt_filter.simple_api import print_statistics
 
     assert callable(print_statistics)
+
+
+def test_import_processing_package_uses_canonical_velocity_api() -> None:
+    import ivt_filter.processing as processing
+    from ivt_filter.processing.velocity import SamplingAnalyzer
+
+    assert processing.SamplingAnalyzer is SamplingAnalyzer
+    assert not hasattr(processing, "VelocityComputer")
+
+
+def test_legacy_core_imports_delegate_to_canonical_implementations() -> None:
+    from ivt_filter.core.classification import IVTClassifier as legacy_classifier
+    from ivt_filter.core.gaze import gap_fill_gaze as legacy_gap_fill
+    from ivt_filter.core.velocity import SamplingAnalyzer as legacy_sampling_analyzer
+    from ivt_filter.preprocessing import gap_fill_gaze
+    from ivt_filter.processing.classification import IVTClassifier
+    from ivt_filter.processing.velocity import SamplingAnalyzer
+
+    assert legacy_classifier is IVTClassifier
+    assert legacy_gap_fill is gap_fill_gaze
+    assert legacy_sampling_analyzer is SamplingAnalyzer
+
+
+def test_obsolete_velocity_computer_module_is_removed() -> None:
+    assert importlib.util.find_spec("ivt_filter.processing.velocity_computer") is None
