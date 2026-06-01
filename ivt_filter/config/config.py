@@ -294,3 +294,30 @@ class FixationPostConfig:
     discard_short_fixations: bool = False
     min_fixation_duration_ms: float = 60.0  # z.B. 60 ms Mindestdauer
     discard_target: Literal["Unclassified", "Saccade"] = "Unclassified"  # Ziel-Label für verworfene Fixationen
+
+
+@dataclass(frozen=True)
+class PipelineConfig:
+    """Single source of truth for the active core processing stages.
+
+    File I/O, evaluation, and plotting are deliberately runner concerns.  A
+    post-processing stage is active exactly when its optional configuration is
+    present.
+    """
+
+    velocity: OlsenVelocityConfig
+    classifier: IVTClassifierConfig
+    classify: bool = True
+    saccade_merge: Optional[SaccadeMergeConfig] = None
+    fixation_post: Optional[FixationPostConfig] = None
+
+    def __post_init__(self) -> None:
+        if not self.classify and (self.saccade_merge or self.fixation_post):
+            raise ValueError("Post-processing stages require classification")
+        if self.saccade_merge and self.saccade_merge.max_saccade_block_duration_ms <= 0:
+            raise ValueError("Saccade merge duration must be positive")
+        if self.fixation_post and not (
+            self.fixation_post.merge_adjacent_fixations
+            or self.fixation_post.discard_short_fixations
+        ):
+            raise ValueError("Fixation post-processing config must enable at least one operation")
