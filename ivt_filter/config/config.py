@@ -34,7 +34,7 @@ Beispiel:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Literal, Optional, Sequence
 
 
 @dataclass
@@ -207,25 +207,14 @@ class OlsenVelocityConfig:
 
     def __post_init__(self) -> None:
         """Reject window-selector settings hidden by the legacy precedence rules."""
-        # Keep this validation aligned with processing.velocity.make_window_selector().
-        # A later compatibility-preserving migration can translate these legacy
-        # booleans into one explicit window-policy type at the config boundary.
-        fixed_window_modes: list[str] = []
-        if self.fixed_window_samples is not None:
-            fixed_window_modes.append("fixed_window_samples")
-        if self.auto_fixed_window_from_ms:
-            fixed_window_modes.append("auto_fixed_window_from_ms")
-        if self.symmetric_round_window:
-            fixed_window_modes.append("symmetric_round_window")
-
-        non_tobii_selector_modes: list[str] = []
-        if self.asymmetric_neighbor_window:
-            non_tobii_selector_modes.append("asymmetric_neighbor_window")
-        if self.shifted_valid_window:
-            non_tobii_selector_modes.append("shifted_valid_window")
-        non_tobii_selector_modes.extend(fixed_window_modes)
-        if self.sample_symmetric_window:
-            non_tobii_selector_modes.append("sample_symmetric_window")
+        # Keep this boundary validation aligned with
+        # processing.velocity.make_window_selector(). A later compatibility-
+        # preserving migration can translate these legacy booleans into one
+        # explicit window-policy type here without changing selector behavior.
+        fixed_window_modes = self._active_fixed_window_modes()
+        non_tobii_selector_modes = self._active_non_tobii_window_modes(
+            fixed_window_modes
+        )
 
         if self.tobii_window_mode and non_tobii_selector_modes:
             self._raise_window_selector_conflict(
@@ -253,9 +242,34 @@ class OlsenVelocityConfig:
                 fixed_window_modes[0], ["sample_symmetric_window"]
             )
 
+    def _active_fixed_window_modes(self) -> list[str]:
+        """Return legacy settings that activate or derive a fixed sample window."""
+        modes: list[str] = []
+        if self.fixed_window_samples is not None:
+            modes.append("fixed_window_samples")
+        if self.auto_fixed_window_from_ms:
+            modes.append("auto_fixed_window_from_ms")
+        if self.symmetric_round_window:
+            modes.append("symmetric_round_window")
+        return modes
+
+    def _active_non_tobii_window_modes(
+        self, fixed_window_modes: Sequence[str]
+    ) -> list[str]:
+        """Return selector settings hidden when Tobii window mode is active."""
+        modes: list[str] = []
+        if self.asymmetric_neighbor_window:
+            modes.append("asymmetric_neighbor_window")
+        if self.shifted_valid_window:
+            modes.append("shifted_valid_window")
+        modes.extend(fixed_window_modes)
+        if self.sample_symmetric_window:
+            modes.append("sample_symmetric_window")
+        return modes
+
     @staticmethod
     def _raise_window_selector_conflict(
-        selected_mode: str, ignored_modes: list[str]
+        selected_mode: str, ignored_modes: Sequence[str]
     ) -> None:
         ignored = ", ".join(ignored_modes)
         raise ValueError(
