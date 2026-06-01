@@ -201,12 +201,9 @@ classDiagram
     }
 
     %% ========== VELOCITY COMPUTATION ==========
-    class VelocityComputer {
-        +OlsenVelocityConfig config
-        +compute(df: DataFrame) DataFrame
-        -_validate_eye_columns(df)
-        -_select_combined_coordinates(df)
-        -_compute_visual_angles(df)
+    class VelocityProcessing {
+        +compute_olsen_velocity(df, cfg) DataFrame
+        +compute_olsen_velocity_from_slim_tsv(path, cfg) DataFrame
     }
 
     class SamplingAnalyzer {
@@ -326,7 +323,7 @@ classDiagram
     IVTPipeline --> EyeTrackingData : processes
     IVTPipeline --> ConfigBuilder : uses
     IVTPipeline --> GazeProcessor : uses
-    IVTPipeline --> VelocityComputer : uses
+    IVTPipeline --> VelocityProcessing : uses
     IVTPipeline --> IVTClassifier : uses
     IVTPipeline --> PostProcessor : uses
     
@@ -336,11 +333,11 @@ classDiagram
     SmoothingStrategy <|-- MedianSmoothing : implements
     SmoothingStrategy <|-- MovingAverageSmoothing : implements
     
-    VelocityComputer --> EyeTrackingData : reads
-    VelocityComputer --> VelocityData : creates
-    VelocityComputer --> SamplingAnalyzer : uses
-    VelocityComputer --> VelocityCalculationStrategy : uses
-    VelocityComputer --> PhysicalConstants : uses
+    VelocityProcessing --> EyeTrackingData : reads
+    VelocityProcessing --> VelocityData : creates
+    VelocityProcessing --> SamplingAnalyzer : uses
+    VelocityProcessing --> VelocityCalculationStrategy : uses
+    VelocityProcessing --> PhysicalConstants : uses
     SamplingAnalyzer --> SamplingModule : uses
     VelocityCalculationStrategy <|-- Olsen2DApproximation : implements
     VelocityCalculationStrategy <|-- Ray3DAngle : implements
@@ -402,12 +399,12 @@ classDiagram
 - **TobiiDataExtractor**: Converts full Tobii exports to slim IVT format
 - **TimestampUnitDetector**: Detects timestamp units (ms/μs/s) and converts
 
-### 4. Gaze Processing (gaze.py)
+### 4. Gaze Processing (`preprocessing/`)
 - **GazeProcessor**: Gap filling, combined column preparation, smoothing
 - **SmoothingStrategy**: Strategy pattern for different smoothing algorithms (None/Median/MovingAverage)
 
-### 5. Velocity Computation (velocity.py, velocity_computer.py, velocity_calculation.py)
-- **VelocityComputer**: Main velocity computation orchestrator
+### 5. Velocity Computation (`processing/velocity.py`, `strategies/velocity_calculation.py`)
+- **`compute_olsen_velocity`**: Main velocity computation entry point
 - **SamplingAnalyzer**: Analyzes sampling rate, detects frequency
 - **SamplingModule**: Sampling rate estimation utilities
 - **VelocityCalculationStrategy**: Strategy pattern (Olsen2D/Ray3D methods)
@@ -448,7 +445,7 @@ Four configuration dataclasses control pipeline behavior:
 1. **Input**: TSV file (Tobii Pro Lab export) → `IOModule.read_tsv()`
 2. **Extraction**: (Optional) `TobiiDataExtractor` converts to slim format → `EyeTrackingData`
 3. **Gaze Processing**: `GazeProcessor` fills gaps, combines eyes, smooths → Modified `EyeTrackingData`
-4. **Velocity Computation**: `VelocityComputer` calculates angular velocity → `VelocityData`
+4. **Velocity Computation**: `compute_olsen_velocity` calculates angular velocity → `VelocityData`
 5. **Classification**: `IVTClassifier` applies velocity threshold → `ClassificationData`
 6. **Post-Processing**: `PostProcessor` merges/filters events → Smoothed `ClassificationData`
 7. **Evaluation**: (Optional) `Evaluator` compares with `GroundTruthData` → `EvaluationMetrics`
@@ -459,7 +456,7 @@ Four configuration dataclasses control pipeline behavior:
 
 | Component | Module | Purpose |
 |-----------|--------|---------|
-| Eye data structures | `gaze.py` | Gap filling, combined columns, smoothing |
+| Eye data structures | `preprocessing/` | Gap filling, combined columns, smoothing |
 | Ground truth handling | `evaluation.py`, `postprocess.py` | GT column detection, event expansion |
 | Sample data | All DataFrames | Row-based representation (time_ms + features) |
 | Evaluation | `evaluation.py` | Statistical comparison, confusion matrix |
@@ -490,7 +487,7 @@ Four configuration dataclasses control pipeline behavior:
    
 6. **Single Responsibility Principle**: Each module has one clear purpose
    - GazeProcessor: gap filling and smoothing
-   - VelocityComputer: velocity calculation
+   - `compute_olsen_velocity`: velocity calculation
    - IVTClassifier: threshold classification
    - PostProcessor: event merging and filtering
    
