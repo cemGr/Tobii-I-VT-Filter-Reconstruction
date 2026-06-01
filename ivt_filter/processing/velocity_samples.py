@@ -788,7 +788,7 @@ def _compute_olsen_velocity_impl(
                     x1, y1 = neighbor_imputer.impute(first_idx, first_idx, last_idx)
                     x2, y2 = neighbor_imputer.impute(last_idx, first_idx, last_idx)
                 elif use_single_eye:
-                    candidates: List[tuple[str, int]] = []
+                    candidates: list[tuple[str, int]] = []
                     if left_valid[first_idx] and left_valid[last_idx]:
                         candidates.append(("left", int(window_lv.sum())))
                     if right_valid[first_idx] and right_valid[last_idx]:
