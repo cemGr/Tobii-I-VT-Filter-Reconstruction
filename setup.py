@@ -21,7 +21,6 @@ setup(
     ],
     extras_require={
         "plot": ["matplotlib>=3.5"],
-        "parallel": ["joblib>=1.1"],
     },
     classifiers=[
         "Programming Language :: Python :: 3",

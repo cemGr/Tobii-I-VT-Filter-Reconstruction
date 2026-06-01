@@ -19,11 +19,12 @@ def test_compute_olsen_velocity_parallel_delegates_to_canonical_implementation(
 
     monkeypatch.setattr(velocity_parallel, "compute_olsen_velocity", canonical)
 
-    with pytest.warns(DeprecationWarning, match="Velocity computation is sequential"):
+    with pytest.warns(DeprecationWarning) as warning_records:
         result = velocity_parallel.compute_olsen_velocity_parallel(
             df, cfg, n_jobs=8, chunk_size=1000
         )
 
+    assert str(warning_records[0].message) == velocity_parallel._DEPRECATION_WARNING
     assert result is expected
     assert calls == [(df, cfg)]
 
@@ -44,7 +45,11 @@ def test_compute_velocity_auto_delegates_to_canonical_implementation(
 
     monkeypatch.setattr(velocity_parallel, "compute_olsen_velocity", canonical)
 
-    result = velocity_parallel.compute_velocity_auto(df, cfg, parallel=parallel, n_jobs=8)
+    with pytest.warns(DeprecationWarning) as warning_records:
+        result = velocity_parallel.compute_velocity_auto(
+            df, cfg, parallel=parallel, n_jobs=8
+        )
 
+    assert str(warning_records[0].message) == velocity_parallel._DEPRECATION_WARNING
     assert result is expected
     assert calls == [(df, cfg)]

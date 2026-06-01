@@ -482,5 +482,5 @@ Potential areas for further improvement:
 1. **Repository Pattern**: Abstract DataFrame operations for better testability
 2. **Pipeline Builder**: Fluent API for configuring processing pipeline
 3. **Plugin System**: Load custom strategies at runtime
-4. **Async Processing**: Support for parallel processing of large datasets
+4. **Async Processing**: Future work only; velocity computation currently runs sequentially
 5. **Metrics Collection**: Built-in performance monitoring

@@ -297,7 +297,7 @@ df = classifier.classify(df)
 ### What Could Be Further Improved 🔮
 1. **Repository Pattern**: Abstract DataFrame operations
 2. **Pipeline Builder**: Fluent API for configuration
-3. **Async Support**: Parallel processing capabilities
+3. **Async Support**: Future work only; velocity computation currently runs sequentially
 4. **Plugin System**: Runtime strategy loading
 5. **Metrics**: Built-in performance monitoring
 

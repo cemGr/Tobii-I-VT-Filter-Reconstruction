@@ -423,6 +423,49 @@ def _documentation_and_example_files() -> set[Path]:
     return paths
 
 
+INACTIVE_PARALLEL_CLAIM_PATTERN = re.compile(
+    r"(?:recommended\s+for\s+large\s+datasets?|"
+    r"support\s+for\s+parallel\s+processing|"
+    r"parallel\s+processing\s+capabilities|"
+    r"pip\s+install\s+[^\n]*\[parallel\])",
+    re.IGNORECASE,
+)
+
+
+def test_sequential_velocity_docs_and_metadata_do_not_advertise_parallel_support() -> None:
+    requirements = (REPOSITORY_ROOT / "requirements.txt").read_text(encoding="utf-8")
+    setup_metadata = (REPOSITORY_ROOT / "setup.py").read_text(encoding="utf-8")
+    readme = (REPOSITORY_ROOT / "README.md").read_text(encoding="utf-8")
+    design_notes = (REPOSITORY_ROOT / "docs/parallelization_guide.md").read_text(
+        encoding="utf-8"
+    )
+    compatibility_facade = (
+        REPOSITORY_ROOT / "ivt_filter/processing/velocity_parallel.py"
+    ).read_text(encoding="utf-8")
+
+    assert compatibility_facade.count("return compute_olsen_velocity(df, cfg)") == 2
+    assert "_warn_sequential_compatibility()" in compatibility_facade
+    assert "joblib" not in requirements
+    assert "joblib" not in setup_metadata
+    assert '"parallel"' not in setup_metadata
+    assert "Velocity computation currently runs sequentially." in readme
+    assert design_notes.startswith("# Future Work Design Notes:")
+    assert "**Status: future work only.**" in design_notes
+
+    public_text_files = _documentation_and_example_files() | {
+        REPOSITORY_ROOT / "requirements.txt",
+        REPOSITORY_ROOT / "setup.py",
+    }
+    for file_path in sorted(public_text_files):
+        relative_path = file_path.relative_to(REPOSITORY_ROOT).as_posix()
+        for line_number, line in enumerate(
+            file_path.read_text(encoding="utf-8").splitlines(), 1
+        ):
+            assert not INACTIVE_PARALLEL_CLAIM_PATTERN.search(line), (
+                f"{relative_path}:{line_number} advertises inactive parallel support"
+            )
+
+
 def test_documentation_and_examples_do_not_recommend_legacy_imports() -> None:
     for file_path in sorted(_documentation_and_example_files()):
         relative_path = file_path.relative_to(REPOSITORY_ROOT).as_posix()

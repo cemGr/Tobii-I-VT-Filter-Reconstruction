@@ -100,6 +100,9 @@ Plotting is optional. Install the plotting extra only if you want to generate fi
 pip install tobii-ivt-filter[plot]
 ```
 
+Velocity computation currently runs sequentially. The package does not expose an
+optional installation extra for multi-core execution.
+
 ### Supported Python Import Paths
 
 Use the canonical module paths below in applications and examples. The package does not

@@ -16,6 +16,16 @@ from .velocity import compute_olsen_velocity
 
 __all__ = ["compute_olsen_velocity_parallel", "compute_velocity_auto"]
 
+_DEPRECATION_WARNING = (
+    "Parallel velocity compatibility wrappers are deprecated; use "
+    "compute_olsen_velocity(). Velocity computation is sequential."
+)
+
+
+def _warn_sequential_compatibility() -> None:
+    """Warn that a historical parallel entry point delegates sequentially."""
+    warnings.warn(_DEPRECATION_WARNING, DeprecationWarning, stacklevel=3)
+
 
 def compute_olsen_velocity_parallel(
     df: pd.DataFrame,
@@ -39,12 +49,7 @@ def compute_olsen_velocity_parallel(
     Returns:
         The DataFrame returned by :func:`compute_olsen_velocity`.
     """
-    warnings.warn(
-        "compute_olsen_velocity_parallel() is deprecated; use "
-        "compute_olsen_velocity(). Velocity computation is sequential.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
+    _warn_sequential_compatibility()
     return compute_olsen_velocity(df, cfg)
 
 
@@ -70,4 +75,5 @@ def compute_velocity_auto(
     Returns:
         The DataFrame returned by :func:`compute_olsen_velocity`.
     """
+    _warn_sequential_compatibility()
     return compute_olsen_velocity(df, cfg)
