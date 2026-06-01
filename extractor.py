@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Optional, Dict
 import pandas as pd
 
+from ivt_filter.utils.sampling import sort_by_time_with_source_row_id
+
 
 # Mapping from slim TSV column names to original Tobii TSV headers.
 RAW_COLUMNS = {
@@ -236,10 +238,8 @@ class TobiiDataExtractor:
         return target
 
     def _sort_by_time(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Sort DataFrame by timestamp."""
-        if "time_ms" in df.columns:
-            return df.sort_values("time_ms").reset_index(drop=True)
-        return df
+        """Validate and stably sort timestamps while retaining source-row provenance."""
+        return sort_by_time_with_source_row_id(df)
 
     def _write_data(self, df: pd.DataFrame, path: str | Path) -> None:
         """Write DataFrame to TSV with Tobii format."""

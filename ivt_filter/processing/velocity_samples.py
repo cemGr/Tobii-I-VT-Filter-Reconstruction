@@ -421,6 +421,8 @@ def _compute_olsen_velocity_impl(
             combined_dir_z[i] = rdz[i]
 
     n = len(df)
+    if n == 0:
+        return df
 
     # Sampling analysis can adjust the effective fixed-window configuration.
     sampling = SamplingAnalyzer().analyze(times, cfg)
