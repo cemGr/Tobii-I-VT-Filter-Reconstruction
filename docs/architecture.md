@@ -50,15 +50,10 @@ classDiagram
         +build_all_configs(args)$ tuple
     }
 
-    %% Velocity Computation Layer (NEW)
-    class VelocityComputer {
-        -cfg: OlsenVelocityConfig
-        -sampling_analyzer: SamplingAnalyzer
-        +compute(df) DataFrame
-        -_prepare_dataframe(df) DataFrame
-        -_extract_data_arrays(df) dict
-        -_print_strategy_info(...)
-        -_compute_all_velocities(...) DataFrame
+    %% Velocity Computation Layer
+    class VelocityProcessing {
+        +compute_olsen_velocity(df, cfg) DataFrame
+        +compute_olsen_velocity_from_slim_tsv(path, cfg) DataFrame
     }
 
     class SamplingAnalyzer {
@@ -71,7 +66,7 @@ classDiagram
         -_auto_convert_window(dt) OlsenVelocityConfig
     }
 
-    VelocityComputer --> SamplingAnalyzer : uses
+    VelocityProcessing --> SamplingAnalyzer : uses
 
     %% Classification Layer
     class IVTClassifier {
