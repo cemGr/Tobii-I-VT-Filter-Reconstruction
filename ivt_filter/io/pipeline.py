@@ -22,7 +22,7 @@ from ..config import (
 from .io import read_tsv, write_tsv
 from ..processing.velocity import compute_olsen_velocity
 from ..processing.classification import apply_ivt_classifier, expand_gt_events_to_samples
-from ..postprocess import merge_short_saccade_blocks, apply_fixation_postprocessing
+from ..postprocessing import merge_short_saccade_blocks, apply_fixation_postprocessing
 from ..evaluation.evaluation import evaluate_ivt_vs_ground_truth, compute_ivt_metrics
 
 if TYPE_CHECKING:
