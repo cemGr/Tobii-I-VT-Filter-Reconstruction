@@ -1,0 +1,18 @@
+# Refresh this lock file with:
+#    uv pip compile pyproject.toml --output-file requirements/runtime.txt --python-version 3.10
+#
+# Do not edit dependency pins by hand.
+numpy==2.2.6
+    # via
+    #   pandas
+    #   tobii-ivt-filter (pyproject.toml)
+pandas==2.3.3
+    # via tobii-ivt-filter (pyproject.toml)
+python-dateutil==2.9.0.post0
+    # via pandas
+pytz==2025.2
+    # via pandas
+six==1.17.0
+    # via python-dateutil
+tzdata==2025.3
+    # via pandas
