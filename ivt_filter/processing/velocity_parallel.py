@@ -14,6 +14,8 @@ import pandas as pd
 from ..config import OlsenVelocityConfig
 from .velocity import compute_olsen_velocity
 
+__all__ = ["compute_olsen_velocity_parallel", "compute_velocity_auto"]
+
 
 def compute_olsen_velocity_parallel(
     df: pd.DataFrame,
