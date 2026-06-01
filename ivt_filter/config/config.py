@@ -34,13 +34,56 @@ Beispiel:
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
+from numbers import Integral, Real
 from typing import Literal, Optional
 
 from .window_policy import (
+    FixedSampleWindowPolicy,
+    ShiftedValidWindowPolicy,
+    TobiiWindowPolicy,
     WindowPolicy,
     translate_legacy_window_flags,
     window_policy_from_dict,
 )
+
+
+def _require_choice(name: str, value: object, choices: tuple[object, ...]) -> None:
+    if value not in choices:
+        raise ValueError(f"{name} must be one of {choices}, got {value!r}")
+
+
+def _require_non_negative(name: str, value: Real) -> None:
+    if not isinstance(value, Real) or not math.isfinite(value) or value < 0:
+        raise ValueError(f"{name} must be non-negative")
+
+
+def _require_positive(name: str, value: Real) -> None:
+    if not isinstance(value, Real) or not math.isfinite(value) or value <= 0:
+        raise ValueError(f"{name} must be positive")
+
+
+def _require_non_negative_integer(name: str, value: int) -> None:
+    if not isinstance(value, Integral) or isinstance(value, bool) or value < 0:
+        raise ValueError(f"{name} must be a non-negative integer")
+
+
+def _require_positive_integer(name: str, value: int) -> None:
+    if not isinstance(value, Integral) or isinstance(value, bool) or value < 1:
+        raise ValueError(f"{name} must be a positive integer")
+
+
+def _require_positive_odd_samples(name: str, value: int) -> None:
+    _require_positive_integer(name, value)
+    if value % 2 == 0:
+        raise ValueError(f"{name} must be a positive odd integer")
+
+
+def _require_fixed_window_samples(name: str, value: int, *, allow_even: bool) -> None:
+    if not isinstance(value, Integral) or isinstance(value, bool) or value < 3:
+        raise ValueError(f"{name} must be an integer >= 3")
+    if not allow_even and value % 2 == 0:
+        raise ValueError(f"{name} must be odd unless allow_asymmetric_window=True")
 
 
 @dataclass
@@ -216,7 +259,31 @@ class OlsenVelocityConfig:
     tobii_eye_offset_interpolation: bool = False
 
     def __post_init__(self) -> None:
-        """Normalize deprecated selector flags into one tagged window policy."""
+        """Validate values and normalize deprecated selector flags into one policy."""
+        _require_positive("window_length_ms", self.window_length_ms)
+        _require_positive("min_dt_ms", self.min_dt_ms)
+        _require_non_negative_integer("max_validity", self.max_validity)
+        _require_positive_odd_samples("smoothing_window_samples", self.smoothing_window_samples)
+        _require_positive_integer("smoothing_min_samples", self.smoothing_min_samples)
+        _require_non_negative_integer("smoothing_expansion_radius", self.smoothing_expansion_radius)
+        _require_non_negative("gap_fill_max_gap_ms", self.gap_fill_max_gap_ms)
+        _require_choice("time_unit", self.time_unit, ("ms", "us", "ns"))
+        _require_choice("eye_mode", self.eye_mode, ("left", "right", "average"))
+        _require_choice("smoothing_mode", self.smoothing_mode, (
+            "none", "median", "moving_average", "median_strict",
+            "moving_average_strict", "median_adaptive", "moving_average_adaptive",
+        ))
+        _require_choice("sampling_rate_method", self.sampling_rate_method, ("all_samples", "first_100"))
+        _require_choice("dt_calculation_method", self.dt_calculation_method, ("median", "mean"))
+        _require_choice("coordinate_rounding", self.coordinate_rounding, ("none", "nearest", "halfup", "floor", "ceil"))
+        _require_choice("velocity_method", self.velocity_method, ("olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"))
+        _require_choice("shifted_valid_fallback", self.shifted_valid_fallback, ("shrink", "unclassified"))
+        if self.fixed_window_samples is not None:
+            _require_fixed_window_samples(
+                "fixed_window_samples", self.fixed_window_samples,
+                allow_even=self.allow_asymmetric_window,
+            )
+
         legacy_policy = translate_legacy_window_flags(
             sample_symmetric_window=self.sample_symmetric_window,
             fixed_window_samples=self.fixed_window_samples,
@@ -236,6 +303,19 @@ class OlsenVelocityConfig:
             raise ValueError(
                 "window_policy cannot be combined with contradictory deprecated legacy window flags."
             )
+
+        policy = self.window_policy
+        if isinstance(policy, (FixedSampleWindowPolicy, ShiftedValidWindowPolicy)):
+            _require_choice("window_policy.fallback", getattr(policy, "fallback", "shrink"), ("shrink", "unclassified"))
+            if policy.samples is not None:
+                _require_fixed_window_samples(
+                    "window_policy.samples", policy.samples,
+                    allow_even=self.allow_asymmetric_window,
+                )
+        if isinstance(policy, TobiiWindowPolicy):
+            if policy.sample_interval_ms is None:
+                raise ValueError("Tobii window mode requires tobii_sample_interval_ms/sample_interval_ms")
+            _require_positive("tobii_sample_interval_ms/sample_interval_ms", policy.sample_interval_ms)
 
 
 @dataclass
@@ -289,6 +369,22 @@ class IVTClassifierConfig:
     confident_switch_margin_deg: float = 4.0
     confident_switch_method: Literal["olsen2d", "ray3d", "ray3d_gaze_dir"] = "ray3d_gaze_dir"
 
+    def __post_init__(self) -> None:
+        _require_positive("velocity_threshold_deg_per_sec", self.velocity_threshold_deg_per_sec)
+        for name in (
+            "hysteresis_width_deg_per_sec", "near_threshold_band",
+            "near_threshold_confidence_margin", "near_threshold_max_delta",
+            "eye_jump_threshold_mm", "eye_jump_velocity_threshold",
+            "confident_switch_margin_deg",
+        ):
+            _require_non_negative(name, getattr(self, name))
+        for name in ("near_threshold_band_lower", "near_threshold_band_upper"):
+            value = getattr(self, name)
+            if value is not None:
+                _require_non_negative(name, value)
+        _require_choice("near_threshold_strategy", self.near_threshold_strategy, ("replace", "inverse"))
+        _require_choice("confident_switch_method", self.confident_switch_method, ("olsen2d", "ray3d", "ray3d_gaze_dir"))
+
 
 @dataclass
 class SaccadeMergeConfig:
@@ -308,6 +404,9 @@ class SaccadeMergeConfig:
     # - "ivt_sample_type": sample-basiert, danach Events neu bauen
     # - None: direkt auf "ivt_event_type"
     use_sample_type_column: Optional[str] = "ivt_sample_type"
+
+    def __post_init__(self) -> None:
+        _require_positive("max_saccade_block_duration_ms", self.max_saccade_block_duration_ms)
 
 
 @dataclass
@@ -338,6 +437,15 @@ class FixationPostConfig:
     min_fixation_duration_ms: float = 60.0  # z.B. 60 ms Mindestdauer
     discard_target: Literal["Unclassified", "Saccade"] = "Unclassified"  # Ziel-Label für verworfene Fixationen
 
+    def __post_init__(self) -> None:
+        for name in (
+            "max_time_gap_ms", "max_angle_deg", "max_gap_velocity_deg_per_sec",
+            "min_fixation_duration_ms",
+        ):
+            _require_non_negative(name, getattr(self, name))
+        _require_choice("merge_weighting", self.merge_weighting, ("uniform", "sample_count"))
+        _require_choice("discard_target", self.discard_target, ("Unclassified", "Saccade"))
+
 
 @dataclass(frozen=True)
 class PipelineConfig:
@@ -357,8 +465,6 @@ class PipelineConfig:
     def __post_init__(self) -> None:
         if not self.classify and (self.saccade_merge or self.fixation_post):
             raise ValueError("Post-processing stages require classification")
-        if self.saccade_merge and self.saccade_merge.max_saccade_block_duration_ms <= 0:
-            raise ValueError("Saccade merge duration must be positive")
         if self.fixation_post and not (
             self.fixation_post.merge_adjacent_fixations
             or self.fixation_post.discard_short_fixations

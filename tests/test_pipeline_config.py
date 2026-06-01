@@ -171,3 +171,52 @@ def test_pipeline_config_rejects_inactive_optional_stage_config() -> None:
             classifier=IVTClassifierConfig(),
             fixation_post=FixationPostConfig(),
         )
+
+
+@pytest.mark.parametrize(
+    ("config_type", "config_kwargs"),
+    [
+        (IVTClassifierConfig, {"velocity_threshold_deg_per_sec": 0.0}),
+        (IVTClassifierConfig, {"hysteresis_width_deg_per_sec": -1.0}),
+        (IVTClassifierConfig, {"near_threshold_strategy": "unknown"}),
+        (IVTClassifierConfig, {"confident_switch_method": "unknown"}),
+        (SaccadeMergeConfig, {"max_saccade_block_duration_ms": 0.0}),
+        (FixationPostConfig, {"max_time_gap_ms": -1.0}),
+        (FixationPostConfig, {"max_angle_deg": -1.0}),
+        (FixationPostConfig, {"max_gap_velocity_deg_per_sec": -1.0}),
+        (FixationPostConfig, {"min_fixation_duration_ms": -1.0}),
+        (FixationPostConfig, {"merge_weighting": "unknown"}),
+        (FixationPostConfig, {"discard_target": "unknown"}),
+    ],
+)
+def test_stage_configs_reject_boundary_and_enum_like_values(
+    config_type: type[object], config_kwargs: dict[str, object]
+) -> None:
+    with pytest.raises(ValueError):
+        config_type(**config_kwargs)
+
+
+def test_stage_configs_accept_minimum_valid_values() -> None:
+    classifier = IVTClassifierConfig(
+        velocity_threshold_deg_per_sec=0.001,
+        hysteresis_width_deg_per_sec=0.0,
+        near_threshold_band=0.0,
+        near_threshold_band_lower=0.0,
+        near_threshold_band_upper=0.0,
+        near_threshold_confidence_margin=0.0,
+        near_threshold_max_delta=0.0,
+        eye_jump_threshold_mm=0.0,
+        eye_jump_velocity_threshold=0.0,
+        confident_switch_margin_deg=0.0,
+    )
+    saccade = SaccadeMergeConfig(max_saccade_block_duration_ms=0.001)
+    fixation = FixationPostConfig(
+        max_time_gap_ms=0.0,
+        max_angle_deg=0.0,
+        max_gap_velocity_deg_per_sec=0.0,
+        min_fixation_duration_ms=0.0,
+    )
+
+    assert classifier.velocity_threshold_deg_per_sec == 0.001
+    assert saccade.max_saccade_block_duration_ms == 0.001
+    assert fixation.min_fixation_duration_ms == 0.0
