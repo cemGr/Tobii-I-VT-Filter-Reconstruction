@@ -191,6 +191,7 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 			raise ValueError("fallback_mode must be 'shrink' or 'unclassified'.")
 		self.fallback_mode = fallback_mode
 		self._fallback_selector = TimeSymmetricWindowSelector()
+		self.last_fallback_applied = False
 
 	def select(
 		self,
@@ -199,6 +200,7 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 		valid: np.ndarray,
 		half_window_ms: float,
 	) -> IndexPair:
+		self.last_fallback_applied = False
 		if not bool(valid[idx]):
 			return None, None
 
@@ -255,6 +257,7 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 			if new_start >= n or not valid[new_start]:
 				# Fallback
 				if self.fallback_mode == "shrink":
+					self.last_fallback_applied = True
 					return self._fallback_selector.select(idx, times, valid, half_window_ms)
 				return None, None
 
@@ -282,6 +285,7 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 			if new_end < 0 or not valid[new_end]:
 				# Fallback
 				if self.fallback_mode == "shrink":
+					self.last_fallback_applied = True
 					return self._fallback_selector.select(idx, times, valid, half_window_ms)
 				return None, None
 
@@ -305,6 +309,7 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 
 		# Fallback
 		if self.fallback_mode == "shrink":
+			self.last_fallback_applied = True
 			return self._fallback_selector.select(idx, times, valid, half_window_ms)
 		return None, None
 
@@ -408,6 +413,7 @@ class ShiftedValidWindowSelector(WindowSelector):
 		self.half_size = int(half_size)
 		self.fallback_mode = fallback_mode
 		self._fallback_selector = FixedSampleSymmetricWindowSelector(half_size)
+		self.last_fallback_applied = False
 
 	def select(
 		self,
@@ -416,6 +422,7 @@ class ShiftedValidWindowSelector(WindowSelector):
 		valid: np.ndarray,
 		half_window_ms: float,
 	) -> IndexPair:
+		self.last_fallback_applied = False
 		if not bool(valid[idx]):
 			return None, None
 
@@ -504,5 +511,6 @@ class ShiftedValidWindowSelector(WindowSelector):
 
 		# Fallback
 		if self.fallback_mode == "shrink":
+			self.last_fallback_applied = True
 			return self._fallback_selector.select(idx, times, valid, half_window_ms)
 		return None, None

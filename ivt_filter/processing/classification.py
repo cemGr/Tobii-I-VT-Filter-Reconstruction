@@ -167,7 +167,13 @@ class IVTClassifier:
         eye_jump_flags = np.zeros(n, dtype=bool)
         refinement_reasons = [""] * n
         
-        # Check if we have window_width_samples column to infer window structure
+        # Velocity computation persists the actual endpoints. Externally supplied
+        # DataFrames may not have that metadata, so retain the legacy symmetric
+        # reconstruction only when both endpoint columns are entirely absent.
+        has_endpoint_metadata = {
+            "velocity_first_idx",
+            "velocity_last_idx",
+        }.issubset(df.columns)
         has_window_width = "window_width_samples" in df.columns
         
         for i in range(n):
@@ -178,8 +184,18 @@ class IVTClassifier:
             if not np.isfinite(velocity_base):
                 continue
             
-            # Infer window indices (symmetric around i based on window_width_samples)
-            if has_window_width:
+            if has_endpoint_metadata:
+                first_value = df.at[i, "velocity_first_idx"]
+                last_value = df.at[i, "velocity_last_idx"]
+                if pd.isna(first_value) or pd.isna(last_value):
+                    continue
+                first_idx = int(first_value)
+                last_idx = int(last_value)
+                if not (0 <= first_idx < n and 0 <= last_idx < n):
+                    continue
+            elif has_window_width:
+                # Compatibility fallback for externally supplied DataFrames made
+                # before Velocity endpoint metadata was introduced.
                 window_width = df.at[i, "window_width_samples"]
                 if pd.notna(window_width):
                     half_width = int(window_width) // 2
@@ -188,7 +204,7 @@ class IVTClassifier:
                 else:
                     continue
             else:
-                # Default: use 3-sample window (i-1, i, i+1)
+                # Compatibility fallback for minimal external DataFrames.
                 first_idx = max(0, i - 1)
                 last_idx = min(n - 1, i + 1)
             
