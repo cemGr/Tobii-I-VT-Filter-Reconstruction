@@ -22,7 +22,6 @@ from ..processing.velocity import compute_olsen_velocity
 from ..processing.classification import apply_ivt_classifier, expand_gt_events_to_samples
 from ..postprocess import merge_short_saccade_blocks, apply_fixation_postprocessing
 from ..evaluation.evaluation import evaluate_ivt_vs_ground_truth, compute_ivt_metrics
-from ..evaluation.plotting import plot_velocity_only, plot_velocity_and_classification
 
 
 class IVTPipeline:
@@ -36,8 +35,8 @@ class IVTPipeline:
         - Notify observers of pipeline events (Observer Pattern)
     
     Example:
-        >>> from observers import ConsoleReporter, MetricsLogger, ExperimentTracker
-        >>> from experiment import ExperimentConfig
+        >>> from ivt_filter.io.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
+        >>> from ivt_filter.evaluation.experiment import ExperimentConfig
         >>> 
         >>> pipeline = IVTPipeline(velocity_config, classifier_config)
         >>> pipeline.register_observer(ConsoleReporter())
@@ -135,7 +134,7 @@ class IVTPipeline:
             Processed DataFrame
         
         Example:
-            >>> from experiment import ExperimentConfig
+            >>> from ivt_filter.evaluation.experiment import ExperimentConfig
             >>> config = ExperimentConfig(
             ...     name="olsen2d_20ms_30deg",
             ...     description="Baseline configuration",
@@ -345,7 +344,9 @@ class IVTPipeline:
         return df, "ivt_event_type_post"
 
     def _generate_plots(self, df: pd.DataFrame, with_events: bool) -> None:
-        """Generate visualization plots."""
+        """Generate visualization plots, loading matplotlib only when requested."""
+        from ..evaluation.plotting import plot_velocity_only, plot_velocity_and_classification
+
         if with_events:
             plot_velocity_and_classification(df, self.velocity_config)
         else:
