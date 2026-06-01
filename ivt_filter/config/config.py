@@ -53,12 +53,12 @@ def _require_choice(name: str, value: object, choices: tuple[object, ...]) -> No
         raise ValueError(f"{name} must be one of {choices}, got {value!r}")
 
 
-def _require_non_negative(name: str, value: Real) -> None:
+def _require_non_negative(name: str, value: object) -> None:
     if not isinstance(value, Real) or not math.isfinite(value) or value < 0:
         raise ValueError(f"{name} must be non-negative")
 
 
-def _require_positive(name: str, value: Real) -> None:
+def _require_positive(name: str, value: object) -> None:
     if not isinstance(value, Real) or not math.isfinite(value) or value <= 0:
         raise ValueError(f"{name} must be positive")
 
