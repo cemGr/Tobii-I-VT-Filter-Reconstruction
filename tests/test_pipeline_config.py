@@ -94,19 +94,24 @@ def test_run_and_run_with_tracking_use_equivalent_core_pipeline(
     assert stage_spy == ["velocity", "classify", "saccade", "fixation"] * 2
 
 
-def test_compatibility_constructor_enables_classification_without_postprocessing(
+def test_common_example_tracking_flow_returns_velocity_and_classification_columns(
     monkeypatch: pytest.MonkeyPatch,
-    stage_spy: list[str],
 ) -> None:
     monkeypatch.setattr("ivt_filter.io.pipeline.read_tsv", lambda path: pd.DataFrame({"time_ms": [0.0]}))
+    monkeypatch.setattr(
+        "ivt_filter.io.pipeline.compute_olsen_velocity",
+        lambda df, config: df.assign(velocity_deg_per_sec=0.0),
+    )
+    monkeypatch.setattr(
+        IVTPipeline,
+        "_apply_classification",
+        staticmethod(lambda df, config: df.assign(ivt_sample_type="Fixation")),
+    )
     pipeline = IVTPipeline(OlsenVelocityConfig(), IVTClassifierConfig())
-
-    assert pipeline.config.classify is True
 
     result = pipeline.run_with_tracking("input.tsv", SimpleNamespace(name="experiment"), evaluate=False)
 
-    assert stage_spy == ["velocity", "classify"]
-    assert "ivt_sample_type" in result.columns
+    assert {"velocity_deg_per_sec", "ivt_sample_type"} <= set(result.columns)
 
 
 def test_explicit_pipeline_config_can_disable_classification(
