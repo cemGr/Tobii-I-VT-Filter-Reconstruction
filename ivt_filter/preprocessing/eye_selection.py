@@ -11,27 +11,10 @@ import pandas as pd
 from ..config import OlsenVelocityConfig
 
 
-def _parse_validity(value) -> int:
-    """
-    Tobii-Validity robust parsen.
+from ..domain.validity import parse_tobii_validity
 
-    - "Valid"   -> 0
-    - "Invalid" -> 999
-    - numeric strings (0,1,2,...) -> int(value)
-    - ints/floats -> int(value)
-    - alles andere -> 999
-    """
-    if isinstance(value, str):
-        v = value.strip().lower()
-        if v == "valid":
-            return 0
-        if v == "invalid":
-            return 999
-
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return 999
+# Backward-compatible private alias; parsing rules live in domain.validity.
+_parse_validity = parse_tobii_validity
 
 
 def _combine_gaze_and_eye(

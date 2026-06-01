@@ -9,27 +9,7 @@ import pandas as pd
 from ..config import OlsenVelocityConfig
 
 
-def _parse_validity(value) -> int:
-    """
-    Tobii-Validity robust parsen.
-
-    - "Valid"   -> 0
-    - "Invalid" -> 999
-    - numeric strings (0,1,2,...) -> int(value)
-    - ints/floats -> int(value)
-    - alles andere -> 999
-    """
-    if isinstance(value, str):
-        v = value.strip().lower()
-        if v == "valid":
-            return 0
-        if v == "invalid":
-            return 999
-
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return 999
+from ..domain.validity import parse_tobii_validity
 
 
 def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
@@ -92,7 +72,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
         # Validitaetscodes parsen (falls vorhanden)
         if val_col in df.columns:
             val_series = df[val_col].copy()
-            v_codes = val_series.map(_parse_validity).to_numpy()
+            v_codes = val_series.map(parse_tobii_validity).to_numpy()
         else:
             val_series = None
             v_codes = None
