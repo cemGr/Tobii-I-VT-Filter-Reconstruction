@@ -38,6 +38,34 @@ from .velocity_samples import (
 )
 
 
+# Keep the historical import surface explicit: these names intentionally re-export
+# implementation details that callers imported from this module before the split.
+__all__ = [
+    "AverageNeighborImputer",
+    "ComputedVelocitySample",
+    "FixedWindowEdgeFallbackContext",
+    "SamplingAnalyzer",
+    "VelocityComputationResult",
+    "VelocityInputArrays",
+    "VelocitySampleComputer",
+    "VelocityStrategyFactory",
+    "WindowSelectorFactory",
+    "_apply_eye_consistent_override",
+    "_calculate_dt_ms",
+    "_get_coordinate_rounding_strategy",
+    "_get_direction_vectors",
+    "_get_velocity_calculation_strategy",
+    "apply_fixed_window_edge_fallback",
+    "compute_olsen_velocity",
+    "compute_olsen_velocity_from_slim_tsv",
+    "find_single_eye_endpoints",
+    "make_window_selector",
+    "normalize_timestamps",
+    "prepare_velocity_input",
+    "visual_angle_deg",
+]
+
+
 def compute_olsen_velocity(
     df: pd.DataFrame,
     cfg: OlsenVelocityConfig,
