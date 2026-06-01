@@ -122,21 +122,21 @@ class TestTobiiGazeDirAngle:
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert angle == pytest.approx(90.0, abs=1e-6)
 
-    def test_zero_vector_returns_zero(self):
-        """Nullvektor → 0° (kein Crash)."""
+    def test_zero_vector_returns_nan(self):
+        """Nullvektor → NaN, da der Winkel nicht berechenbar ist."""
         v1 = np.array([0.0, 0.0, 0.0])
         v2 = _make_unit_vec(0, 0, 1)
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
-        assert angle == 0.0
+        assert math.isnan(angle)
 
-    def test_none_direction_returns_zero(self):
-        """Fehlende Richtung (None) → 0°."""
+    def test_none_direction_returns_nan(self):
+        """Fehlende Richtung (None) → NaN."""
         ctx = VelocityContext(
             x1_mm=0.0, y1_mm=0.0, x2_mm=0.0, y2_mm=0.0,
             eye_x_mm=None, eye_y_mm=None, eye_z_mm=None,
             dir1=None, dir2=_make_unit_vec(0, 0, 1),
         )
-        assert self.strat.calculate_visual_angle_ctx(ctx) == 0.0
+        assert math.isnan(self.strat.calculate_visual_angle_ctx(ctx))
 
     def test_consistent_with_ray3d_gaze_dir_for_moderate_angles(self):
         """Für moderate Winkel (<90°) sollten TobiiGazeDirAngle und Ray3DGazeDir
