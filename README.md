@@ -125,11 +125,11 @@ Here's a typical workflow for processing a file:
 If you export from Tobii Pro Lab, use the built-in extractor:
 
 ```bash
-python extractor.py raw_tobii_export.tsv data.tsv
+python extractor.py --input raw_tobii_export.tsv --output data.tsv --timestamp-unit auto
 ```
 
 This converts the Tobii export to the slim format needed by the I-VT filter. It automatically:
-- Detects timestamp units (ms/us)
+- Detects timestamp units and populates millisecond and microsecond timestamps
 - Maps Tobii column names to standard format
 - Excludes calibration samples
 - Removes rows without stimulus names
