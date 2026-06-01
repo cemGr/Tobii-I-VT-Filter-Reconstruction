@@ -48,6 +48,62 @@ def test_apply_ivt_classifier_uses_default_config_and_classifies_velocities() ->
     ]
 
 
+def test_strict_baseline_threshold_boundary_ignores_invalid_window_heuristics() -> None:
+    result = apply_ivt_classifier(
+        pd.DataFrame(
+            {
+                "velocity_deg_per_sec": [29.999, 30.0, 30.001],
+                "window_any_invalid": [True, True, True],
+            }
+        ),
+        IVTClassifierConfig(velocity_threshold_deg_per_sec=30.0),
+    )
+
+    assert result["ivt_sample_type"].tolist() == ["Fixation", "Saccade", "Saccade"]
+    assert result["classifier_refinement_rules_enabled"].tolist() == ["", "", ""]
+    assert not result["classifier_invalid_window_neighbor_confirmation_enabled"].any()
+    assert not result["classifier_hysteresis_enabled"].any()
+
+
+def test_enabled_neighbor_confirmation_and_hysteresis_refine_threshold_boundary() -> None:
+    result = apply_ivt_classifier(
+        pd.DataFrame(
+            {
+                "velocity_deg_per_sec": [30.001, 29.999, 30.0, 30.001],
+                "window_any_invalid": [True, True, True, True],
+            }
+        ),
+        IVTClassifierConfig(
+            velocity_threshold_deg_per_sec=30.0,
+            enable_invalid_window_neighbor_confirmation=True,
+            enable_hysteresis=True,
+            hysteresis_width_deg_per_sec=0.01,
+        ),
+    )
+
+    assert result["ivt_sample_type"].tolist() == ["Fixation", "Fixation", "Saccade", "Saccade"]
+    assert result["velocity_neighbor_support"].tolist() == [False, False, True, True]
+    assert result["classifier_refinement_rules_enabled"].unique().tolist() == [
+        "invalid_window_neighbor_confirmation,hysteresis"
+    ]
+    assert result["classifier_invalid_window_neighbor_confirmation_enabled"].all()
+    assert result["classifier_hysteresis_enabled"].all()
+    assert result["classifier_hysteresis_width_deg_per_sec"].unique().tolist() == [0.01]
+
+
+def test_enabled_hysteresis_retains_previous_saccade_immediately_below_threshold() -> None:
+    result = apply_ivt_classifier(
+        pd.DataFrame({"velocity_deg_per_sec": [30.001, 29.999, 30.0]}),
+        IVTClassifierConfig(
+            velocity_threshold_deg_per_sec=30.0,
+            enable_hysteresis=True,
+            hysteresis_width_deg_per_sec=0.01,
+        ),
+    )
+
+    assert result["ivt_sample_type"].tolist() == ["Saccade", "Saccade", "Saccade"]
+
+
 @pytest.mark.parametrize("strategy", [Ray3DGazeDir(), TobiiGazeDirAngle()])
 @pytest.mark.parametrize(
     ("dir1", "dir2"),

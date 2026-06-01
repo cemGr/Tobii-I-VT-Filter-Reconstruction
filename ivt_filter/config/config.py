@@ -286,6 +286,16 @@ class IVTClassifierConfig:
     """
 
     velocity_threshold_deg_per_sec: float = 30.0
+
+    # Optional reconstruction heuristics. Disabled by default so the classifier
+    # behaves as a strict I-VT velocity-threshold classifier.
+    # Require an adjacent above-threshold velocity before classifying an
+    # invalid-window sample as a saccade.
+    enable_invalid_window_neighbor_confirmation: bool = False
+    # Retain the previous motion label while velocity is in the band immediately
+    # below the saccade threshold.
+    enable_hysteresis: bool = False
+    hysteresis_width_deg_per_sec: float = 2.0
     
     # Stage 1: Near-threshold hybrid strategy
     # Enable hybrid classification near threshold using alternative velocity

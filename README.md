@@ -54,6 +54,28 @@ Output: classified eye-tracking events
 
 **Post-Processing**: Merge saccades separated by brief periods (e.g., <75 ms) and discard very short fixations (<60 ms) that are likely noise.
 
+### Strict I-VT Baseline and Optional Reconstruction Heuristics
+
+The default classifier is a strict I-VT baseline. After validity handling, each finite velocity is classified with one inclusive threshold comparison:
+
+- `velocity < threshold` → `Fixation`
+- `velocity >= threshold` → `Saccade`
+- invalid eye samples → `EyesNotFound`
+- missing or non-finite velocity → `Unclassified`
+
+Reconstruction heuristics are opt-in and are not part of the baseline algorithm:
+
+| Option | Behavior when enabled |
+|--------|-----------------------|
+| `--enable-invalid-window-neighbor-confirmation` | Requires an adjacent above-threshold velocity before an invalid-window sample can become a saccade. |
+| `--enable-hysteresis` | Retains the previous motion label while velocity remains in the band immediately below the saccade threshold. |
+| `--hysteresis-width <deg/s>` | Sets the width of that optional hysteresis band (default: `2.0`). |
+| `--enable-near-threshold-hybrid` | Allows alternative-velocity refinement near the threshold. |
+| `--enable-eye-jump-rule` | Allows alternative-velocity correction for eye-position jumps. |
+| `--confident-switch-enabled` | Allows confident alternative-velocity switching away from the threshold. |
+
+Classifier output contains diagnostic columns including `classifier_refinement_rules_enabled`, `classifier_invalid_window_neighbor_confirmation_enabled`, `classifier_hysteresis_enabled`, and `classifier_hysteresis_width_deg_per_sec`, so exported runs state which optional rules were active.
+
 ---
 
 ## Installation & Setup
