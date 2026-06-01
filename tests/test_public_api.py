@@ -17,7 +17,6 @@ from ivt_filter.config import OlsenVelocityConfig
 
 REPOSITORY_ROOT = Path(__file__).parent.parent
 COMPATIBILITY_FACADES = {
-    "ivt_filter.postprocess": ("ivt_filter.postprocessing",),
     "ivt_filter.core": (
         "ivt_filter.postprocessing",
         "ivt_filter.processing.velocity",
@@ -296,6 +295,10 @@ def test_obsolete_velocity_computer_module_is_removed() -> None:
     assert importlib.util.find_spec("ivt_filter.processing.velocity_computer") is None
 
 
+def test_obsolete_postprocess_module_is_removed() -> None:
+    assert importlib.util.find_spec("ivt_filter.postprocess") is None
+
+
 LEGACY_MODULE_PREFIXES = ("ivt_filter.postprocess", "ivt_filter.core")
 LEGACY_TEXT_PATTERN = re.compile(
     r"(?:\bivt_filter\.(?:postprocess|core)\b|"
@@ -351,11 +354,10 @@ def _imported_module_names(
 
 def test_productive_modules_do_not_import_legacy_facades() -> None:
     package_root = REPOSITORY_ROOT / "ivt_filter"
-    legacy_facade = package_root / "postprocess.py"
     legacy_core = package_root / "core"
 
     for module_path in package_root.rglob("*.py"):
-        if module_path == legacy_facade or legacy_core in module_path.parents:
+        if legacy_core in module_path.parents:
             continue
 
         module_name = _module_name(module_path)
