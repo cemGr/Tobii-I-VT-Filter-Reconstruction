@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .config import OlsenVelocityConfig
+from .config import OlsenVelocityConfig, PipelineConfig
 from .processing.velocity import compute_olsen_velocity, compute_olsen_velocity_from_slim_tsv
 from .processing.classification import apply_ivt_classifier
 from .postprocess import merge_short_saccade_blocks
@@ -23,6 +23,7 @@ def __getattr__(name: str) -> Any:
 
 __all__ = [
     "OlsenVelocityConfig",
+    "PipelineConfig",
     "compute_olsen_velocity",
     "compute_olsen_velocity_from_slim_tsv",
     "apply_ivt_classifier",

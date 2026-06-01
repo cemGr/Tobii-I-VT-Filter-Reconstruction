@@ -12,6 +12,7 @@ from .config import (
     IVTClassifierConfig,
     SaccadeMergeConfig,
     FixationPostConfig,
+    PipelineConfig,
 )
 
 
@@ -117,4 +118,22 @@ class ConfigBuilder:
             cls.build_classifier_config(args),
             cls.build_saccade_merge_config(args),
             cls.build_fixation_post_config(args),
+        )
+
+    @classmethod
+    def build_pipeline_config(cls, args: argparse.Namespace) -> PipelineConfig:
+        """Build the source-of-truth configuration for active processing stages."""
+        velocity, classifier, saccade, fixation = cls.build_all_configs(args)
+        return PipelineConfig(
+            velocity=velocity,
+            classifier=classifier,
+            classify=(
+                args.classify
+                or args.evaluate
+                or bool(args.post_smoothing_ms)
+                or args.merge_close_fixations
+                or args.discard_short_fixations
+            ),
+            saccade_merge=saccade if args.post_smoothing_ms else None,
+            fixation_post=fixation if (args.merge_close_fixations or args.discard_short_fixations) else None,
         )
