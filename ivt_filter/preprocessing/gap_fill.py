@@ -155,6 +155,8 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                 px_x_prev = px_x_next = px_y_prev = px_y_next = None
 
             # Gaze-Direction-Endpunkte
+            dpx: tuple[float, float, float] | None
+            dnx: tuple[float, float, float] | None
             if dir_x_vals is not None:
                 dpx = (float(dir_x_vals[prev_idx]), float(dir_y_vals[prev_idx]), float(dir_z_vals[prev_idx]))
                 dnx = (float(dir_x_vals[next_idx]), float(dir_y_vals[next_idx]), float(dir_z_vals[next_idx]))
@@ -191,7 +193,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                     px_y_vals[j] = (1.0 - alpha) * float(px_y_prev) + alpha * float(px_y_next)
 
                 # Gaze-Direction-Vektoren interpolieren und renormieren
-                if dir_endpoints_valid:
+                if dir_endpoints_valid and dpx is not None and dnx is not None:
                     ix = (1.0 - alpha) * dpx[0] + alpha * dnx[0]
                     iy = (1.0 - alpha) * dpx[1] + alpha * dnx[1]
                     iz = (1.0 - alpha) * dpx[2] + alpha * dnx[2]
