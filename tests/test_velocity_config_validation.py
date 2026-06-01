@@ -87,3 +87,27 @@ def test_shifted_valid_window_accepts_compatible_fixed_window_modes(
 ) -> None:
     cfg = OlsenVelocityConfig(shifted_valid_window=True, **fixed_window_mode)
     assert cfg.shifted_valid_window is True
+
+
+@pytest.mark.parametrize(
+    ("config_kwargs", "selector_type"),
+    [
+        ({}, "TimeSymmetricWindowSelector"),
+        ({"sample_symmetric_window": True}, "SampleSymmetricWindowSelector"),
+        ({"fixed_window_samples": 5}, "FixedSampleSymmetricWindowSelector"),
+        ({"shifted_valid_window": True}, "TimeBasedShiftedValidWindowSelector"),
+        (
+            {"shifted_valid_window": True, "fixed_window_samples": 5},
+            "ShiftedValidWindowSelector",
+        ),
+        ({"asymmetric_neighbor_window": True}, "AsymmetricNeighborWindowSelector"),
+    ],
+)
+def test_compatible_legacy_window_modes_keep_existing_selector_behavior(
+    config_kwargs: dict[str, object], selector_type: str
+) -> None:
+    from ivt_filter.processing.velocity import make_window_selector
+
+    selector = make_window_selector(OlsenVelocityConfig(**config_kwargs))
+
+    assert type(selector).__name__ == selector_type
