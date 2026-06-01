@@ -514,25 +514,16 @@ def main() -> None:
     args = parser.parse_args()
     
     # Build all configurations
-    vel_cfg, cls_cfg, sac_cfg, fix_cfg = ConfigBuilder.build_all_configs(args)
+    pipeline_config = ConfigBuilder.build_pipeline_config(args)
     
     # Create pipeline
-    pipeline = IVTPipeline(
-        velocity_config=vel_cfg,
-        classifier_config=cls_cfg,
-        saccade_merge_config=sac_cfg if args.post_smoothing_ms else None,
-        fixation_post_config=fix_cfg if (args.merge_close_fixations or args.discard_short_fixations) else None,
-    )
+    pipeline = IVTPipeline(pipeline_config)
     
     # Run pipeline
     pipeline.run(
         input_path=args.input,
         output_path=args.output,
-        classify=args.classify,
         evaluate=args.evaluate,
-        post_smoothing_ms=args.post_smoothing_ms,
-        merge_close_fixations=args.merge_close_fixations,
-        discard_short_fixations=args.discard_short_fixations,
         plot=not args.no_plot,
         with_events=args.with_events,
         evaluate_exclude_calibration=args.exclude_calibration,

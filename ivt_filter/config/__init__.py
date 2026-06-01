@@ -5,6 +5,7 @@ from .config import (
     IVTClassifierConfig,
     SaccadeMergeConfig,
     FixationPostConfig,
+    PipelineConfig,
 )
 from .constants import PhysicalConstants
 from .config_builder import ConfigBuilder
@@ -14,6 +15,7 @@ __all__ = [
     "IVTClassifierConfig",
     "SaccadeMergeConfig",
     "FixationPostConfig",
+    "PipelineConfig",
     "PhysicalConstants",
     "ConfigBuilder",
 ]
