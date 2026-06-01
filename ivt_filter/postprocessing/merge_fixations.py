@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Tuple, Dict, Any, List
 
 import numpy as np
@@ -10,6 +11,8 @@ import pandas as pd
 
 from ..config import FixationPostConfig
 from ..strategies import Ray3DAngle, Olsen2DApproximation
+
+logger = logging.getLogger(__name__)
 
 
 def _weighted_fixation_center(
@@ -91,10 +94,10 @@ def merge_adjacent_fixations(
     # Select strategy
     if use_ray3d:
         angle_calculator = Ray3DAngle()
-        print("[MergeFixations] Using Ray3D angle calculation")
+        logger.info("[MergeFixations] Using Ray3D angle calculation")
     else:
         angle_calculator = Olsen2DApproximation()  # type: ignore[assignment]
-        print("[MergeFixations] Using Olsen 2D approximation")
+        logger.info("[MergeFixations] Using Olsen 2D approximation")
 
     # Fixations-Bloecke aus den Labels bestimmen
     events: List[Tuple[int, int]] = []

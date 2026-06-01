@@ -373,12 +373,16 @@ class SamplingAnalyzer:
             else np.mean(deltas)
         )
         hz_measured = 1000.0 / dt_ms if dt_ms > 0 else float("nan")
-        print(
-            f"[Sampling] {cfg.dt_calculation_method} dt = {dt_ms:.3f} ms -> measured ~{hz_measured:.1f} Hz (using {method_desc})"
+        logger.info(
+            "[Sampling] %s dt = %.3f ms -> measured ~%.1f Hz (using %s)",
+            cfg.dt_calculation_method,
+            dt_ms,
+            hz_measured,
+            method_desc,
         )
         if math.isfinite(hz_measured):
             nearest = min(self.NOMINAL_RATES, key=lambda rate: abs(rate - hz_measured))
-            print(f"[Sampling] nearest nominal rate: {nearest:.1f} Hz")
+            logger.info("[Sampling] nearest nominal rate: %.1f Hz", nearest)
         should_convert = cfg.auto_fixed_window_from_ms or cfg.symmetric_round_window
         if should_convert and cfg.fixed_window_samples is None and dt_ms > 0:
             intervals = max(1, int(round(cfg.window_length_ms / dt_ms)))
@@ -387,8 +391,12 @@ class SamplingAnalyzer:
                 samples += 1
             effective_ms = (samples - 1) * dt_ms
             cfg = dataclasses.replace(cfg, fixed_window_samples=samples)
-            print(
-                f"[Window] auto sample window: {samples} samples total (~{(samples - 1) / 2.0:.1f} pro Seite um das Zentrum, effektive Spannweite ~{effective_ms:.2f} ms)"
+            logger.info(
+                "[Window] auto sample window: %s samples total (~%.1f pro Seite um "
+                "das Zentrum, effektive Spannweite ~%.2f ms)",
+                samples,
+                (samples - 1) / 2.0,
+                effective_ms,
             )
         return VelocityComputationResult(dt_ms, hz_measured, cfg)
 
