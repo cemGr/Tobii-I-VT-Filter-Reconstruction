@@ -456,6 +456,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Maximaler visueller Winkel in Grad zwischen Fixationszentren fuer Merge (default: 0.5).",
     )
     parser.add_argument(
+        "--merge-fix-max-gap-velocity-deg-per-sec",
+        type=float,
+        default=35.0,
+        help="Maximale Velocity in Grad/s fuer das Relabeling von Gap-Samples (default: 35).",
+    )
+    parser.add_argument(
         "--discard-short-fixations",
         action="store_true",
         help="Fixationen verwerfen, deren Dauer kleiner als min-fixation-duration-ms ist.",
