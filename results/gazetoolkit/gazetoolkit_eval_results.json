@@ -1,0 +1,287 @@
+{
+  "no_gap_fill": {
+    "sample_level": {
+      "n_samples_total": 27801,
+      "n_samples_gt_fix_or_sac": 22979,
+      "n_fix_in_gt": 20174,
+      "n_sac_in_gt": 2805,
+      "n_gt_uncl": 0,
+      "n_pred_uncl": 0,
+      "n_correct_uncl": 0,
+      "accuracy_uncl": null,
+      "recall_uncl": null,
+      "n_gt_eynf": 0,
+      "n_pred_eynf": 0,
+      "n_correct_eynf": 0,
+      "accuracy_eynf": null,
+      "recall_eynf": null,
+      "n_agree": 22754,
+      "percentage_agreement": 99.0208451194569,
+      "n_agree_all": 26886,
+      "percentage_agreement_all": 96.70875148375958,
+      "fixation_recall": 99.5092693565976,
+      "saccade_recall": 95.50802139037432,
+      "cohen_kappa": 0.9214204342818406,
+      "labels": [
+        "Fixation",
+        "Saccade",
+        "Unknown"
+      ],
+      "tp_fix": 20075,
+      "fn_fix": 98,
+      "tp_sac": 2679,
+      "fn_sac": 126,
+      "n_fix_to_uncl": 0,
+      "n_sac_to_uncl": 0,
+      "n_fix_to_eynf": 0,
+      "n_sac_to_eynf": 0,
+      "confusion_matrix": [
+        [
+          20075,
+          98,
+          1
+        ],
+        [
+          126,
+          2679,
+          0
+        ],
+        [
+          690,
+          0,
+          4132
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "Fixation",
+        "Saccade",
+        "Unknown"
+      ],
+      "per_class": {
+        "Fixation": {
+          "precision": 96.1,
+          "recall": 99.5,
+          "f1": 97.8
+        },
+        "Saccade": {
+          "precision": 96.5,
+          "recall": 95.5,
+          "f1": 96.0
+        }
+      }
+    },
+    "event_level": {
+      "n_gt_events": 1472,
+      "n_pred_events": 2037,
+      "n_matched": 1446,
+      "n_fn": 26,
+      "n_fp": 591,
+      "event_counts": {
+        "Fixation": {
+          "gt": 738,
+          "pred": 1258
+        },
+        "Saccade": {
+          "gt": 734,
+          "pred": 779
+        }
+      },
+      "confusion_matrix": {
+        "Fixation": {
+          "Fixation": 724,
+          "Saccade": 1,
+          "FN": 13
+        },
+        "Saccade": {
+          "Saccade": 690,
+          "Fixation": 31,
+          "FN": 13
+        }
+      },
+      "timing": {
+        "Fixation": {
+          "n_events": 724,
+          "onset_dev_mean_ms": 0.6022099447513812,
+          "onset_dev_std_ms": 7.728397498153948,
+          "onset_dev_abs_mean_ms": 0.9530386740331491,
+          "offset_dev_mean_ms": -1.5704419889502763,
+          "offset_dev_std_ms": 18.801555490907695,
+          "offset_dev_abs_mean_ms": 2.611878453038674
+        },
+        "Saccade": {
+          "n_events": 690,
+          "onset_dev_mean_ms": 0.09710144927536232,
+          "onset_dev_std_ms": 2.390867421853486,
+          "onset_dev_abs_mean_ms": 0.43043478260869567,
+          "offset_dev_mean_ms": -0.043478260869565216,
+          "offset_dev_std_ms": 4.775769704781799,
+          "offset_dev_abs_mean_ms": 0.9130434782608695
+        }
+      },
+      "per_class": {
+        "Fixation": {
+          "precision": 57.6,
+          "recall": 98.1,
+          "f1": 72.5,
+          "n_gt": 738,
+          "n_pred": 1258
+        },
+        "Saccade": {
+          "precision": 88.6,
+          "recall": 94.0,
+          "f1": 91.2,
+          "n_gt": 734,
+          "n_pred": 779
+        }
+      }
+    }
+  },
+  "gap_fill": {
+    "sample_level": {
+      "n_samples_total": 27822,
+      "n_samples_gt_fix_or_sac": 24217,
+      "n_fix_in_gt": 20991,
+      "n_sac_in_gt": 3226,
+      "n_gt_uncl": 0,
+      "n_pred_uncl": 0,
+      "n_correct_uncl": 0,
+      "accuracy_uncl": null,
+      "recall_uncl": null,
+      "n_gt_eynf": 0,
+      "n_pred_eynf": 0,
+      "n_correct_eynf": 0,
+      "accuracy_eynf": null,
+      "recall_eynf": null,
+      "n_agree": 21174,
+      "percentage_agreement": 87.43444687616137,
+      "n_agree_all": 24779,
+      "percentage_agreement_all": 89.06261232118467,
+      "fixation_recall": 89.15725787242151,
+      "saccade_recall": 76.22442653440794,
+      "cohen_kappa": 0.7572461646300913,
+      "labels": [
+        "Fixation",
+        "Saccade",
+        "Unknown"
+      ],
+      "tp_fix": 18715,
+      "fn_fix": 173,
+      "tp_sac": 2459,
+      "fn_sac": 36,
+      "n_fix_to_uncl": 0,
+      "n_sac_to_uncl": 0,
+      "n_fix_to_eynf": 0,
+      "n_sac_to_eynf": 0,
+      "confusion_matrix": [
+        [
+          18715,
+          173,
+          2103
+        ],
+        [
+          36,
+          2459,
+          731
+        ],
+        [
+          0,
+          0,
+          3605
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "Fixation",
+        "Saccade",
+        "Unknown"
+      ],
+      "per_class": {
+        "Fixation": {
+          "precision": 99.8,
+          "recall": 89.2,
+          "f1": 94.2
+        },
+        "Saccade": {
+          "precision": 93.4,
+          "recall": 76.2,
+          "f1": 84.0
+        }
+      }
+    },
+    "event_level": {
+      "n_gt_events": 1723,
+      "n_pred_events": 1503,
+      "n_matched": 1346,
+      "n_fn": 377,
+      "n_fp": 157,
+      "event_counts": {
+        "Fixation": {
+          "gt": 857,
+          "pred": 711
+        },
+        "Saccade": {
+          "gt": 866,
+          "pred": 792
+        }
+      },
+      "confusion_matrix": {
+        "Fixation": {
+          "Fixation": 648,
+          "Saccade": 50,
+          "FN": 159
+        },
+        "Saccade": {
+          "Saccade": 647,
+          "Fixation": 1,
+          "FN": 218
+        }
+      },
+      "timing": {
+        "Fixation": {
+          "n_events": 648,
+          "onset_dev_mean_ms": 4.693956790123366,
+          "onset_dev_std_ms": 34.76684441965884,
+          "onset_dev_abs_mean_ms": 5.465558641975262,
+          "offset_dev_mean_ms": -7.677495370370856,
+          "offset_dev_std_ms": 39.427333495581976,
+          "offset_dev_abs_mean_ms": 7.986131172840049
+        },
+        "Saccade": {
+          "n_events": 647,
+          "onset_dev_mean_ms": 1.0947944358577917,
+          "onset_dev_std_ms": 6.953900597922748,
+          "onset_dev_abs_mean_ms": 1.403913446676929,
+          "offset_dev_mean_ms": -3.529925811437868,
+          "offset_dev_std_ms": 19.748705411833992,
+          "offset_dev_abs_mean_ms": 3.942089644513566
+        }
+      },
+      "per_class": {
+        "Fixation": {
+          "precision": 91.1,
+          "recall": 75.6,
+          "f1": 82.7,
+          "n_gt": 857,
+          "n_pred": 711
+        },
+        "Saccade": {
+          "precision": 81.7,
+          "recall": 74.7,
+          "f1": 78.0,
+          "n_gt": 866,
+          "n_pred": 792
+        }
+      }
+    }
+  },
+  "label_schema": {
+    "gt_collapse": {
+      "EyesNotFound": "Unknown",
+      "Unclassified": "Unknown"
+    },
+    "classes": [
+      "Fixation",
+      "Saccade",
+      "Unknown"
+    ]
+  }
+}
