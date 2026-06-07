@@ -15,36 +15,36 @@
       "n_correct_eynf": 0,
       "accuracy_eynf": null,
       "recall_eynf": null,
-      "n_agree": 22754,
-      "percentage_agreement": 99.0208451194569,
-      "n_agree_all": 26886,
-      "percentage_agreement_all": 96.70875148375958,
-      "fixation_recall": 99.5092693565976,
-      "saccade_recall": 95.50802139037432,
-      "cohen_kappa": 0.9214204342818406,
+      "n_agree": 22751,
+      "percentage_agreement": 99.00778972104966,
+      "n_agree_all": 26883,
+      "percentage_agreement_all": 96.6979605050178,
+      "fixation_recall": 99.50431248141172,
+      "saccade_recall": 95.4367201426025,
+      "cohen_kappa": 0.921161813933684,
       "labels": [
         "Fixation",
         "Saccade",
         "Unknown"
       ],
-      "tp_fix": 20075,
+      "tp_fix": 20074,
       "fn_fix": 98,
-      "tp_sac": 2679,
-      "fn_sac": 126,
+      "tp_sac": 2677,
+      "fn_sac": 127,
       "n_fix_to_uncl": 0,
       "n_sac_to_uncl": 0,
       "n_fix_to_eynf": 0,
       "n_sac_to_eynf": 0,
       "confusion_matrix": [
         [
-          20075,
+          20074,
           98,
-          1
+          2
         ],
         [
-          126,
-          2679,
-          0
+          127,
+          2677,
+          1
         ],
         [
           690,
@@ -65,21 +65,21 @@
         },
         "Saccade": {
           "precision": 96.5,
-          "recall": 95.5,
-          "f1": 96.0
+          "recall": 95.4,
+          "f1": 95.9
         }
       }
     },
     "event_level": {
       "n_gt_events": 1472,
-      "n_pred_events": 2037,
+      "n_pred_events": 2039,
       "n_matched": 1446,
       "n_fn": 26,
-      "n_fp": 591,
+      "n_fp": 593,
       "event_counts": {
         "Fixation": {
           "gt": 738,
-          "pred": 1258
+          "pred": 1260
         },
         "Saccade": {
           "gt": 734,
@@ -101,30 +101,30 @@
       "timing": {
         "Fixation": {
           "n_events": 724,
-          "onset_dev_mean_ms": 0.6022099447513812,
-          "onset_dev_std_ms": 7.728397498153948,
-          "onset_dev_abs_mean_ms": 0.9530386740331491,
-          "offset_dev_mean_ms": -1.5704419889502763,
-          "offset_dev_std_ms": 18.801555490907695,
-          "offset_dev_abs_mean_ms": 2.611878453038674
+          "onset_dev_mean_ms": 0.7513812154696132,
+          "onset_dev_std_ms": 8.864060855673918,
+          "onset_dev_abs_mean_ms": 1.12707182320442,
+          "offset_dev_mean_ms": -1.617403314917127,
+          "offset_dev_std_ms": 18.860007697329717,
+          "offset_dev_abs_mean_ms": 2.658839779005525
         },
         "Saccade": {
           "n_events": 690,
           "onset_dev_mean_ms": 0.09710144927536232,
           "onset_dev_std_ms": 2.390867421853486,
           "onset_dev_abs_mean_ms": 0.43043478260869567,
-          "offset_dev_mean_ms": -0.043478260869565216,
-          "offset_dev_std_ms": 4.775769704781799,
-          "offset_dev_abs_mean_ms": 0.9130434782608695
+          "offset_dev_mean_ms": -0.06666666666666667,
+          "offset_dev_std_ms": 4.814246717422855,
+          "offset_dev_abs_mean_ms": 0.936231884057971
         }
       },
       "per_class": {
         "Fixation": {
-          "precision": 57.6,
+          "precision": 57.5,
           "recall": 98.1,
           "f1": 72.5,
           "n_gt": 738,
-          "n_pred": 1258
+          "n_pred": 1260
         },
         "Saccade": {
           "precision": 88.6,
@@ -152,41 +152,41 @@
       "n_correct_eynf": 0,
       "accuracy_eynf": null,
       "recall_eynf": null,
-      "n_agree": 21174,
-      "percentage_agreement": 87.43444687616137,
-      "n_agree_all": 24779,
-      "percentage_agreement_all": 89.06261232118467,
-      "fixation_recall": 89.15725787242151,
-      "saccade_recall": 76.22442653440794,
-      "cohen_kappa": 0.7572461646300913,
+      "n_agree": 23961,
+      "percentage_agreement": 98.94289135731098,
+      "n_agree_all": 27554,
+      "percentage_agreement_all": 99.03673352023579,
+      "fixation_recall": 99.67605164117955,
+      "saccade_recall": 94.17234965902045,
+      "cohen_kappa": 0.9757702299451029,
       "labels": [
         "Fixation",
         "Saccade",
         "Unknown"
       ],
-      "tp_fix": 18715,
-      "fn_fix": 173,
-      "tp_sac": 2459,
-      "fn_sac": 36,
+      "tp_fix": 20923,
+      "fn_fix": 68,
+      "tp_sac": 3038,
+      "fn_sac": 186,
       "n_fix_to_uncl": 0,
       "n_sac_to_uncl": 0,
       "n_fix_to_eynf": 0,
       "n_sac_to_eynf": 0,
       "confusion_matrix": [
         [
-          18715,
-          173,
-          2103
+          20923,
+          68,
+          0
         ],
         [
-          36,
-          2459,
-          731
+          186,
+          3038,
+          2
         ],
         [
+          12,
           0,
-          0,
-          3605
+          3593
         ]
       ],
       "confusion_matrix_labels": [
@@ -196,79 +196,79 @@
       ],
       "per_class": {
         "Fixation": {
-          "precision": 99.8,
-          "recall": 89.2,
-          "f1": 94.2
+          "precision": 99.1,
+          "recall": 99.7,
+          "f1": 99.4
         },
         "Saccade": {
-          "precision": 93.4,
-          "recall": 76.2,
-          "f1": 84.0
+          "precision": 97.8,
+          "recall": 94.2,
+          "f1": 96.0
         }
       }
     },
     "event_level": {
       "n_gt_events": 1723,
-      "n_pred_events": 1503,
-      "n_matched": 1346,
-      "n_fn": 377,
-      "n_fp": 157,
+      "n_pred_events": 1643,
+      "n_matched": 1554,
+      "n_fn": 169,
+      "n_fp": 89,
       "event_counts": {
         "Fixation": {
           "gt": 857,
-          "pred": 711
+          "pred": 834
         },
         "Saccade": {
           "gt": 866,
-          "pred": 792
+          "pred": 809
         }
       },
       "confusion_matrix": {
         "Fixation": {
-          "Fixation": 648,
-          "Saccade": 50,
-          "FN": 159
+          "Fixation": 767,
+          "Saccade": 4,
+          "FN": 86
         },
         "Saccade": {
-          "Saccade": 647,
-          "Fixation": 1,
-          "FN": 218
+          "Saccade": 771,
+          "Fixation": 12,
+          "FN": 83
         }
       },
       "timing": {
         "Fixation": {
-          "n_events": 648,
-          "onset_dev_mean_ms": 4.693956790123366,
-          "onset_dev_std_ms": 34.76684441965884,
-          "onset_dev_abs_mean_ms": 5.465558641975262,
-          "offset_dev_mean_ms": -7.677495370370856,
-          "offset_dev_std_ms": 39.427333495581976,
-          "offset_dev_abs_mean_ms": 7.986131172840049
+          "n_events": 767,
+          "onset_dev_mean_ms": -1.2820547588005782,
+          "onset_dev_std_ms": 24.222545717333865,
+          "onset_dev_abs_mean_ms": 2.846599739243844,
+          "offset_dev_mean_ms": 0.619294654498053,
+          "offset_dev_std_ms": 19.88783320642909,
+          "offset_dev_abs_mean_ms": 2.7922803129074913
         },
         "Saccade": {
-          "n_events": 647,
-          "onset_dev_mean_ms": 1.0947944358577917,
-          "onset_dev_std_ms": 6.953900597922748,
-          "onset_dev_abs_mean_ms": 1.403913446676929,
-          "offset_dev_mean_ms": -3.529925811437868,
-          "offset_dev_std_ms": 19.748705411833992,
-          "offset_dev_abs_mean_ms": 3.942089644513566
+          "n_events": 771,
+          "onset_dev_mean_ms": 0.11889753566797293,
+          "onset_dev_std_ms": 3.6883764229722695,
+          "onset_dev_abs_mean_ms": 0.4863787289234917,
+          "offset_dev_mean_ms": 0.03236705577173025,
+          "offset_dev_std_ms": 4.795692949553108,
+          "offset_dev_abs_mean_ms": 0.8971634241245307
         }
       },
       "per_class": {
         "Fixation": {
-          "precision": 91.1,
-          "recall": 75.6,
-          "f1": 82.7,
+          "precision": 92.0,
+          "recall": 89.5,
+          "f1": 90.7,
           "n_gt": 857,
-          "n_pred": 711
+          "n_pred": 834
         },
         "Saccade": {
-          "precision": 81.7,
-          "recall": 74.7,
-          "f1": 78.0,
+          "precision": 95.3,
+          "recall": 89.0,
+          "f1": 92.1,
           "n_gt": 866,
-          "n_pred": 792
+          "n_pred": 809
         }
       }
     }
@@ -282,6 +282,7 @@
       "Fixation",
       "Saccade",
       "Unknown"
-    ]
+    ],
+    "pipeline": "GazeToolkit i-vt.exe (C# original)"
   }
 }
