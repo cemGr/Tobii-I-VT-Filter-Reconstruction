@@ -16,35 +16,40 @@ Sample-level
   Class         Precision     Recall         F1
   ------------ ---------- ---------- ----------
   Fixation           96.1       99.5       97.8
-  Saccade            96.5       95.5       96.0
+  Saccade            96.5       95.4       95.9
 
 Event-level  (max-IoU, min IoU > 0)
   Class         Precision     Recall         F1  GT ev  Pred ev
   ------------ ---------- ---------- ----------  -----  -------
-  Fixation           57.6       98.1       72.5    738     1258
+  Fixation           57.5       98.1       72.5    738     1260
   Saccade            88.6       94.0       91.2    734      779
 
 Variant 2 — Gap Fill 75 ms  (ivt_filter.py)
 -------------------------------------------
 
 Sample-level
-  Agreement (Fix/Sac only) : 87.4 %
-  Agreement (all samples)  : 89.1 %
-  Cohen's κ                : 0.757
+  Agreement (Fix/Sac only) : 98.9 %
+  Agreement (all samples)  : 99.0 %
+  Cohen's κ                : 0.976
 
   Class         Precision     Recall         F1
   ------------ ---------- ---------- ----------
-  Fixation           99.8       89.2       94.2
-  Saccade            93.4       76.2       84.0
+  Fixation           99.1       99.7       99.4
+  Saccade            97.8       94.2       96.0
 
 Event-level  (max-IoU, min IoU > 0)
   Class         Precision     Recall         F1  GT ev  Pred ev
   ------------ ---------- ---------- ----------  -----  -------
-  Fixation           91.1       75.6       82.7    857      711
-  Saccade            81.7       74.7       78.0    866      792
+  Fixation           92.0       89.5       90.7    857      834
+  Saccade            95.3       89.0       92.1    866      809
+
+Pipeline (both variants): i-vt.exe (GazeToolkit C#, UXI.GazeToolkit.dll)
+    Settings: --select Average --frequency 120 --window-side 10 --threshold 30
+    No merge, denoise, or discard step applied.
 
 Limitations
 -----------
-No gap fill: C# pipeline generation settings unknown (no merge step evident).
-Gap fill   : ivt_filter.py uses fixed 600 mm viewing distance (actual ≈565 mm);
-             no native gap fill; strict both-eyes-valid requirement.
+No gap fill: Fixation over-fragmentation due to missing merge step (intentional,
+             to isolate the pure I-VT filter without post-processing).
+Gap fill   : GazeToolkit and Tobii Pro Lab apply independent linear interpolation
+             to the same raw signal; interpolated values may differ slightly.
