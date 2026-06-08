@@ -185,51 +185,44 @@ class TestTobiiGazeDirAngle:
 # ---------------------------------------------------------------------------
 
 class TestTobiiGazeVelocityWindowSelector:
-    """Tests für die Tobii-exakte Fenstergröße."""
+    """Tests for the Tobii-matched window selector."""
 
     def _make_valid_data(self, n: int):
-        """Erstellt n valide Samples (alle valid=True, äquidistant)."""
-        times = np.arange(n, dtype=float)  # 1 ms Abstand
+        """Create n valid samples (all valid=True, equidistant)."""
+        times = np.arange(n, dtype=float)
         valid = np.ones(n, dtype=bool)
         return times, valid
 
     def test_window_size_60hz(self):
-        """60 Hz, 20 ms Fenster: window_samples = floor(20/16.67*1.01)+1 = 3."""
-        # floor(20 / 16.67 * 1.01) + 1 = floor(1.213) + 1 = 1 + 1 = 2 → half = 0
-        # Aber: volle Fenstergröße: window_ms = 20 ms (half_window_ms = 10 ms übergeben)
-        # Tobii: window_samples = floor(20 / 16.67 * 1.01) + 1 = floor(1.213) + 1 = 2 → half = 0
-        # Mit half = 0 gibt es kein sinnvolles Fenster mehr.
-        # Korrekte Verwendung: half_window_ms = window_length_ms / 2 = 10 ms
+        """60 Hz, 20 ms window: N = max(1, floor(20/16.67*1.01)) + 1 = 2."""
         sample_interval_ms = 1000.0 / 60  # ≈ 16.67 ms
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
-        half_size = sel._compute_half_size(half_window_ms=10.0)  # 20 ms gesamt
-        # window_samples = floor(20 / 16.67 * 1.01) + 1 = floor(1.213) + 1 = 2
-        # half = (2-1)//2 = 0 → kein Fenster bei half=0
-        # Das stimmt mit Tobii überein: bei 60 Hz und 20 ms Fenster = 2 Samples,
-        # was bedeutet: 1 Sample links und 1 Sample rechts → half=1 wäre falsch
-        # Laut Tobii: window_samples=2 → half=(2-1)//2=0 → asymmetrisch
-        assert half_size >= 0
+        N = sel._compute_window_samples(half_window_ms=10.0)
+        assert N == 2
 
     def test_window_size_120hz_20ms(self):
-        """120 Hz, 20 ms Fenster: window_samples = floor(20/8.33*1.01)+1 = 4."""
+        """120 Hz, 20 ms window: N = max(1, floor(20/8.33*1.01)) + 1 = 3."""
         sample_interval_ms = 1000.0 / 120  # ≈ 8.33 ms
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
-        half_size = sel._compute_half_size(half_window_ms=10.0)
-        # window_samples = floor(20 / 8.33 * 1.01) + 1 = floor(2.425) + 1 = 3
-        # half = (3-1)//2 = 1
-        assert half_size == 1
+        N = sel._compute_window_samples(half_window_ms=10.0)
+        assert N == 3
 
     def test_window_size_240hz_20ms(self):
-        """240 Hz, 20 ms Fenster: Größerer half_size."""
+        """240 Hz, 20 ms window: N = max(1, floor(20/4.17*1.01)) + 1 = 5."""
         sample_interval_ms = 1000.0 / 240  # ≈ 4.17 ms
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
-        half_size = sel._compute_half_size(half_window_ms=10.0)
-        # window_samples = floor(20 / 4.17 * 1.01) + 1 = floor(4.848) + 1 = 5
-        # half = (5-1)//2 = 2
-        assert half_size == 2
+        N = sel._compute_window_samples(half_window_ms=10.0)
+        assert N == 5
+
+    def test_window_size_120hz_1ms(self):
+        """120 Hz, 1 ms window: N=2; MidIndex must yield a valid window."""
+        sample_interval_ms = 1000.0 / 120
+        sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
+        N = sel._compute_window_samples(half_window_ms=0.5)
+        assert N == 2
 
     def test_select_returns_valid_endpoints(self):
-        """Fensterauswahl liefert valide Endpunkte."""
+        """Window selection returns valid endpoints."""
         sample_interval_ms = 8.33  # 120 Hz
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
         n = 20
@@ -240,43 +233,61 @@ class TestTobiiGazeVelocityWindowSelector:
         assert first < last
         assert first <= idx <= last
 
+    def test_select_1ms_120hz_valid(self):
+        """At 120 Hz / 1 ms window (N=2), MidIndex must produce a valid pair."""
+        sample_interval_ms = 1000.0 / 120
+        sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
+        n = 20
+        times, valid = self._make_valid_data(n)
+        idx = 5
+        first, last = sel.select(idx, times, valid, half_window_ms=0.5)
+        assert first is not None and last is not None
+        assert first < last
+
     def test_select_invalid_center_returns_none(self):
-        """Ungültiges Center-Sample → kein Fenster."""
+        """Invalid centre sample returns (None, None)."""
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=8.33)
         n = 20
         times = np.arange(n, dtype=float)
         valid = np.ones(n, dtype=bool)
-        valid[10] = False  # center ungültig
+        valid[10] = False
         first, last = sel.select(10, times, valid, half_window_ms=10.0)
         assert first is None and last is None
 
     def test_select_at_data_boundary(self):
-        """Fenster am Rand des Datensatzes wird korrekt begrenzt."""
+        """Window at data boundary is clamped correctly."""
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=8.33)
         n = 20
         times, valid = self._make_valid_data(n)
-        # Am Anfang (idx=0)
         first, last = sel.select(0, times, valid, half_window_ms=10.0)
         if first is not None:
             assert first >= 0
             assert last <= n - 1
 
     def test_invalid_sample_interval_raises(self):
-        """Ungültiges sample_interval_ms löst ValueError aus."""
+        """Invalid sample_interval_ms raises ValueError."""
         with pytest.raises(ValueError):
             TobiiGazeVelocityWindowSelector(sample_interval_ms=0.0)
         with pytest.raises(ValueError):
             TobiiGazeVelocityWindowSelector(sample_interval_ms=-1.0)
 
-    def test_1_01_factor_larger_than_without_factor(self):
-        """Mit 1.01-Faktor wird mindestens genauso groß wie ohne."""
+    def test_tolerance_factor_increases_or_maintains_window(self):
+        """Tolerance 1.01 produces N >= N with tolerance 1.0."""
+        from ivt_filter.strategies.anchor_window import compute_window_samples
         interval = 8.33
         sel = TobiiGazeVelocityWindowSelector(sample_interval_ms=interval)
-        half_with = sel._compute_half_size(10.0)
-        # Ohne 1.01-Faktor: floor(20/8.33) + 1 = 3 → half = 1
-        window_without = int(20.0 / interval) + 1
-        half_without = (window_without - 1) // 2
-        assert half_with >= half_without
+        N_with = sel._compute_window_samples(10.0)
+        N_without = compute_window_samples(20_000.0, interval * 1000.0, tolerance=1.0)
+        assert N_with >= N_without
+
+    def test_custom_strategy_is_used(self):
+        """A custom AnchorWindowStrategy is respected."""
+        from ivt_filter.strategies.anchor_window import SymmetricHalf
+        sel = TobiiGazeVelocityWindowSelector(
+            sample_interval_ms=1000.0 / 120,
+            strategy=SymmetricHalf(),
+        )
+        assert isinstance(sel.strategy, SymmetricHalf)
 
 
 # ---------------------------------------------------------------------------
