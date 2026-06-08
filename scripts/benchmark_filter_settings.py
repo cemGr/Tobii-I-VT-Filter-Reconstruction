@@ -56,6 +56,7 @@ CSV_FIELDS = [
     "event_mean_iou",
     "event_correct_type_rate",
     "eye_mode",
+    "velocity_method",
     "threshold_deg_per_sec",
     "window_length_ms",
     "smoothing_mode",
@@ -118,6 +119,7 @@ def infer_pipeline_config(path: Path) -> tuple[PipelineConfig, dict[str, Any]]:
 
     velocity = OlsenVelocityConfig(
         window_length_ms=window_ms,
+        velocity_method="olsen2d",
         time_column=time_column,
         time_unit=time_unit,
         eye_mode=eye_mode,
@@ -127,6 +129,95 @@ def infer_pipeline_config(path: Path) -> tuple[PipelineConfig, dict[str, Any]]:
         gap_fill_max_gap_ms=gap_fill_ms,
     )
     classifier = IVTClassifierConfig(velocity_threshold_deg_per_sec=threshold)
+    config = PipelineConfig(
+        velocity=velocity,
+        classifier=classifier,
+        classify=True,
+        fixation_post=fixation_post,
+    )
+    return config, notes
+
+
+def load_file_configs(configs_path: Path) -> dict[str, Any]:
+    """Load explicit per-file configurations from a JSON file.
+
+    Returns a dict with keys ``files`` (mapping filename → config entry) and
+    ``skip`` (list of filenames to exclude from benchmarking).
+    """
+    if not configs_path.exists():
+        return {"files": {}, "skip": []}
+    with configs_path.open(encoding="utf-8") as fh:
+        data = json.load(fh)
+    return data
+
+
+def build_pipeline_config_from_entry(
+    entry: dict[str, Any], path: Path
+) -> tuple[PipelineConfig, dict[str, Any]]:
+    """Build a PipelineConfig from an explicit JSON config entry.
+
+    Time column/unit are still probed from the file itself since that
+    information is not encoded in the config entry.
+    """
+    notes: dict[str, Any] = {
+        "source_name": path.name,
+        "config_source": "configs.json",
+        "entry_notes": entry.get("notes", ""),
+    }
+    time_column, time_unit = _infer_time_settings(path, notes)
+
+    velocity_method = entry.get("velocity_method", "tobii_gaze_dir")
+    eye_mode = entry.get("eye_mode", "average")
+    window_ms = float(entry.get("window_length_ms", 20.0))
+    smoothing_mode = entry.get("smoothing_mode", "none")
+    smoothing_window = int(entry.get("smoothing_window_samples", 5))
+    gap_fill_enabled = bool(entry.get("gap_fill_enabled", False))
+    gap_fill_ms = float(entry.get("gap_fill_max_gap_ms", 75.0))
+    threshold = float(entry.get("velocity_threshold_deg_per_sec", 30.0))
+
+    velocity = OlsenVelocityConfig(
+        window_length_ms=window_ms,
+        velocity_method=velocity_method,
+        time_column=time_column,
+        time_unit=time_unit,
+        eye_mode=eye_mode,
+        smoothing_mode=smoothing_mode,
+        smoothing_window_samples=smoothing_window,
+        gap_fill_enabled=gap_fill_enabled,
+        gap_fill_max_gap_ms=gap_fill_ms,
+    )
+    classifier = IVTClassifierConfig(velocity_threshold_deg_per_sec=threshold)
+
+    merge = bool(entry.get("merge_adjacent_fixations", False))
+    discard = bool(entry.get("discard_short_fixations", False))
+    if merge or discard:
+        fixation_post = FixationPostConfig()
+        if merge:
+            fixation_post.merge_adjacent_fixations = True
+            fixation_post.max_time_gap_ms = float(entry.get("merge_max_time_gap_ms", 75.0))
+            fixation_post.max_angle_deg = float(entry.get("merge_max_angle_deg", 0.5))
+        if discard:
+            fixation_post.discard_short_fixations = True
+            fixation_post.min_fixation_duration_ms = float(entry.get("min_fixation_duration_ms", 60.0))
+            if "discard_target" in entry:
+                fixation_post.discard_target = entry["discard_target"]
+        fixation_post.__post_init__()
+    else:
+        fixation_post = None
+
+    notes.update({
+        "eye_mode": eye_mode,
+        "velocity_method": velocity_method,
+        "threshold_deg_per_sec": threshold,
+        "window_length_ms": window_ms,
+        "smoothing_mode": smoothing_mode,
+        "smoothing_window_samples": smoothing_window,
+        "gap_fill_enabled": gap_fill_enabled,
+        "gap_fill_max_gap_ms": gap_fill_ms,
+        "merge_adjacent_fixations": merge,
+        "discard_short_fixations": discard,
+    })
+
     config = PipelineConfig(
         velocity=velocity,
         classifier=classifier,
@@ -290,10 +381,15 @@ def run_benchmark(
     input_files: Iterable[Path],
     results_dir: Path,
     *,
+    configs_path: Path | None = None,
     write_outputs: bool = False,
     exclude_calibration: bool = False,
     continue_on_error: bool = True,
 ) -> list[dict[str, Any]]:
+    file_configs = load_file_configs(configs_path) if configs_path else {"files": {}, "skip": []}
+    skip_set = set(file_configs.get("skip", []))
+    explicit_configs = file_configs.get("files", {})
+
     results_dir.mkdir(parents=True, exist_ok=True)
     outputs_dir = results_dir / "outputs"
     if write_outputs:
@@ -301,10 +397,16 @@ def run_benchmark(
 
     results = []
     for path in input_files:
+        if path.name in skip_set:
+            print(f"[benchmark] skipping {path.name} (skip list)", flush=True)
+            continue
         started = time.perf_counter()
         print(f"[benchmark] {path.name}", flush=True)
         try:
-            config, notes = infer_pipeline_config(path)
+            if path.name in explicit_configs:
+                config, notes = build_pipeline_config_from_entry(explicit_configs[path.name], path)
+            else:
+                config, notes = infer_pipeline_config(path)
             output_path = outputs_dir / f"{path.stem}_benchmark.tsv" if write_outputs else None
             df = IVTPipeline(config).run(
                 str(path),
@@ -574,6 +676,7 @@ def _csv_row(result: dict[str, Any]) -> dict[str, Any]:
         "event_mean_iou": _round(event.get("mean_iou")),
         "event_correct_type_rate": _round(event.get("correct_type_rate")),
         "eye_mode": velocity.get("eye_mode"),
+        "velocity_method": velocity.get("velocity_method"),
         "threshold_deg_per_sec": classifier.get("velocity_threshold_deg_per_sec"),
         "window_length_ms": velocity.get("window_length_ms"),
         "smoothing_mode": velocity.get("smoothing_mode"),
@@ -696,6 +799,15 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
     parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
+    parser.add_argument(
+        "--configs",
+        type=Path,
+        default=None,
+        help=(
+            "Path to a configs.json file with explicit per-file filter settings. "
+            "Defaults to <input-dir>/configs.json when that file exists."
+        ),
+    )
     parser.add_argument("--pattern", default="*.tsv")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--write-outputs", action="store_true")
@@ -719,9 +831,18 @@ def main(argv: list[str] | None = None) -> int:
     if not input_files:
         raise SystemExit(f"No input files matched {args.input_dir / args.pattern}")
 
+    # Resolve configs path: explicit arg > auto-detect default location
+    configs_path: Path | None = args.configs
+    if configs_path is None:
+        default_configs = args.input_dir / "configs.json"
+        if default_configs.exists():
+            configs_path = default_configs
+            print(f"[benchmark] using configs: {configs_path}", flush=True)
+
     results = run_benchmark(
         input_files,
         args.results_dir,
+        configs_path=configs_path,
         write_outputs=args.write_outputs,
         exclude_calibration=args.exclude_calibration,
         continue_on_error=not args.fail_fast,

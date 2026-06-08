@@ -58,33 +58,33 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 87.06798336400243,
+      "duration_seconds": 32.84065266601101,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
             "EyesNotFound": 28
           },
           "Fixation": {
-            "FN": 4,
-            "Fixation": 532,
+            "FN": 2,
+            "Fixation": 534,
             "Saccade": 2
           },
           "Saccade": {
-            "FN": 6,
-            "Saccade": 543
+            "FN": 3,
+            "Saccade": 546
           },
           "Unclassified": {
             "Unclassified": 6
           }
         },
-        "correct_type_rate": 0.9892952720785013,
+        "correct_type_rate": 0.9937555753791257,
         "event_counts": {
           "EyesNotFound": {
             "gt": 28,
@@ -92,25 +92,25 @@
           },
           "Fixation": {
             "gt": 538,
-            "pred": 538
+            "pred": 591
           },
           "Saccade": {
             "gt": 549,
-            "pred": 552
+            "pred": 605
           },
           "Unclassified": {
             "gt": 6,
             "pred": 6
           }
         },
-        "match_rate": 0.9910793933987511,
-        "mean_iou": 0.9878407352798951,
-        "n_correct_type": 1109,
-        "n_fn": 10,
-        "n_fp": 13,
+        "match_rate": 0.9955396966993756,
+        "mean_iou": 0.984643863587406,
+        "n_correct_type": 1114,
+        "n_fn": 5,
+        "n_fp": 114,
         "n_gt_events": 1121,
-        "n_matched": 1111,
-        "n_pred_events": 1124,
+        "n_matched": 1116,
+        "n_pred_events": 1230,
         "timing": {
           "EyesNotFound": {
             "n_events": 28,
@@ -122,22 +122,22 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 532,
-            "offset_dev_abs_mean_ms": 0.7387218045112782,
-            "offset_dev_mean_ms": -0.5845864661654135,
-            "offset_dev_std_ms": 9.528151727725502,
-            "onset_dev_abs_mean_ms": 0.6015037593984962,
-            "onset_dev_mean_ms": 0.2556390977443609,
-            "onset_dev_std_ms": 3.538657400901416
+            "n_events": 534,
+            "offset_dev_abs_mean_ms": 2.391385767790262,
+            "offset_dev_mean_ms": -2.3277153558052435,
+            "offset_dev_std_ms": 20.188309074522106,
+            "onset_dev_abs_mean_ms": 2.235955056179775,
+            "onset_dev_mean_ms": 2.041198501872659,
+            "onset_dev_std_ms": 14.035274084817342
           },
           "Saccade": {
-            "n_events": 543,
-            "offset_dev_abs_mean_ms": 0.4198895027624309,
-            "offset_dev_mean_ms": 0.36095764272559855,
-            "offset_dev_std_ms": 2.1065931915266205,
-            "onset_dev_abs_mean_ms": 0.1841620626151013,
-            "onset_dev_mean_ms": -0.055248618784530384,
-            "onset_dev_std_ms": 1.3435252284756962
+            "n_events": 546,
+            "offset_dev_abs_mean_ms": 0.4267399267399267,
+            "offset_dev_mean_ms": -0.0018315018315018315,
+            "offset_dev_std_ms": 3.430836463791453,
+            "onset_dev_abs_mean_ms": 0.09340659340659341,
+            "onset_dev_mean_ms": 0.031135531135531136,
+            "onset_dev_std_ms": 1.0302495430948506
           },
           "Unclassified": {
             "n_events": 6,
@@ -152,7 +152,9 @@
       },
       "file": "I-VT-botheye20ms30threshold_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Both eyes, 20ms window, threshold 30, 120 Hz \u2014 extracted version with gaze_dir columns",
         "eye_mode": "average",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
@@ -161,12 +163,15 @@
         "smoothing_window_samples": 5,
         "source_name": "I-VT-botheye20ms30threshold_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.988404933324502,
+        "cohen_kappa": 0.9777083549922626,
         "confusion_matrix": [
           [
             184,
@@ -176,14 +181,14 @@
           ],
           [
             0,
-            15623,
-            39,
+            15579,
+            83,
             0
           ],
           [
             0,
-            9,
-            2141,
+            10,
+            2140,
             0
           ],
           [
@@ -193,17 +198,17 @@
             6
           ]
         ],
-        "fixation_recall": 99.75098965649343,
-        "fn_fix": 39,
-        "fn_sac": 9,
+        "fixation_recall": 99.47005490997319,
+        "fn_fix": 83,
+        "fn_sac": 10,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 17764,
-        "n_agree_all": 17954,
+        "n_agree": 17719,
+        "n_agree_all": 17909,
         "n_correct_eynf": 184,
         "n_correct_uncl": 6,
         "n_fix_in_gt": 15662,
@@ -218,13 +223,13 @@
         "n_sac_to_uncl": 0,
         "n_samples_gt_fix_or_sac": 17812,
         "n_samples_total": 18002,
-        "percentage_agreement": 99.73051875140355,
-        "percentage_agreement_all": 99.73336295967114,
+        "percentage_agreement": 99.47788008084437,
+        "percentage_agreement_all": 99.48339073436286,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 99.5813953488372,
-        "tp_fix": 15623,
-        "tp_sac": 2141
+        "saccade_recall": 99.53488372093024,
+        "tp_fix": 15579,
+        "tp_sac": 2140
       },
       "output_path": null,
       "status": "ok"
@@ -253,7 +258,16 @@
           "velocity_threshold_deg_per_sec": 30.0
         },
         "classify": true,
-        "fixation_post": null,
+        "fixation_post": {
+          "discard_short_fixations": true,
+          "discard_target": "Unclassified",
+          "max_angle_deg": 0.5,
+          "max_gap_velocity_deg_per_sec": 35.0,
+          "max_time_gap_ms": 75.0,
+          "merge_adjacent_fixations": true,
+          "merge_weighting": "uniform",
+          "min_fixation_duration_ms": 60.0
+        },
         "saccade_merge": null,
         "velocity": {
           "allow_asymmetric_window": false,
@@ -277,8 +291,8 @@
           "shifted_valid_window": false,
           "smoothing_expansion_radius": 0,
           "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
+          "smoothing_mode": "median",
+          "smoothing_window_samples": 3,
           "symmetric_round_window": false,
           "time_column": "time_ms",
           "time_unit": "ms",
@@ -287,753 +301,62 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 94.05611358000169,
+      "duration_seconds": 35.41423457801284,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 28
+            "EyesNotFound": 27
           },
           "Fixation": {
-            "FN": 4,
-            "Fixation": 532,
-            "Saccade": 2
+            "Fixation": 508
           },
           "Saccade": {
-            "FN": 6,
-            "Saccade": 543
+            "FN": 2,
+            "Saccade": 529
           },
           "Unclassified": {
-            "Unclassified": 6
-          }
-        },
-        "correct_type_rate": 0.9892952720785013,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 28,
-            "pred": 28
-          },
-          "Fixation": {
-            "gt": 538,
-            "pred": 538
-          },
-          "Saccade": {
-            "gt": 549,
-            "pred": 552
-          },
-          "Unclassified": {
-            "gt": 6,
-            "pred": 6
-          }
-        },
-        "match_rate": 0.9910793933987511,
-        "mean_iou": 0.9878407352798951,
-        "n_correct_type": 1109,
-        "n_fn": 10,
-        "n_fp": 13,
-        "n_gt_events": 1121,
-        "n_matched": 1111,
-        "n_pred_events": 1124,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 28,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 532,
-            "offset_dev_abs_mean_ms": 0.7387218045112782,
-            "offset_dev_mean_ms": -0.5845864661654135,
-            "offset_dev_std_ms": 9.528151727725502,
-            "onset_dev_abs_mean_ms": 0.6015037593984962,
-            "onset_dev_mean_ms": 0.2556390977443609,
-            "onset_dev_std_ms": 3.538657400901416
-          },
-          "Saccade": {
-            "n_events": 543,
-            "offset_dev_abs_mean_ms": 0.4198895027624309,
-            "offset_dev_mean_ms": 0.36095764272559855,
-            "offset_dev_std_ms": 2.1065931915266205,
-            "onset_dev_abs_mean_ms": 0.1841620626151013,
-            "onset_dev_mean_ms": -0.055248618784530384,
-            "onset_dev_std_ms": 1.3435252284756962
-          },
-          "Unclassified": {
-            "n_events": 6,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "I-VT-botheye20ms30threshold_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "I-VT-botheye20ms30threshold_input.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.988404933324502,
-        "confusion_matrix": [
-          [
-            184,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            15623,
-            39,
-            0
-          ],
-          [
-            0,
-            9,
-            2141,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            6
-          ]
-        ],
-        "fixation_recall": 99.75098965649343,
-        "fn_fix": 39,
-        "fn_sac": 9,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 17764,
-        "n_agree_all": 17954,
-        "n_correct_eynf": 184,
-        "n_correct_uncl": 6,
-        "n_fix_in_gt": 15662,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 184,
-        "n_gt_uncl": 6,
-        "n_pred_eynf": 184,
-        "n_pred_uncl": 6,
-        "n_sac_in_gt": 2150,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 17812,
-        "n_samples_total": 18002,
-        "percentage_agreement": 99.73051875140355,
-        "percentage_agreement_all": 99.73336295967114,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 99.5813953488372,
-        "tp_fix": 15623,
-        "tp_sac": 2141
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 87.55270003600162,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 30
-          },
-          "Fixation": {
-            "FN": 5,
-            "Fixation": 536,
-            "Saccade": 2
-          },
-          "Saccade": {
-            "FN": 7,
-            "Saccade": 547
-          },
-          "Unclassified": {
-            "Unclassified": 6
-          }
-        },
-        "correct_type_rate": 0.9876434245366285,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 30,
-            "pred": 30
-          },
-          "Fixation": {
-            "gt": 543,
-            "pred": 542
-          },
-          "Saccade": {
-            "gt": 554,
-            "pred": 556
-          },
-          "Unclassified": {
-            "gt": 6,
-            "pred": 6
-          }
-        },
-        "match_rate": 0.9894086496028244,
-        "mean_iou": 0.9875923790329738,
-        "n_correct_type": 1119,
-        "n_fn": 12,
-        "n_fp": 13,
-        "n_gt_events": 1133,
-        "n_matched": 1121,
-        "n_pred_events": 1134,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 30,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 536,
-            "offset_dev_abs_mean_ms": 0.7332089552238806,
-            "offset_dev_mean_ms": -0.5802238805970149,
-            "offset_dev_std_ms": 9.492599219907254,
-            "onset_dev_abs_mean_ms": 0.5970149253731343,
-            "onset_dev_mean_ms": 0.2537313432835821,
-            "onset_dev_std_ms": 3.525472736197228
-          },
-          "Saccade": {
-            "n_events": 547,
-            "offset_dev_abs_mean_ms": 0.44789762340036565,
-            "offset_dev_mean_ms": 0.38939670932358317,
-            "offset_dev_std_ms": 2.2163472328629346,
-            "onset_dev_abs_mean_ms": 0.18281535648994515,
-            "onset_dev_mean_ms": -0.054844606946983544,
-            "onset_dev_std_ms": 1.3386031357088823
-          },
-          "Unclassified": {
-            "n_events": 6,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "I-VT-botheye20ms30threshold_slim.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "I-VT-botheye20ms30threshold_slim.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9884076487601829,
-        "confusion_matrix": [
-          [
-            220,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            15692,
-            40,
-            0
-          ],
-          [
-            0,
-            9,
-            2155,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            6
-          ]
-        ],
-        "fixation_recall": 99.74574116450546,
-        "fn_fix": 40,
-        "fn_sac": 9,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 17847,
-        "n_agree_all": 18073,
-        "n_correct_eynf": 220,
-        "n_correct_uncl": 6,
-        "n_fix_in_gt": 15732,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 220,
-        "n_gt_uncl": 6,
-        "n_pred_eynf": 220,
-        "n_pred_uncl": 6,
-        "n_sac_in_gt": 2164,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 17896,
-        "n_samples_total": 18122,
-        "percentage_agreement": 99.72619579794367,
-        "percentage_agreement_all": 99.72961041827612,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 99.58410351201479,
-        "tp_fix": 15692,
-        "tp_sac": 2155
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 97.3089024669971,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 28
-          },
-          "Fixation": {
-            "FN": 4,
-            "Fixation": 532,
-            "Saccade": 2
-          },
-          "Saccade": {
-            "FN": 6,
-            "Saccade": 543
-          },
-          "Unclassified": {
-            "Unclassified": 6
-          }
-        },
-        "correct_type_rate": 0.9892952720785013,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 28,
-            "pred": 28
-          },
-          "Fixation": {
-            "gt": 538,
-            "pred": 538
-          },
-          "Saccade": {
-            "gt": 549,
-            "pred": 552
-          },
-          "Unclassified": {
-            "gt": 6,
-            "pred": 6
-          }
-        },
-        "match_rate": 0.9910793933987511,
-        "mean_iou": 0.9878407352798951,
-        "n_correct_type": 1109,
-        "n_fn": 10,
-        "n_fp": 13,
-        "n_gt_events": 1121,
-        "n_matched": 1111,
-        "n_pred_events": 1124,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 28,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 532,
-            "offset_dev_abs_mean_ms": 0.7387218045112782,
-            "offset_dev_mean_ms": -0.5845864661654135,
-            "offset_dev_std_ms": 9.528151727725502,
-            "onset_dev_abs_mean_ms": 0.6015037593984962,
-            "onset_dev_mean_ms": 0.2556390977443609,
-            "onset_dev_std_ms": 3.538657400901416
-          },
-          "Saccade": {
-            "n_events": 543,
-            "offset_dev_abs_mean_ms": 0.4198895027624309,
-            "offset_dev_mean_ms": 0.36095764272559855,
-            "offset_dev_std_ms": 2.1065931915266205,
-            "onset_dev_abs_mean_ms": 0.1841620626151013,
-            "onset_dev_mean_ms": -0.055248618784530384,
-            "onset_dev_std_ms": 1.3435252284756962
-          },
-          "Unclassified": {
-            "n_events": 6,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "I-VT-botheye20ms30threshold_small.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "I-VT-botheye20ms30threshold_small.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.988404933324502,
-        "confusion_matrix": [
-          [
-            184,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            15623,
-            39,
-            0
-          ],
-          [
-            0,
-            9,
-            2141,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            6
-          ]
-        ],
-        "fixation_recall": 99.75098965649343,
-        "fn_fix": 39,
-        "fn_sac": 9,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 17764,
-        "n_agree_all": 17954,
-        "n_correct_eynf": 184,
-        "n_correct_uncl": 6,
-        "n_fix_in_gt": 15662,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 184,
-        "n_gt_uncl": 6,
-        "n_pred_eynf": 184,
-        "n_pred_uncl": 6,
-        "n_sac_in_gt": 2150,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 17812,
-        "n_samples_total": 18002,
-        "percentage_agreement": 99.73051875140355,
-        "percentage_agreement_all": 99.73336295967114,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 99.5813953488372,
-        "tp_fix": 15623,
-        "tp_sac": 2141
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 112.80896342099732,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 435
-          },
-          "Fixation": {
             "FN": 1,
-            "Fixation": 610,
-            "Saccade": 3
-          },
-          "Saccade": {
-            "FN": 10,
             "Fixation": 1,
-            "Saccade": 674
-          },
-          "Unclassified": {
-            "FN": 10,
-            "Fixation": 32,
-            "Saccade": 11,
-            "Unclassified": 362
+            "Unclassified": 14
           }
         },
-        "correct_type_rate": 0.9683573755234993,
+        "correct_type_rate": 0.9963031423290203,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 435,
-            "pred": 479
+            "gt": 27,
+            "pred": 28
           },
           "Fixation": {
-            "gt": 614,
-            "pred": 761
+            "gt": 508,
+            "pred": 529
           },
           "Saccade": {
-            "gt": 685,
-            "pred": 814
+            "gt": 531,
+            "pred": 598
           },
           "Unclassified": {
-            "gt": 415,
-            "pred": 371
+            "gt": 16,
+            "pred": 61
           }
         },
-        "match_rate": 0.990228013029316,
-        "mean_iou": 0.9707652133366572,
-        "n_correct_type": 2081,
-        "n_fn": 21,
-        "n_fp": 297,
-        "n_gt_events": 2149,
-        "n_matched": 2128,
-        "n_pred_events": 2425,
+        "match_rate": 0.9972273567467652,
+        "mean_iou": 0.974542446668899,
+        "n_correct_type": 1078,
+        "n_fn": 3,
+        "n_fp": 137,
+        "n_gt_events": 1082,
+        "n_matched": 1079,
+        "n_pred_events": 1216,
         "timing": {
           "EyesNotFound": {
-            "n_events": 435,
+            "n_events": 27,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -1042,25 +365,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 610,
-            "offset_dev_abs_mean_ms": 9.565573770491802,
-            "offset_dev_mean_ms": -9.044262295081968,
-            "offset_dev_std_ms": 53.624275268381645,
-            "onset_dev_abs_mean_ms": 8.588524590163935,
-            "onset_dev_mean_ms": 8.047540983606558,
-            "onset_dev_std_ms": 56.09278059602868
+            "n_events": 508,
+            "offset_dev_abs_mean_ms": 4.5137795275590555,
+            "offset_dev_mean_ms": -4.478346456692913,
+            "offset_dev_std_ms": 28.170401529082106,
+            "onset_dev_abs_mean_ms": 5.93503937007874,
+            "onset_dev_mean_ms": 5.214566929133858,
+            "onset_dev_std_ms": 43.911413697002274
           },
           "Saccade": {
-            "n_events": 674,
-            "offset_dev_abs_mean_ms": 1.1513353115727003,
-            "offset_dev_mean_ms": 0.47477744807121663,
-            "offset_dev_std_ms": 4.860929416724667,
-            "onset_dev_abs_mean_ms": 0.40801186943620177,
-            "onset_dev_mean_ms": -0.33086053412462907,
-            "onset_dev_std_ms": 2.7725083457630415
+            "n_events": 529,
+            "offset_dev_abs_mean_ms": 0.8544423440453687,
+            "offset_dev_mean_ms": -0.09829867674858223,
+            "offset_dev_std_ms": 3.9897806171197505,
+            "onset_dev_abs_mean_ms": 0.11153119092627599,
+            "onset_dev_mean_ms": -0.017013232514177693,
+            "onset_dev_std_ms": 1.1034097298925447
           },
           "Unclassified": {
-            "n_events": 362,
+            "n_events": 14,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -1070,81 +393,86 @@
           }
         }
       },
-      "file": "I-VT-frequency120Fixation_input.tsv",
+      "file": "I-VT-frequency120Fixation export_extracted.tsv",
       "inference_notes": {
-        "discard_short_fixations": false,
+        "config_source": "configs.json",
+        "discard_short_fixations": true,
+        "entry_notes": "Tobii IVT Fixation preset, both eyes, 120 Hz \u2014 extracted version with gaze_dir columns",
         "eye_mode": "average",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "I-VT-frequency120Fixation_input.tsv",
+        "merge_adjacent_fixations": true,
+        "smoothing_mode": "median",
+        "smoothing_window_samples": 3,
+        "source_name": "I-VT-frequency120Fixation export_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
-        "accuracy_uncl": 83.27183271832719,
-        "cohen_kappa": 0.9608005179529685,
+        "accuracy_uncl": 88.88888888888889,
+        "cohen_kappa": 0.948619560182253,
         "confusion_matrix": [
           [
-            4085,
+            183,
             0,
             0,
             0
           ],
           [
-            44,
-            19868,
-            256,
-            13
+            1,
+            15467,
+            106,
+            83
           ],
           [
             0,
-            36,
-            2686,
-            0
+            24,
+            2109,
+            2
           ],
           [
-            3,
-            82,
-            51,
-            677
+            0,
+            2,
+            1,
+            24
           ]
         ],
-        "fixation_recall": 98.44903622218919,
-        "fn_fix": 256,
-        "fn_sac": 36,
+        "fixation_recall": 98.78648527815035,
+        "fn_fix": 106,
+        "fn_sac": 24,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 22554,
-        "n_agree_all": 27316,
-        "n_correct_eynf": 4085,
-        "n_correct_uncl": 677,
-        "n_fix_in_gt": 20181,
-        "n_fix_to_eynf": 44,
-        "n_fix_to_uncl": 13,
-        "n_gt_eynf": 4085,
-        "n_gt_uncl": 813,
-        "n_pred_eynf": 4132,
-        "n_pred_uncl": 690,
-        "n_sac_in_gt": 2722,
+        "n_agree": 17576,
+        "n_agree_all": 17783,
+        "n_correct_eynf": 183,
+        "n_correct_uncl": 24,
+        "n_fix_in_gt": 15657,
+        "n_fix_to_eynf": 1,
+        "n_fix_to_uncl": 83,
+        "n_gt_eynf": 183,
+        "n_gt_uncl": 27,
+        "n_pred_eynf": 184,
+        "n_pred_uncl": 109,
+        "n_sac_in_gt": 2135,
         "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 22903,
-        "n_samples_total": 27801,
-        "percentage_agreement": 98.47618215954242,
-        "percentage_agreement_all": 98.25545843674688,
+        "n_sac_to_uncl": 2,
+        "n_samples_gt_fix_or_sac": 17792,
+        "n_samples_total": 18002,
+        "percentage_agreement": 98.78597122302159,
+        "percentage_agreement_all": 98.78346850349962,
         "recall_eynf": 100.0,
-        "recall_uncl": 83.27183271832719,
-        "saccade_recall": 98.67744305657604,
-        "tp_fix": 19868,
-        "tp_sac": 2686
+        "recall_uncl": 88.88888888888889,
+        "saccade_recall": 98.78220140515222,
+        "tp_fix": 15467,
+        "tp_sac": 2109
       },
       "output_path": null,
       "status": "ok"
@@ -1187,8 +515,8 @@
           "eye_mode": "average",
           "fixed_window_edge_fallback": false,
           "fixed_window_samples": null,
-          "gap_fill_enabled": true,
-          "gap_fill_max_gap_ms": 20.0,
+          "gap_fill_enabled": false,
+          "gap_fill_max_gap_ms": 75.0,
           "max_validity": 1,
           "min_dt_ms": 0.1,
           "sample_symmetric_window": false,
@@ -1207,69 +535,62 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 87.91744491499412,
+      "duration_seconds": 35.94519557899912,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 36,
-            "FN": 432,
-            "Fixation": 2,
-            "Saccade": 9
+            "EyesNotFound": 28
           },
           "Fixation": {
-            "FN": 43,
-            "Fixation": 619,
-            "Saccade": 3
+            "FN": 4,
+            "Fixation": 504,
+            "Saccade": 1
           },
           "Saccade": {
-            "FN": 35,
-            "Fixation": 4,
-            "Saccade": 624
+            "FN": 5,
+            "Saccade": 516
           },
           "Unclassified": {
-            "FN": 296,
-            "Fixation": 38,
-            "Saccade": 34,
-            "Unclassified": 3
+            "Unclassified": 6
           }
         },
-        "correct_type_rate": 0.588613406795225,
+        "correct_type_rate": 0.9906015037593985,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 479,
-            "pred": 36
+            "gt": 28,
+            "pred": 28
           },
           "Fixation": {
-            "gt": 665,
-            "pred": 679
+            "gt": 509,
+            "pred": 590
           },
           "Saccade": {
-            "gt": 663,
-            "pred": 684
+            "gt": 521,
+            "pred": 604
           },
           "Unclassified": {
-            "gt": 371,
-            "pred": 3
+            "gt": 6,
+            "pred": 6
           }
         },
-        "match_rate": 0.6299357208448118,
-        "mean_iou": 0.9297457828265928,
-        "n_correct_type": 1282,
-        "n_fn": 806,
-        "n_fp": 30,
-        "n_gt_events": 2178,
-        "n_matched": 1372,
-        "n_pred_events": 1402,
+        "match_rate": 0.9915413533834586,
+        "mean_iou": 0.8787833842250433,
+        "n_correct_type": 1054,
+        "n_fn": 9,
+        "n_fp": 173,
+        "n_gt_events": 1064,
+        "n_matched": 1055,
+        "n_pred_events": 1228,
         "timing": {
           "EyesNotFound": {
-            "n_events": 36,
+            "n_events": 28,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -1278,25 +599,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 619,
-            "offset_dev_abs_mean_ms": 6.7717011308562745,
-            "offset_dev_mean_ms": 3.486825525040496,
-            "offset_dev_std_ms": 50.0772579109086,
-            "onset_dev_abs_mean_ms": 5.492762520193798,
-            "onset_dev_mean_ms": -3.150264943457278,
-            "onset_dev_std_ms": 68.47267518025491
+            "n_events": 504,
+            "offset_dev_abs_mean_ms": 12.665396825397751,
+            "offset_dev_mean_ms": -5.489444444443536,
+            "offset_dev_std_ms": 52.79031729429817,
+            "onset_dev_abs_mean_ms": 8.829420634920934,
+            "onset_dev_mean_ms": 3.1746230158730633,
+            "onset_dev_std_ms": 33.689582033784255
           },
           "Saccade": {
-            "n_events": 624,
-            "offset_dev_abs_mean_ms": 1.1618685897437013,
-            "offset_dev_mean_ms": 0.8413557692308751,
-            "offset_dev_std_ms": 5.1792077334687034,
-            "onset_dev_abs_mean_ms": 1.0149711538461605,
-            "onset_dev_mean_ms": -0.8547083333333213,
-            "onset_dev_std_ms": 4.923143284123821
+            "n_events": 516,
+            "offset_dev_abs_mean_ms": 3.6498643410855287,
+            "offset_dev_mean_ms": -2.6162906976743505,
+            "offset_dev_std_ms": 6.178957002569762,
+            "onset_dev_abs_mean_ms": 3.779060077519089,
+            "onset_dev_mean_ms": 3.5852538759687844,
+            "onset_dev_std_ms": 4.534547092645391
           },
           "Unclassified": {
-            "n_events": 3,
+            "n_events": 6,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -1306,81 +627,86 @@
           }
         }
       },
-      "file": "IVT-Eyeboth-NoiseAv3-Win20-V30_input.tsv",
+      "file": "IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Average eye, moving average smoothing window 3 \u2014 extracted version with gaze_dir columns",
         "eye_mode": "average",
-        "gap_fill_enabled": true,
-        "gap_fill_max_gap_ms": 20.0,
+        "gap_fill_enabled": false,
+        "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": false,
         "smoothing_mode": "moving_average",
         "smoothing_window_samples": 3,
-        "source_name": "IVT-Eyeboth-NoiseAv3-Win20-V30_input.tsv",
+        "source_name": "IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
-        "accuracy_eynf": 88.57696030977735,
-        "accuracy_uncl": 0.5797101449275363,
-        "cohen_kappa": 0.8852093309010857,
+        "accuracy_eynf": 100.0,
+        "accuracy_uncl": 100.0,
+        "cohen_kappa": 0.8774330104767863,
         "confusion_matrix": [
           [
-            3660,
-            387,
-            85,
+            184,
+            0,
+            0,
             0
           ],
           [
             0,
-            19627,
-            137,
+            15174,
+            133,
             0
           ],
           [
             0,
-            100,
-            3115,
+            411,
+            2094,
             0
           ],
           [
             0,
-            571,
-            115,
-            4
+            0,
+            0,
+            6
           ]
         ],
-        "fixation_recall": 99.30682048168387,
-        "fn_fix": 137,
-        "fn_sac": 100,
+        "fixation_recall": 99.13111648265499,
+        "fn_fix": 133,
+        "fn_sac": 411,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 22742,
-        "n_agree_all": 26406,
-        "n_correct_eynf": 3660,
-        "n_correct_uncl": 4,
-        "n_fix_in_gt": 19764,
+        "n_agree": 17268,
+        "n_agree_all": 17458,
+        "n_correct_eynf": 184,
+        "n_correct_uncl": 6,
+        "n_fix_in_gt": 15307,
         "n_fix_to_eynf": 0,
         "n_fix_to_uncl": 0,
-        "n_gt_eynf": 4132,
-        "n_gt_uncl": 690,
-        "n_pred_eynf": 3660,
-        "n_pred_uncl": 4,
-        "n_sac_in_gt": 3215,
+        "n_gt_eynf": 184,
+        "n_gt_uncl": 6,
+        "n_pred_eynf": 184,
+        "n_pred_uncl": 6,
+        "n_sac_in_gt": 2505,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 22979,
-        "n_samples_total": 27801,
-        "percentage_agreement": 98.96862352582792,
-        "percentage_agreement_all": 94.98219488507608,
-        "recall_eynf": 88.57696030977735,
-        "recall_uncl": 0.5797101449275363,
-        "saccade_recall": 96.8895800933126,
-        "tp_fix": 19627,
-        "tp_sac": 3115
+        "n_samples_gt_fix_or_sac": 17812,
+        "n_samples_total": 18002,
+        "percentage_agreement": 96.94587918257355,
+        "percentage_agreement_all": 96.97811354293967,
+        "recall_eynf": 100.0,
+        "recall_uncl": 100.0,
+        "saccade_recall": 83.59281437125749,
+        "tp_fix": 15174,
+        "tp_sac": 2094
       },
       "output_path": null,
       "status": "ok"
@@ -1443,31 +769,31 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 49.86089282499597,
+      "duration_seconds": 34.79234176799946,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
             "EyesNotFound": 13
           },
           "Fixation": {
-            "FN": 6,
-            "Fixation": 532,
+            "FN": 3,
+            "Fixation": 535,
             "Saccade": 2
           },
           "Saccade": {
-            "FN": 6,
+            "FN": 3,
             "Fixation": 3,
-            "Saccade": 536
+            "Saccade": 539
           }
         },
-        "correct_type_rate": 0.9845173041894353,
+        "correct_type_rate": 0.9899817850637522,
         "event_counts": {
           "EyesNotFound": {
             "gt": 13,
@@ -1475,21 +801,21 @@
           },
           "Fixation": {
             "gt": 540,
-            "pred": 536
+            "pred": 542
           },
           "Saccade": {
             "gt": 545,
-            "pred": 544
+            "pred": 550
           }
         },
-        "match_rate": 0.9890710382513661,
-        "mean_iou": 0.9867332067113787,
-        "n_correct_type": 1081,
-        "n_fn": 12,
-        "n_fp": 7,
+        "match_rate": 0.994535519125683,
+        "mean_iou": 0.9937299509212479,
+        "n_correct_type": 1087,
+        "n_fn": 6,
+        "n_fp": 13,
         "n_gt_events": 1098,
-        "n_matched": 1086,
-        "n_pred_events": 1093,
+        "n_matched": 1092,
+        "n_pred_events": 1105,
         "timing": {
           "EyesNotFound": {
             "n_events": 13,
@@ -1501,28 +827,30 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 532,
-            "offset_dev_abs_mean_ms": 0.2349624060150376,
-            "offset_dev_mean_ms": -0.07832330826992043,
-            "offset_dev_std_ms": 1.6553683486920077,
-            "onset_dev_abs_mean_ms": 0.5952424812060606,
-            "onset_dev_mean_ms": 0.12531766917598539,
-            "onset_dev_std_ms": 3.5410901253218046
+            "n_events": 535,
+            "offset_dev_abs_mean_ms": 0.3426803738331405,
+            "offset_dev_mean_ms": -0.3115289719653464,
+            "offset_dev_std_ms": 3.7693129484921277,
+            "onset_dev_abs_mean_ms": 0.24922242990790683,
+            "onset_dev_mean_ms": -0.09345794392523364,
+            "onset_dev_std_ms": 2.7447939577541813
           },
           "Saccade": {
-            "n_events": 536,
-            "offset_dev_abs_mean_ms": 0.49750373134243564,
-            "offset_dev_mean_ms": 0.3109365671668063,
-            "offset_dev_std_ms": 2.7732799481139097,
-            "onset_dev_abs_mean_ms": 0.17101865671331815,
-            "onset_dev_mean_ms": -0.13992537313259082,
-            "onset_dev_std_ms": 1.1866731765798064
+            "n_events": 539,
+            "offset_dev_abs_mean_ms": 0.20098515769988576,
+            "offset_dev_mean_ms": 0.01546011131830472,
+            "offset_dev_std_ms": 2.24358696634503,
+            "onset_dev_abs_mean_ms": 0.030920222634881568,
+            "onset_dev_mean_ms": -0.030920222634881568,
+            "onset_dev_std_ms": 0.5071284813574647
           }
         }
       },
       "file": "IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Average eye, gap fill 75ms, no smoothing (explicit NoNoise)",
         "eye_mode": "average",
         "gap_fill_enabled": true,
         "gap_fill_max_gap_ms": 75.0,
@@ -1533,12 +861,13 @@
         "threshold_deg_per_sec": 30.0,
         "time_column": "time_us",
         "time_unit": "us",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": null,
-        "cohen_kappa": 0.9841105243642383,
+        "cohen_kappa": 0.989465346814921,
         "confusion_matrix": [
           [
             136,
@@ -1547,25 +876,25 @@
           ],
           [
             0,
-            15639,
-            38
+            15656,
+            21
           ],
           [
             0,
-            27,
-            2162
+            22,
+            2167
           ]
         ],
-        "fixation_recall": 99.75760668495248,
-        "fn_fix": 38,
-        "fn_sac": 27,
+        "fixation_recall": 99.86604579957901,
+        "fn_fix": 21,
+        "fn_sac": 22,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade"
         ],
-        "n_agree": 17801,
-        "n_agree_all": 17937,
+        "n_agree": 17823,
+        "n_agree_all": 17959,
         "n_correct_eynf": 136,
         "n_correct_uncl": 0,
         "n_fix_in_gt": 15677,
@@ -1580,13 +909,13 @@
         "n_sac_to_uncl": 0,
         "n_samples_gt_fix_or_sac": 17866,
         "n_samples_total": 18002,
-        "percentage_agreement": 99.63618045449458,
-        "percentage_agreement_all": 99.63892900788801,
+        "percentage_agreement": 99.75931937758872,
+        "percentage_agreement_all": 99.76113765137207,
         "recall_eynf": 100.0,
         "recall_uncl": null,
-        "saccade_recall": 98.76656007309273,
-        "tp_fix": 15639,
-        "tp_sac": 2162
+        "saccade_recall": 98.99497487437185,
+        "tp_fix": 15656,
+        "tp_sac": 2167
       },
       "output_path": null,
       "status": "ok"
@@ -1649,63 +978,62 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 260.36641491499904,
+      "duration_seconds": 77.41388156299945,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 119
+            "EyesNotFound": 55
           },
           "Fixation": {
-            "FN": 44,
-            "Fixation": 863,
-            "Saccade": 12
+            "FN": 6,
+            "Fixation": 567,
+            "Saccade": 2
           },
           "Saccade": {
-            "FN": 42,
-            "Fixation": 12,
-            "Saccade": 913
+            "FN": 4,
+            "Saccade": 595
           },
           "Unclassified": {
-            "Unclassified": 51
+            "Unclassified": 21
           }
         },
-        "correct_type_rate": 0.9464980544747081,
+        "correct_type_rate": 0.9904,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 119,
-            "pred": 119
+            "gt": 55,
+            "pred": 55
           },
           "Fixation": {
-            "gt": 919,
-            "pred": 1007
+            "gt": 575,
+            "pred": 607
           },
           "Saccade": {
-            "gt": 967,
-            "pred": 1063
+            "gt": 599,
+            "pred": 633
           },
           "Unclassified": {
-            "gt": 51,
-            "pred": 51
+            "gt": 21,
+            "pred": 21
           }
         },
-        "match_rate": 0.958171206225681,
-        "mean_iou": 0.9496254995415973,
-        "n_correct_type": 1946,
-        "n_fn": 86,
-        "n_fp": 270,
-        "n_gt_events": 2056,
-        "n_matched": 1970,
-        "n_pred_events": 2240,
+        "match_rate": 0.992,
+        "mean_iou": 0.9903244962336701,
+        "n_correct_type": 1238,
+        "n_fn": 10,
+        "n_fp": 76,
+        "n_gt_events": 1250,
+        "n_matched": 1240,
+        "n_pred_events": 1316,
         "timing": {
           "EyesNotFound": {
-            "n_events": 119,
+            "n_events": 55,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -1714,25 +1042,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 863,
-            "offset_dev_abs_mean_ms": 2.5249130938586326,
-            "offset_dev_mean_ms": -2.2514484356894555,
-            "offset_dev_std_ms": 28.994607781140942,
-            "onset_dev_abs_mean_ms": 3.939745075318656,
-            "onset_dev_mean_ms": 2.6210892236384704,
-            "onset_dev_std_ms": 36.242178069233184
+            "n_events": 567,
+            "offset_dev_abs_mean_ms": 0.7301587301587301,
+            "offset_dev_mean_ms": -0.7195767195767195,
+            "offset_dev_std_ms": 12.281475945936757,
+            "onset_dev_abs_mean_ms": 0.7072310405643739,
+            "onset_dev_mean_ms": 0.7072310405643739,
+            "onset_dev_std_ms": 8.298260743387969
           },
           "Saccade": {
-            "n_events": 913,
-            "offset_dev_abs_mean_ms": 0.9211391018619934,
-            "offset_dev_mean_ms": 0.14129244249726178,
-            "offset_dev_std_ms": 3.5250938265038476,
-            "onset_dev_abs_mean_ms": 0.6527929901423878,
-            "onset_dev_mean_ms": -0.20153340635268346,
-            "onset_dev_std_ms": 3.082014509304008
+            "n_events": 595,
+            "offset_dev_abs_mean_ms": 0.1915966386554622,
+            "offset_dev_mean_ms": 0.08067226890756303,
+            "offset_dev_std_ms": 1.5774759978283794,
+            "onset_dev_abs_mean_ms": 0.24033613445378152,
+            "onset_dev_mean_ms": 0.015126050420168067,
+            "onset_dev_std_ms": 2.0129479301776354
           },
           "Unclassified": {
-            "n_events": 51,
+            "n_events": 21,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -1742,81 +1070,86 @@
           }
         }
       },
-      "file": "IVT30_input.tsv",
+      "file": "IVT30_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Average eye, threshold 30, no smoothing \u2014 extracted version with gaze_dir columns",
         "eye_mode": "average",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": false,
         "smoothing_mode": "none",
         "smoothing_window_samples": 5,
-        "source_name": "IVT30_input.tsv",
+        "source_name": "IVT30_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.971199940475267,
+        "cohen_kappa": 0.9886889749335577,
         "confusion_matrix": [
           [
-            2840,
+            1157,
             0,
             0,
             0
           ],
           [
             0,
-            60310,
-            405,
+            38011,
+            126,
             0
           ],
           [
             0,
-            173,
-            8312,
+            10,
+            5675,
             0
           ],
           [
             0,
             0,
             0,
-            83
+            26
           ]
         ],
-        "fixation_recall": 99.33294902412912,
-        "fn_fix": 405,
-        "fn_sac": 173,
+        "fixation_recall": 99.6696121876393,
+        "fn_fix": 126,
+        "fn_sac": 10,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 68622,
-        "n_agree_all": 71545,
-        "n_correct_eynf": 2840,
-        "n_correct_uncl": 83,
-        "n_fix_in_gt": 60715,
+        "n_agree": 43686,
+        "n_agree_all": 44869,
+        "n_correct_eynf": 1157,
+        "n_correct_uncl": 26,
+        "n_fix_in_gt": 38137,
         "n_fix_to_eynf": 0,
         "n_fix_to_uncl": 0,
-        "n_gt_eynf": 2840,
-        "n_gt_uncl": 83,
-        "n_pred_eynf": 2840,
-        "n_pred_uncl": 83,
-        "n_sac_in_gt": 8485,
+        "n_gt_eynf": 1157,
+        "n_gt_uncl": 26,
+        "n_pred_eynf": 1157,
+        "n_pred_uncl": 26,
+        "n_sac_in_gt": 5685,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 69200,
-        "n_samples_total": 72123,
-        "percentage_agreement": 99.16473988439306,
-        "percentage_agreement_all": 99.19859129542587,
+        "n_samples_gt_fix_or_sac": 43822,
+        "n_samples_total": 45005,
+        "percentage_agreement": 99.68965359864907,
+        "percentage_agreement_all": 99.69781135429396,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 97.96110783736005,
-        "tp_fix": 60310,
-        "tp_sac": 8312
+        "saccade_recall": 99.8240985048373,
+        "tp_fix": 38011,
+        "tp_sac": 5675
       },
       "output_path": null,
       "status": "ok"
@@ -1845,7 +1178,16 @@
           "velocity_threshold_deg_per_sec": 30.0
         },
         "classify": true,
-        "fixation_post": null,
+        "fixation_post": {
+          "discard_short_fixations": true,
+          "discard_target": "Unclassified",
+          "max_angle_deg": 0.5,
+          "max_gap_velocity_deg_per_sec": 35.0,
+          "max_time_gap_ms": 75.0,
+          "merge_adjacent_fixations": true,
+          "merge_weighting": "uniform",
+          "min_fixation_duration_ms": 60.0
+        },
         "saccade_merge": null,
         "velocity": {
           "allow_asymmetric_window": false,
@@ -1856,7 +1198,7 @@
           "average_window_single_eye": false,
           "coordinate_rounding": "none",
           "dt_calculation_method": "mean",
-          "eye_mode": "average",
+          "eye_mode": "left",
           "fixed_window_edge_fallback": false,
           "fixed_window_samples": null,
           "gap_fill_enabled": false,
@@ -1879,412 +1221,183 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 129.1988408229954,
+      "duration_seconds": 35.54949777098955,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 479
+            "EyesNotFound": 17,
+            "FN": 10
           },
           "Fixation": {
-            "FN": 9,
-            "Fixation": 663,
-            "Saccade": 29
+            "EyesNotFound": 3,
+            "FN": 17,
+            "Fixation": 487,
+            "Unclassified": 1
           },
           "Saccade": {
+            "EyesNotFound": 4,
+            "FN": 25,
+            "Saccade": 498,
+            "Unclassified": 4
+          },
+          "Unclassified": {
             "FN": 11,
-            "Fixation": 5,
-            "Saccade": 683
-          },
-          "Unclassified": {
-            "Unclassified": 371
+            "Unclassified": 5
           }
         },
-        "correct_type_rate": 0.976,
+        "correct_type_rate": 0.9306839186691312,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 479,
-            "pred": 479
+            "gt": 27,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 701,
-            "pred": 737
+            "gt": 508,
+            "pred": 504
           },
           "Saccade": {
-            "gt": 699,
-            "pred": 746
+            "gt": 531,
+            "pred": 537
           },
           "Unclassified": {
-            "gt": 371,
-            "pred": 371
+            "gt": 16,
+            "pred": 45
           }
         },
-        "match_rate": 0.9911111111111112,
-        "mean_iou": 0.9791898542375405,
-        "n_correct_type": 2196,
-        "n_fn": 20,
-        "n_fp": 103,
-        "n_gt_events": 2250,
-        "n_matched": 2230,
-        "n_pred_events": 2333,
+        "match_rate": 0.9417744916820703,
+        "mean_iou": 0.9439152686988513,
+        "n_correct_type": 1007,
+        "n_fn": 63,
+        "n_fp": 132,
+        "n_gt_events": 1082,
+        "n_matched": 1019,
+        "n_pred_events": 1151,
         "timing": {
           "EyesNotFound": {
-            "n_events": 479,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
+            "n_events": 17,
+            "offset_dev_abs_mean_ms": 7.235294117647059,
+            "offset_dev_mean_ms": 7.235294117647059,
+            "offset_dev_std_ms": 9.086593226869367,
+            "onset_dev_abs_mean_ms": 10.176470588235293,
+            "onset_dev_mean_ms": -10.176470588235293,
+            "onset_dev_std_ms": 28.00052520515831
           },
           "Fixation": {
-            "n_events": 663,
-            "offset_dev_abs_mean_ms": 1.4454509803921936,
-            "offset_dev_mean_ms": -0.7164434389140059,
-            "offset_dev_std_ms": 11.24819661447978,
-            "onset_dev_abs_mean_ms": 1.6968416289593402,
-            "onset_dev_mean_ms": 1.4454570135746732,
-            "onset_dev_std_ms": 12.886561725203132
+            "n_events": 487,
+            "offset_dev_abs_mean_ms": 5.716632443531828,
+            "offset_dev_mean_ms": -5.478439425051334,
+            "offset_dev_std_ms": 41.20338802077895,
+            "onset_dev_abs_mean_ms": 4.186858316221766,
+            "onset_dev_mean_ms": 3.090349075975359,
+            "onset_dev_std_ms": 17.506849020743193
           },
           "Saccade": {
-            "n_events": 683,
-            "offset_dev_abs_mean_ms": 0.75646852122996,
-            "offset_dev_mean_ms": 0.12200585651542285,
-            "offset_dev_std_ms": 3.1241616503572454,
-            "onset_dev_abs_mean_ms": 0.48804831625192535,
-            "onset_dev_mean_ms": -0.12200732064428879,
-            "onset_dev_std_ms": 3.7466113101484155
+            "n_events": 498,
+            "offset_dev_abs_mean_ms": 1.8634538152610443,
+            "offset_dev_mean_ms": -0.20883534136546184,
+            "offset_dev_std_ms": 5.909151434261454,
+            "onset_dev_abs_mean_ms": 0.6746987951807228,
+            "onset_dev_mean_ms": 0.14457831325301204,
+            "onset_dev_std_ms": 3.83450141865531
           },
           "Unclassified": {
-            "n_events": 371,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
+            "n_events": 5,
+            "offset_dev_abs_mean_ms": 1.6,
+            "offset_dev_mean_ms": 1.6,
+            "offset_dev_std_ms": 3.577708763999664,
+            "onset_dev_abs_mean_ms": 1.8,
+            "onset_dev_mean_ms": 1.8,
+            "onset_dev_std_ms": 4.024922359499622
           }
         }
       },
-      "file": "LR-NoiseM3-W20-V30_input.tsv",
+      "file": "LeftFixation_extracted.tsv",
       "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "median",
-        "smoothing_window_samples": 3,
-        "source_name": "LR-NoiseM3-W20-V30_input.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9827009321471816,
-        "confusion_matrix": [
-          [
-            4132,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            20062,
-            156,
-            0
-          ],
-          [
-            0,
-            56,
-            2705,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            690
-          ]
-        ],
-        "fixation_recall": 99.228410327431,
-        "fn_fix": 156,
-        "fn_sac": 56,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 22767,
-        "n_agree_all": 27589,
-        "n_correct_eynf": 4132,
-        "n_correct_uncl": 690,
-        "n_fix_in_gt": 20218,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 4132,
-        "n_gt_uncl": 690,
-        "n_pred_eynf": 4132,
-        "n_pred_uncl": 690,
-        "n_sac_in_gt": 2761,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 22979,
-        "n_samples_total": 27801,
-        "percentage_agreement": 99.07741851255494,
-        "percentage_agreement_all": 99.23743750224811,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 97.97174936617168,
-        "tp_fix": 20062,
-        "tp_sac": 2705
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "left",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 145.1904835460009,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 395,
-            "FN": 40
-          },
-          "Fixation": {
-            "EyesNotFound": 7,
-            "FN": 23,
-            "Fixation": 582,
-            "Saccade": 2
-          },
-          "Saccade": {
-            "EyesNotFound": 14,
-            "FN": 45,
-            "Fixation": 2,
-            "Saccade": 610,
-            "Unclassified": 14
-          },
-          "Unclassified": {
-            "EyesNotFound": 5,
-            "FN": 35,
-            "Fixation": 27,
-            "Saccade": 1,
-            "Unclassified": 347
-          }
-        },
-        "correct_type_rate": 0.899953466728711,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 435,
-            "pred": 512
-          },
-          "Fixation": {
-            "gt": 614,
-            "pred": 745
-          },
-          "Saccade": {
-            "gt": 685,
-            "pred": 743
-          },
-          "Unclassified": {
-            "gt": 415,
-            "pred": 416
-          }
-        },
-        "match_rate": 0.9334574220567706,
-        "mean_iou": 0.8806729705780747,
-        "n_correct_type": 1934,
-        "n_fn": 143,
-        "n_fp": 410,
-        "n_gt_events": 2149,
-        "n_matched": 2006,
-        "n_pred_events": 2416,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 395,
-            "offset_dev_abs_mean_ms": 4.681012658227848,
-            "offset_dev_mean_ms": 4.681012658227848,
-            "offset_dev_std_ms": 52.07276750589688,
-            "onset_dev_abs_mean_ms": 6.949367088607595,
-            "onset_dev_mean_ms": -6.949367088607595,
-            "onset_dev_std_ms": 95.71654678413033
-          },
-          "Fixation": {
-            "n_events": 582,
-            "offset_dev_abs_mean_ms": 10.230240549828178,
-            "offset_dev_mean_ms": -9.79725085910653,
-            "offset_dev_std_ms": 53.01966114067729,
-            "onset_dev_abs_mean_ms": 12.723367697594501,
-            "onset_dev_mean_ms": 11.740549828178693,
-            "onset_dev_std_ms": 65.12453082112263
-          },
-          "Saccade": {
-            "n_events": 610,
-            "offset_dev_abs_mean_ms": 2.413114754098361,
-            "offset_dev_mean_ms": 0.4459016393442623,
-            "offset_dev_std_ms": 6.929235884356096,
-            "onset_dev_abs_mean_ms": 0.9475409836065574,
-            "onset_dev_mean_ms": -0.08852459016393442,
-            "onset_dev_std_ms": 4.357810056992639
-          },
-          "Unclassified": {
-            "n_events": 347,
-            "offset_dev_abs_mean_ms": 1.7002881844380404,
-            "offset_dev_mean_ms": -1.7002881844380404,
-            "offset_dev_std_ms": 3.922968518562768,
-            "onset_dev_abs_mean_ms": 1.1930835734870318,
-            "onset_dev_mean_ms": 1.1930835734870318,
-            "onset_dev_std_ms": 3.056341555043835
-          }
-        }
-      },
-      "file": "LeftFixation_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
+        "config_source": "configs.json",
+        "discard_short_fixations": true,
+        "entry_notes": "Tobii IVT Fixation preset, left eye \u2014 extracted version with gaze_dir columns",
         "eye_mode": "left",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "LeftFixation_input.tsv",
+        "merge_adjacent_fixations": true,
+        "smoothing_mode": "median",
+        "smoothing_window_samples": 3,
+        "source_name": "LeftFixation_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
-        "accuracy_uncl": 69.24969249692496,
-        "cohen_kappa": 0.8651018309181507,
+        "accuracy_uncl": 40.74074074074074,
+        "cohen_kappa": 0.7966399806286745,
         "confusion_matrix": [
           [
-            4085,
+            183,
             0,
             0,
             0
           ],
           [
-            888,
-            18990,
-            263,
-            40
+            611,
+            14882,
+            94,
+            70
           ],
           [
-            191,
-            65,
-            2428,
-            38
+            120,
+            41,
+            1956,
+            18
           ],
           [
-            173,
-            53,
-            24,
-            563
+            13,
+            0,
+            3,
+            11
           ]
         ],
-        "fixation_recall": 94.09840939497546,
-        "fn_fix": 263,
-        "fn_sac": 65,
+        "fixation_recall": 95.05013731877115,
+        "fn_fix": 94,
+        "fn_sac": 41,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 21418,
-        "n_agree_all": 26066,
-        "n_correct_eynf": 4085,
-        "n_correct_uncl": 563,
-        "n_fix_in_gt": 20181,
-        "n_fix_to_eynf": 888,
-        "n_fix_to_uncl": 40,
-        "n_gt_eynf": 4085,
-        "n_gt_uncl": 813,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 641,
-        "n_sac_in_gt": 2722,
-        "n_sac_to_eynf": 191,
-        "n_sac_to_uncl": 38,
-        "n_samples_gt_fix_or_sac": 22903,
-        "n_samples_total": 27801,
-        "percentage_agreement": 93.51613325765183,
-        "percentage_agreement_all": 93.75921729434194,
+        "n_agree": 16838,
+        "n_agree_all": 17032,
+        "n_correct_eynf": 183,
+        "n_correct_uncl": 11,
+        "n_fix_in_gt": 15657,
+        "n_fix_to_eynf": 611,
+        "n_fix_to_uncl": 70,
+        "n_gt_eynf": 183,
+        "n_gt_uncl": 27,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 99,
+        "n_sac_in_gt": 2135,
+        "n_sac_to_eynf": 120,
+        "n_sac_to_uncl": 18,
+        "n_samples_gt_fix_or_sac": 17792,
+        "n_samples_total": 18002,
+        "percentage_agreement": 94.63803956834532,
+        "percentage_agreement_all": 94.61170981002111,
         "recall_eynf": 100.0,
-        "recall_uncl": 69.24969249692496,
-        "saccade_recall": 89.19911829537105,
-        "tp_fix": 18990,
-        "tp_sac": 2428
+        "recall_uncl": 40.74074074074074,
+        "saccade_recall": 91.61592505854802,
+        "tp_fix": 14882,
+        "tp_sac": 1956
       },
       "output_path": null,
       "status": "ok"
@@ -2347,61 +1460,61 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 1.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 62.834837732996675,
+      "duration_seconds": 11.553247906005709,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 512
+            "EyesNotFound": 65
           },
           "Fixation": {
-            "FN": 1091,
-            "Unclassified": 131
+            "FN": 766,
+            "Unclassified": 53
           },
           "Saccade": {
-            "FN": 1159,
-            "Unclassified": 190
+            "FN": 816,
+            "Unclassified": 4
           },
           "Unclassified": {
-            "Unclassified": 191
+            "Unclassified": 8
           }
         },
-        "correct_type_rate": 0.21472205253512522,
+        "correct_type_rate": 0.04264018691588785,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 512,
-            "pred": 512
+            "gt": 65,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 1222,
+            "gt": 819,
             "pred": 0
           },
           "Saccade": {
-            "gt": 1349,
+            "gt": 820,
             "pred": 0
           },
           "Unclassified": {
-            "gt": 191,
-            "pred": 512
+            "gt": 8,
+            "pred": 65
           }
         },
-        "match_rate": 0.3127672571777642,
-        "mean_iou": 0.9478484942974228,
-        "n_correct_type": 703,
-        "n_fn": 2250,
+        "match_rate": 0.07593457943925233,
+        "mean_iou": 0.7291766344524088,
+        "n_correct_type": 73,
+        "n_fn": 1582,
         "n_fp": 0,
-        "n_gt_events": 3274,
-        "n_matched": 1024,
-        "n_pred_events": 1024,
+        "n_gt_events": 1712,
+        "n_matched": 130,
+        "n_pred_events": 130,
         "timing": {
           "EyesNotFound": {
-            "n_events": 512,
+            "n_events": 65,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -2410,7 +1523,7 @@
             "onset_dev_std_ms": 0.0
           },
           "Unclassified": {
-            "n_events": 191,
+            "n_events": 8,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -2420,26 +1533,31 @@
           }
         }
       },
-      "file": "LeftV30W1_input.tsv",
+      "file": "LeftV30W1_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Left eye, very small window (1ms) \u2014 extracted version with gaze_dir columns",
         "eye_mode": "left",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": false,
         "smoothing_mode": "none",
         "smoothing_window_samples": 5,
-        "source_name": "LeftV30W1_input.tsv",
+        "source_name": "LeftV30W1_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 1.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.16336473137120766,
+        "cohen_kappa": 0.049016136524501236,
         "confusion_matrix": [
           [
-            5337,
+            927,
             0,
             0,
             0
@@ -2448,19 +1566,19 @@
             0,
             0,
             0,
-            18660
+            14642
           ],
           [
             0,
             0,
             0,
-            3613
+            2425
           ],
           [
             0,
             0,
             0,
-            191
+            8
           ]
         ],
         "fixation_recall": 0.0,
@@ -2473,23 +1591,23 @@
           "Unclassified"
         ],
         "n_agree": 0,
-        "n_agree_all": 5528,
-        "n_correct_eynf": 5337,
-        "n_correct_uncl": 191,
-        "n_fix_in_gt": 18660,
+        "n_agree_all": 935,
+        "n_correct_eynf": 927,
+        "n_correct_uncl": 8,
+        "n_fix_in_gt": 14642,
         "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 18660,
-        "n_gt_eynf": 5337,
-        "n_gt_uncl": 191,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 22464,
-        "n_sac_in_gt": 3613,
+        "n_fix_to_uncl": 14642,
+        "n_gt_eynf": 927,
+        "n_gt_uncl": 8,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 17075,
+        "n_sac_in_gt": 2425,
         "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 3613,
-        "n_samples_gt_fix_or_sac": 22273,
-        "n_samples_total": 27801,
+        "n_sac_to_uncl": 2425,
+        "n_samples_gt_fix_or_sac": 17067,
+        "n_samples_total": 18002,
         "percentage_agreement": 0.0,
-        "percentage_agreement_all": 19.884176828171647,
+        "percentage_agreement_all": 5.193867348072436,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
         "saccade_recall": 0.0,
@@ -2566,64 +1684,63 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 103.7009962489974,
+      "duration_seconds": 27.333717243003775,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 512
+            "EyesNotFound": 65
           },
           "Fixation": {
-            "Fixation": 608,
-            "Unclassified": 2
+            "FN": 1,
+            "Fixation": 509
           },
           "Saccade": {
-            "FN": 8,
-            "Saccade": 689,
-            "Unclassified": 2
+            "FN": 1,
+            "Saccade": 536,
+            "Unclassified": 1
           },
           "Unclassified": {
-            "FN": 9,
-            "Saccade": 7,
-            "Unclassified": 520
+            "Saccade": 1,
+            "Unclassified": 46
           }
         },
-        "correct_type_rate": 0.9881204921510395,
+        "correct_type_rate": 0.996551724137931,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 512,
-            "pred": 512
+            "gt": 65,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 610,
-            "pred": 612
+            "gt": 510,
+            "pred": 511
           },
           "Saccade": {
-            "gt": 699,
-            "pred": 743
+            "gt": 538,
+            "pred": 553
           },
           "Unclassified": {
-            "gt": 536,
-            "pred": 549
+            "gt": 47,
+            "pred": 53
           }
         },
-        "match_rate": 0.9927874416631312,
-        "mean_iou": 0.9839600841501269,
-        "n_correct_type": 2329,
-        "n_fn": 17,
-        "n_fp": 76,
-        "n_gt_events": 2357,
-        "n_matched": 2340,
-        "n_pred_events": 2416,
+        "match_rate": 0.9982758620689656,
+        "mean_iou": 0.9925999812429893,
+        "n_correct_type": 1156,
+        "n_fn": 2,
+        "n_fp": 24,
+        "n_gt_events": 1160,
+        "n_matched": 1158,
+        "n_pred_events": 1182,
         "timing": {
           "EyesNotFound": {
-            "n_events": 512,
+            "n_events": 65,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -2632,113 +1749,114 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 608,
-            "offset_dev_abs_mean_ms": 0.9490131578947368,
-            "offset_dev_mean_ms": -0.9194078947368421,
-            "offset_dev_std_ms": 12.815960690219402,
-            "onset_dev_abs_mean_ms": 1.3289473684210527,
-            "onset_dev_mean_ms": 1.243421052631579,
-            "onset_dev_std_ms": 9.81106305624382
+            "n_events": 509,
+            "offset_dev_abs_mean_ms": 0.44204322200392926,
+            "offset_dev_mean_ms": -0.343811394891945,
+            "offset_dev_std_ms": 7.423472165232393,
+            "onset_dev_abs_mean_ms": 1.2082514734774066,
+            "onset_dev_mean_ms": -0.009823182711198428,
+            "onset_dev_std_ms": 15.231736894620449
           },
           "Saccade": {
-            "n_events": 689,
-            "offset_dev_abs_mean_ms": 0.7460087082728593,
-            "offset_dev_mean_ms": 0.5979680696661829,
-            "offset_dev_std_ms": 4.370161303515743,
-            "onset_dev_abs_mean_ms": 0.23222060957910015,
-            "onset_dev_mean_ms": -0.20899854862119013,
-            "onset_dev_std_ms": 1.4596830897087254
+            "n_events": 536,
+            "offset_dev_abs_mean_ms": 0.17350746268656717,
+            "offset_dev_mean_ms": -0.08395522388059702,
+            "offset_dev_std_ms": 1.3179012024047032,
+            "onset_dev_abs_mean_ms": 0.06343283582089553,
+            "onset_dev_mean_ms": 0.033582089552238806,
+            "onset_dev_std_ms": 0.73547685896372
           },
           "Unclassified": {
-            "n_events": 520,
-            "offset_dev_abs_mean_ms": 0.14038461538461539,
-            "offset_dev_mean_ms": -0.14038461538461539,
-            "offset_dev_std_ms": 1.0596395968878864,
-            "onset_dev_abs_mean_ms": 0.2865384615384615,
-            "onset_dev_mean_ms": 0.2865384615384615,
-            "onset_dev_std_ms": 1.9044141854267578
+            "n_events": 46,
+            "offset_dev_abs_mean_ms": 0.34782608695652173,
+            "offset_dev_mean_ms": -0.34782608695652173,
+            "offset_dev_std_ms": 1.6494765675388976,
+            "onset_dev_abs_mean_ms": 0.0,
+            "onset_dev_mean_ms": 0.0,
+            "onset_dev_std_ms": 0.0
           }
         }
       },
-      "file": "LeftV30W20Discard60NoSaccade_input.tsv",
+      "file": "LeftV30W20Discard60NoSaccade_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": true,
-        "discard_target": "Unclassified",
+        "entry_notes": "Left eye, discard short fixations <60ms; target=Unclassified \u2014 extracted version with gaze_dir columns",
         "eye_mode": "left",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": false,
-        "merge_fix_max_angle_deg": 0.5,
-        "merge_fix_max_gap_ms": 75.0,
-        "min_fixation_duration_ms": 60.0,
         "smoothing_mode": "none",
         "smoothing_window_samples": 5,
-        "source_name": "LeftV30W20Discard60NoSaccade_input.tsv",
+        "source_name": "LeftV30W20Discard60NoSaccade_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
-        "accuracy_uncl": 95.16806722689076,
-        "cohen_kappa": 0.9886167052597608,
+        "accuracy_uncl": 97.22222222222221,
+        "cohen_kappa": 0.9936894064091331,
         "confusion_matrix": [
           [
-            5337,
+            927,
             0,
             0,
             0
           ],
           [
             0,
-            18800,
-            67,
-            35
+            14884,
+            16,
+            3
           ],
           [
             0,
-            4,
-            2602,
+            8,
+            2052,
             4
           ],
           [
             0,
             0,
-            46,
-            906
+            3,
+            105
           ]
         ],
-        "fixation_recall": 99.46037456353824,
-        "fn_fix": 67,
-        "fn_sac": 4,
+        "fixation_recall": 99.87250889082735,
+        "fn_fix": 16,
+        "fn_sac": 8,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 21402,
-        "n_agree_all": 27645,
-        "n_correct_eynf": 5337,
-        "n_correct_uncl": 906,
-        "n_fix_in_gt": 18902,
+        "n_agree": 16936,
+        "n_agree_all": 17968,
+        "n_correct_eynf": 927,
+        "n_correct_uncl": 105,
+        "n_fix_in_gt": 14903,
         "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 35,
-        "n_gt_eynf": 5337,
-        "n_gt_uncl": 952,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 945,
-        "n_sac_in_gt": 2610,
+        "n_fix_to_uncl": 3,
+        "n_gt_eynf": 927,
+        "n_gt_uncl": 108,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 112,
+        "n_sac_in_gt": 2064,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 4,
-        "n_samples_gt_fix_or_sac": 21512,
-        "n_samples_total": 27801,
-        "percentage_agreement": 99.488657493492,
-        "percentage_agreement_all": 99.43886910542787,
+        "n_samples_gt_fix_or_sac": 16967,
+        "n_samples_total": 18002,
+        "percentage_agreement": 99.81729239111216,
+        "percentage_agreement_all": 99.81113209643372,
         "recall_eynf": 100.0,
-        "recall_uncl": 95.16806722689076,
-        "saccade_recall": 99.69348659003832,
-        "tp_fix": 18800,
-        "tp_sac": 2602
+        "recall_uncl": 97.22222222222221,
+        "saccade_recall": 99.4186046511628,
+        "tp_fix": 14884,
+        "tp_sac": 2052
       },
       "output_path": null,
       "status": "ok"
@@ -2810,63 +1928,62 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 97.42992154900276,
+      "duration_seconds": 26.71128970499558,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 468
+            "EyesNotFound": 45
           },
           "Fixation": {
-            "FN": 9,
-            "Fixation": 651,
-            "Saccade": 2
+            "FN": 1,
+            "Fixation": 510
           },
           "Saccade": {
-            "FN": 9,
-            "Fixation": 2,
-            "Saccade": 654
+            "FN": 1,
+            "Fixation": 1,
+            "Saccade": 520
           },
           "Unclassified": {
-            "Unclassified": 408
+            "Unclassified": 10
           }
         },
-        "correct_type_rate": 0.9900136177939174,
+        "correct_type_rate": 0.9972426470588235,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 468,
-            "pred": 512
+            "gt": 45,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 662,
-            "pred": 734
+            "gt": 511,
+            "pred": 543
           },
           "Saccade": {
-            "gt": 665,
-            "pred": 724
+            "gt": 522,
+            "pred": 541
           },
           "Unclassified": {
-            "gt": 408,
-            "pred": 409
+            "gt": 10,
+            "pred": 10
           }
         },
-        "match_rate": 0.9918293236495688,
-        "mean_iou": 0.9791507020304686,
-        "n_correct_type": 2181,
-        "n_fn": 18,
-        "n_fp": 194,
-        "n_gt_events": 2203,
-        "n_matched": 2185,
-        "n_pred_events": 2379,
+        "match_rate": 0.9981617647058824,
+        "mean_iou": 0.9869737264546483,
+        "n_correct_type": 1085,
+        "n_fn": 2,
+        "n_fp": 73,
+        "n_gt_events": 1088,
+        "n_matched": 1086,
+        "n_pred_events": 1159,
         "timing": {
           "EyesNotFound": {
-            "n_events": 468,
+            "n_events": 45,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -2875,25 +1992,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 651,
-            "offset_dev_abs_mean_ms": 5.671274961597542,
-            "offset_dev_mean_ms": -5.619047619047619,
-            "offset_dev_std_ms": 34.57597039762917,
-            "onset_dev_abs_mean_ms": 5.451612903225806,
-            "onset_dev_mean_ms": 4.428571428571429,
-            "onset_dev_std_ms": 31.29928553058799
+            "n_events": 510,
+            "offset_dev_abs_mean_ms": 3.2666666666666666,
+            "offset_dev_mean_ms": -3.168627450980392,
+            "offset_dev_std_ms": 24.75465061342141,
+            "onset_dev_abs_mean_ms": 2.6745098039215685,
+            "onset_dev_mean_ms": 1.4352941176470588,
+            "onset_dev_std_ms": 19.185136924022256
           },
           "Saccade": {
-            "n_events": 654,
-            "offset_dev_abs_mean_ms": 0.7859327217125383,
-            "offset_dev_mean_ms": 0.6299694189602446,
-            "offset_dev_std_ms": 4.483499200768303,
-            "onset_dev_abs_mean_ms": 0.2308868501529052,
-            "onset_dev_mean_ms": -0.1819571865443425,
-            "onset_dev_std_ms": 1.460740490016937
+            "n_events": 520,
+            "offset_dev_abs_mean_ms": 0.17884615384615385,
+            "offset_dev_mean_ms": -0.08653846153846154,
+            "offset_dev_std_ms": 1.3379777750232635,
+            "onset_dev_abs_mean_ms": 0.06346153846153846,
+            "onset_dev_mean_ms": 0.032692307692307694,
+            "onset_dev_std_ms": 0.7245279251979053
           },
           "Unclassified": {
-            "n_events": 408,
+            "n_events": 10,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -2903,85 +2020,86 @@
           }
         }
       },
-      "file": "LeftV30W20MergeF75ms0-5angle_input.tsv",
+      "file": "LeftV30W20MergeF75ms0-5angle_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
-        "discard_target": "Unclassified",
+        "entry_notes": "Left eye, merge fixations (75ms / 0.5 deg) \u2014 extracted version with gaze_dir columns",
         "eye_mode": "left",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": true,
-        "merge_fix_max_angle_deg": 0.5,
-        "merge_fix_max_gap_ms": 75.0,
-        "min_fixation_duration_ms": 60.0,
         "smoothing_mode": "none",
         "smoothing_window_samples": 5,
-        "source_name": "LeftV30W20MergeF75ms0-5angle_input.tsv",
+        "source_name": "LeftV30W20MergeF75ms0-5angle_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9851821085389346,
+        "cohen_kappa": 0.9890077746785025,
         "confusion_matrix": [
           [
-            5288,
+            905,
             0,
             0,
             0
           ],
           [
-            49,
-            19128,
-            134,
-            2
+            22,
+            14994,
+            23,
+            0
           ],
           [
             0,
-            11,
-            2557,
+            12,
+            2034,
             0
           ],
           [
             0,
             0,
             0,
-            632
+            12
           ]
         ],
-        "fixation_recall": 99.04209599751462,
-        "fn_fix": 134,
-        "fn_sac": 11,
+        "fixation_recall": 99.70077797725912,
+        "fn_fix": 23,
+        "fn_sac": 12,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 21685,
-        "n_agree_all": 27605,
-        "n_correct_eynf": 5288,
-        "n_correct_uncl": 632,
-        "n_fix_in_gt": 19313,
-        "n_fix_to_eynf": 49,
-        "n_fix_to_uncl": 2,
-        "n_gt_eynf": 5288,
-        "n_gt_uncl": 632,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 634,
-        "n_sac_in_gt": 2568,
+        "n_agree": 17028,
+        "n_agree_all": 17945,
+        "n_correct_eynf": 905,
+        "n_correct_uncl": 12,
+        "n_fix_in_gt": 15039,
+        "n_fix_to_eynf": 22,
+        "n_fix_to_uncl": 0,
+        "n_gt_eynf": 905,
+        "n_gt_uncl": 12,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 12,
+        "n_sac_in_gt": 2046,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 21881,
-        "n_samples_total": 27801,
-        "percentage_agreement": 99.10424569261002,
-        "percentage_agreement_all": 99.2949893888709,
+        "n_samples_gt_fix_or_sac": 17085,
+        "n_samples_total": 18002,
+        "percentage_agreement": 99.66637401229148,
+        "percentage_agreement_all": 99.68336851460948,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 99.57165109034268,
-        "tp_fix": 19128,
-        "tp_sac": 2557
+        "saccade_recall": 99.41348973607037,
+        "tp_fix": 14994,
+        "tp_sac": 2034
       },
       "output_path": null,
       "status": "ok"
@@ -3044,63 +2162,63 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 73.62972422099847,
+      "duration_seconds": 25.69515355200565,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 512
+            "EyesNotFound": 65
           },
           "Fixation": {
-            "FN": 12,
-            "Fixation": 460,
-            "Saccade": 2
+            "FN": 6,
+            "Fixation": 362,
+            "Saccade": 4
           },
           "Saccade": {
-            "FN": 26,
-            "Fixation": 13,
-            "Saccade": 402
+            "FN": 8,
+            "Fixation": 4,
+            "Saccade": 349
           },
           "Unclassified": {
-            "Unclassified": 416
+            "Unclassified": 10
           }
         },
-        "correct_type_rate": 0.9712425393380358,
+        "correct_type_rate": 0.9727722772277227,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 512,
-            "pred": 512
+            "gt": 65,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 474,
-            "pred": 517
+            "gt": 372,
+            "pred": 554
           },
           "Saccade": {
-            "gt": 441,
-            "pred": 471
+            "gt": 361,
+            "pred": 553
           },
           "Unclassified": {
-            "gt": 416,
-            "pred": 416
+            "gt": 10,
+            "pred": 10
           }
         },
-        "match_rate": 0.979381443298969,
-        "mean_iou": 0.9760462412891631,
-        "n_correct_type": 1790,
-        "n_fn": 38,
-        "n_fp": 111,
-        "n_gt_events": 1843,
-        "n_matched": 1805,
-        "n_pred_events": 1916,
+        "match_rate": 0.9826732673267327,
+        "mean_iou": 0.6611064318232222,
+        "n_correct_type": 786,
+        "n_fn": 14,
+        "n_fp": 388,
+        "n_gt_events": 808,
+        "n_matched": 794,
+        "n_pred_events": 1182,
         "timing": {
           "EyesNotFound": {
-            "n_events": 512,
+            "n_events": 65,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -3109,25 +2227,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 460,
-            "offset_dev_abs_mean_ms": 5.680434782608696,
-            "offset_dev_mean_ms": -4.641304347826087,
-            "offset_dev_std_ms": 27.55212193518988,
-            "onset_dev_abs_mean_ms": 6.178260869565217,
-            "onset_dev_mean_ms": 4.6521739130434785,
-            "onset_dev_std_ms": 40.515532614830214
+            "n_events": 362,
+            "offset_dev_abs_mean_ms": 66.6988950276243,
+            "offset_dev_mean_ms": -37.65469613259668,
+            "offset_dev_std_ms": 144.81502038890793,
+            "onset_dev_abs_mean_ms": 51.22099447513812,
+            "onset_dev_mean_ms": 23.988950276243095,
+            "onset_dev_std_ms": 137.09310943000986
           },
           "Saccade": {
-            "n_events": 402,
-            "offset_dev_abs_mean_ms": 1.5223880597014925,
-            "offset_dev_mean_ms": 1.0199004975124377,
-            "offset_dev_std_ms": 5.319666799050243,
-            "onset_dev_abs_mean_ms": 1.8582089552238805,
-            "onset_dev_mean_ms": -1.3208955223880596,
-            "onset_dev_std_ms": 6.089442332777223
+            "n_events": 349,
+            "offset_dev_abs_mean_ms": 16.94269340974212,
+            "offset_dev_mean_ms": -16.638968481375358,
+            "offset_dev_std_ms": 8.691141947879986,
+            "onset_dev_abs_mean_ms": 19.163323782234958,
+            "onset_dev_mean_ms": 18.733524355300858,
+            "onset_dev_std_ms": 8.93048147217361
           },
           "Unclassified": {
-            "n_events": 416,
+            "n_events": 10,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -3137,81 +2255,86 @@
           }
         }
       },
-      "file": "LeftV30W20NoiseAvW9_input.tsv",
+      "file": "LeftV30W20NoiseAvW9_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Left eye, moving average smoothing window 9 \u2014 extracted version with gaze_dir columns",
         "eye_mode": "left",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": false,
         "smoothing_mode": "moving_average",
         "smoothing_window_samples": 9,
-        "source_name": "LeftV30W20NoiseAvW9_input.tsv",
+        "source_name": "LeftV30W20NoiseAvW9_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9784176883283252,
+        "cohen_kappa": 0.6788279548289616,
         "confusion_matrix": [
           [
-            5337,
+            927,
             0,
             0,
             0
           ],
           [
             0,
-            17690,
-            215,
+            13482,
+            421,
             0
           ],
           [
             0,
-            103,
-            3815,
+            1510,
+            1650,
             0
           ],
           [
             0,
             0,
             0,
-            641
+            12
           ]
         ],
-        "fixation_recall": 98.79921809550405,
-        "fn_fix": 215,
-        "fn_sac": 103,
+        "fixation_recall": 96.97187657340143,
+        "fn_fix": 421,
+        "fn_sac": 1510,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 21505,
-        "n_agree_all": 27483,
-        "n_correct_eynf": 5337,
-        "n_correct_uncl": 641,
-        "n_fix_in_gt": 17905,
+        "n_agree": 15132,
+        "n_agree_all": 16071,
+        "n_correct_eynf": 927,
+        "n_correct_uncl": 12,
+        "n_fix_in_gt": 13903,
         "n_fix_to_eynf": 0,
         "n_fix_to_uncl": 0,
-        "n_gt_eynf": 5337,
-        "n_gt_uncl": 641,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 641,
-        "n_sac_in_gt": 3918,
+        "n_gt_eynf": 927,
+        "n_gt_uncl": 12,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 12,
+        "n_sac_in_gt": 3160,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 21823,
-        "n_samples_total": 27801,
-        "percentage_agreement": 98.5428217935206,
-        "percentage_agreement_all": 98.85615625337219,
+        "n_samples_gt_fix_or_sac": 17063,
+        "n_samples_total": 18002,
+        "percentage_agreement": 88.68311551309851,
+        "percentage_agreement_all": 89.27341406510388,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 97.37110770801429,
-        "tp_fix": 17690,
-        "tp_sac": 3815
+        "saccade_recall": 52.21518987341772,
+        "tp_fix": 13482,
+        "tp_sac": 1650
       },
       "output_path": null,
       "status": "ok"
@@ -3274,63 +2397,62 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 74.52912606999598,
+      "duration_seconds": 25.893454420001945,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 512
+            "EyesNotFound": 65
           },
           "Fixation": {
-            "FN": 11,
-            "Fixation": 646,
-            "Saccade": 1
+            "FN": 2,
+            "Fixation": 508,
+            "Saccade": 2
           },
           "Saccade": {
-            "FN": 34,
-            "Fixation": 5,
-            "Saccade": 584
+            "FN": 4,
+            "Saccade": 496
           },
           "Unclassified": {
-            "Unclassified": 416
+            "Unclassified": 10
           }
         },
-        "correct_type_rate": 0.9769126301493889,
+        "correct_type_rate": 0.9926402943882244,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 512,
-            "pred": 512
+            "gt": 65,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 658,
-            "pred": 668
+            "gt": 512,
+            "pred": 554
           },
           "Saccade": {
-            "gt": 623,
-            "pred": 600
+            "gt": 500,
+            "pred": 553
           },
           "Unclassified": {
-            "gt": 416,
-            "pred": 416
+            "gt": 10,
+            "pred": 10
           }
         },
-        "match_rate": 0.9796287913082843,
-        "mean_iou": 0.9839713739912515,
-        "n_correct_type": 2158,
-        "n_fn": 45,
-        "n_fp": 32,
-        "n_gt_events": 2209,
-        "n_matched": 2164,
-        "n_pred_events": 2196,
+        "match_rate": 0.9944802207911684,
+        "mean_iou": 0.9680224310878044,
+        "n_correct_type": 1079,
+        "n_fn": 6,
+        "n_fp": 101,
+        "n_gt_events": 1087,
+        "n_matched": 1081,
+        "n_pred_events": 1182,
         "timing": {
           "EyesNotFound": {
-            "n_events": 512,
+            "n_events": 65,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -3339,25 +2461,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 646,
-            "offset_dev_abs_mean_ms": 1.6981424148606812,
-            "offset_dev_mean_ms": -0.30495356037151705,
-            "offset_dev_std_ms": 14.977343310263636,
-            "onset_dev_abs_mean_ms": 2.043343653250774,
-            "onset_dev_mean_ms": 1.111455108359133,
-            "onset_dev_std_ms": 14.716861353968621
+            "n_events": 508,
+            "offset_dev_abs_mean_ms": 5.69488188976378,
+            "offset_dev_mean_ms": -5.663385826771654,
+            "offset_dev_std_ms": 38.13164777561528,
+            "onset_dev_abs_mean_ms": 6.582677165354331,
+            "onset_dev_mean_ms": 6.291338582677166,
+            "onset_dev_std_ms": 46.4788319380232
           },
           "Saccade": {
-            "n_events": 584,
-            "offset_dev_abs_mean_ms": 1.0325342465753424,
-            "offset_dev_mean_ms": 0.5222602739726028,
-            "offset_dev_std_ms": 5.010402663269015,
-            "onset_dev_abs_mean_ms": 0.2551369863013699,
-            "onset_dev_mean_ms": -0.11815068493150685,
-            "onset_dev_std_ms": 1.4518265556713486
+            "n_events": 496,
+            "offset_dev_abs_mean_ms": 0.9556451612903226,
+            "offset_dev_mean_ms": 0.5483870967741935,
+            "offset_dev_std_ms": 3.515862671177679,
+            "onset_dev_abs_mean_ms": 0.4032258064516129,
+            "onset_dev_mean_ms": -0.4032258064516129,
+            "onset_dev_std_ms": 2.0137681843806132
           },
           "Unclassified": {
-            "n_events": 416,
+            "n_events": 10,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -3367,81 +2489,86 @@
           }
         }
       },
-      "file": "LeftV30W20NoiseMedW9_input.tsv",
+      "file": "LeftV30W20NoiseMedW9_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Left eye, median smoothing window 9 \u2014 extracted version with gaze_dir columns",
         "eye_mode": "left",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
         "merge_adjacent_fixations": false,
         "smoothing_mode": "median",
         "smoothing_window_samples": 9,
-        "source_name": "LeftV30W20NoiseMedW9_input.tsv",
+        "source_name": "LeftV30W20NoiseMedW9_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9873291495544636,
+        "cohen_kappa": 0.9722154384504396,
         "confusion_matrix": [
           [
-            5337,
+            927,
             0,
             0,
             0
           ],
           [
             0,
-            19310,
-            71,
+            14979,
+            130,
             0
           ],
           [
             0,
-            94,
-            2348,
+            13,
+            1941,
             0
           ],
           [
             0,
             0,
             0,
-            641
+            12
           ]
         ],
-        "fixation_recall": 99.6336618337547,
-        "fn_fix": 71,
-        "fn_sac": 94,
+        "fixation_recall": 99.1395856774108,
+        "fn_fix": 130,
+        "fn_sac": 13,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 21658,
-        "n_agree_all": 27636,
-        "n_correct_eynf": 5337,
-        "n_correct_uncl": 641,
-        "n_fix_in_gt": 19381,
+        "n_agree": 16920,
+        "n_agree_all": 17859,
+        "n_correct_eynf": 927,
+        "n_correct_uncl": 12,
+        "n_fix_in_gt": 15109,
         "n_fix_to_eynf": 0,
         "n_fix_to_uncl": 0,
-        "n_gt_eynf": 5337,
-        "n_gt_uncl": 641,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 641,
-        "n_sac_in_gt": 2442,
+        "n_gt_eynf": 927,
+        "n_gt_uncl": 12,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 12,
+        "n_sac_in_gt": 1954,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 21823,
-        "n_samples_total": 27801,
-        "percentage_agreement": 99.24391696833615,
-        "percentage_agreement_all": 99.40649616920255,
+        "n_samples_gt_fix_or_sac": 17063,
+        "n_samples_total": 18002,
+        "percentage_agreement": 99.1619293207525,
+        "percentage_agreement_all": 99.20564381735363,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 96.15069615069615,
-        "tp_fix": 19310,
-        "tp_sac": 2348
+        "saccade_recall": 99.33469805527125,
+        "tp_fix": 14979,
+        "tp_sac": 1941
       },
       "output_path": null,
       "status": "ok"
@@ -3511,56 +2638,56 @@
           }
         }
       },
-      "duration_seconds": 92.58956593400217,
+      "duration_seconds": 25.316503531998023,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
-            "EyesNotFound": 512
+            "EyesNotFound": 65
           },
           "Fixation": {
-            "FN": 9,
-            "Fixation": 714,
-            "Saccade": 7
+            "FN": 3,
+            "Fixation": 543,
+            "Saccade": 1
           },
           "Saccade": {
-            "FN": 8,
+            "FN": 2,
             "Fixation": 2,
-            "Saccade": 689
+            "Saccade": 534
           },
           "Unclassified": {
-            "Unclassified": 416
+            "Unclassified": 10
           }
         },
-        "correct_type_rate": 0.9889690284259652,
+        "correct_type_rate": 0.993103448275862,
         "event_counts": {
           "EyesNotFound": {
-            "gt": 512,
-            "pred": 512
+            "gt": 65,
+            "pred": 65
           },
           "Fixation": {
-            "gt": 730,
-            "pred": 745
+            "gt": 547,
+            "pred": 557
           },
           "Saccade": {
-            "gt": 699,
-            "pred": 743
+            "gt": 538,
+            "pred": 556
           },
           "Unclassified": {
-            "gt": 416,
-            "pred": 416
+            "gt": 10,
+            "pred": 10
           }
         },
-        "match_rate": 0.9927874416631312,
-        "mean_iou": 0.9839600841501269,
-        "n_correct_type": 2331,
-        "n_fn": 17,
-        "n_fp": 76,
-        "n_gt_events": 2357,
-        "n_matched": 2340,
-        "n_pred_events": 2416,
+        "match_rate": 0.9956896551724138,
+        "mean_iou": 0.9872777649126308,
+        "n_correct_type": 1152,
+        "n_fn": 5,
+        "n_fp": 33,
+        "n_gt_events": 1160,
+        "n_matched": 1155,
+        "n_pred_events": 1188,
         "timing": {
           "EyesNotFound": {
-            "n_events": 512,
+            "n_events": 65,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -3569,25 +2696,25 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 714,
-            "offset_dev_abs_mean_ms": 0.9215686274509803,
-            "offset_dev_mean_ms": -0.896358543417367,
-            "offset_dev_std_ms": 11.860356877538326,
-            "onset_dev_abs_mean_ms": 1.4551820728291316,
-            "onset_dev_mean_ms": 1.3823529411764706,
-            "onset_dev_std_ms": 9.42160520645403
+            "n_events": 543,
+            "offset_dev_abs_mean_ms": 0.5211786372007366,
+            "offset_dev_mean_ms": -0.5211786372007366,
+            "offset_dev_std_ms": 7.255676801010613,
+            "onset_dev_abs_mean_ms": 1.0939226519337018,
+            "onset_dev_mean_ms": 1.0276243093922652,
+            "onset_dev_std_ms": 9.78010874185495
           },
           "Saccade": {
-            "n_events": 689,
-            "offset_dev_abs_mean_ms": 0.7460087082728593,
-            "offset_dev_mean_ms": 0.5979680696661829,
-            "offset_dev_std_ms": 4.370161303515743,
-            "onset_dev_abs_mean_ms": 0.23222060957910015,
-            "onset_dev_mean_ms": -0.20899854862119013,
-            "onset_dev_std_ms": 1.4596830897087254
+            "n_events": 534,
+            "offset_dev_abs_mean_ms": 0.41760299625468167,
+            "offset_dev_mean_ms": 0.2602996254681648,
+            "offset_dev_std_ms": 2.1019147672224427,
+            "onset_dev_abs_mean_ms": 0.12734082397003746,
+            "onset_dev_mean_ms": -0.12734082397003746,
+            "onset_dev_std_ms": 1.0353424572073389
           },
           "Unclassified": {
-            "n_events": 416,
+            "n_events": 10,
             "offset_dev_abs_mean_ms": 0.0,
             "offset_dev_mean_ms": 0.0,
             "offset_dev_std_ms": 0.0,
@@ -3597,7 +2724,7 @@
           }
         }
       },
-      "file": "LeftV30W20_input.tsv",
+      "file": "LeftV30W20_extracted.tsv",
       "inference_notes": {
         "discard_short_fixations": false,
         "eye_mode": "left",
@@ -3606,706 +2733,7 @@
         "merge_adjacent_fixations": false,
         "smoothing_mode": "none",
         "smoothing_window_samples": 5,
-        "source_name": "LeftV30W20_input.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.99090323227511,
-        "confusion_matrix": [
-          [
-            5337,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            19100,
-            113,
-            0
-          ],
-          [
-            0,
-            8,
-            2602,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            641
-          ]
-        ],
-        "fixation_recall": 99.41185655545725,
-        "fn_fix": 113,
-        "fn_sac": 8,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 21702,
-        "n_agree_all": 27680,
-        "n_correct_eynf": 5337,
-        "n_correct_uncl": 641,
-        "n_fix_in_gt": 19213,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 5337,
-        "n_gt_uncl": 641,
-        "n_pred_eynf": 5337,
-        "n_pred_uncl": 641,
-        "n_sac_in_gt": 2610,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 21823,
-        "n_samples_total": 27801,
-        "percentage_agreement": 99.44553911011317,
-        "percentage_agreement_all": 99.5647638574152,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 99.69348659003832,
-        "tp_fix": 19100,
-        "tp_sac": 2602
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": true,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 68.1658417639992,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 25,
-            "Fixation": 1
-          },
-          "Fixation": {
-            "FN": 69,
-            "Fixation": 780,
-            "Saccade": 8
-          },
-          "Saccade": {
-            "FN": 76,
-            "Fixation": 8,
-            "Saccade": 782
-          },
-          "Unclassified": {
-            "Unclassified": 2
-          }
-        },
-        "correct_type_rate": 0.9074814391776128,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 26,
-            "pred": 25
-          },
-          "Fixation": {
-            "gt": 857,
-            "pred": 834
-          },
-          "Saccade": {
-            "gt": 866,
-            "pred": 846
-          },
-          "Unclassified": {
-            "gt": 2,
-            "pred": 2
-          }
-        },
-        "match_rate": 0.9171901770416905,
-        "mean_iou": 0.9583514626586167,
-        "n_correct_type": 1589,
-        "n_fn": 145,
-        "n_fp": 101,
-        "n_gt_events": 1751,
-        "n_matched": 1606,
-        "n_pred_events": 1707,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 25,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 780,
-            "offset_dev_abs_mean_ms": 2.8098358974359225,
-            "offset_dev_mean_ms": -0.3098333333333136,
-            "offset_dev_std_ms": 17.496338241376414,
-            "onset_dev_abs_mean_ms": 3.237189743589779,
-            "onset_dev_mean_ms": -0.39529743589741123,
-            "onset_dev_std_ms": 23.97761060023019
-          },
-          "Saccade": {
-            "n_events": 782,
-            "offset_dev_abs_mean_ms": 0.8525204603581056,
-            "offset_dev_mean_ms": 0.5115051150895122,
-            "offset_dev_std_ms": 4.686968757363207,
-            "onset_dev_abs_mean_ms": 0.4156035805626941,
-            "onset_dev_mean_ms": -0.33035038363174124,
-            "onset_dev_std_ms": 2.793643412004906
-          },
-          "Unclassified": {
-            "n_events": 2,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "bothEyeT30W20In75_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": true,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "bothEyeT30W20In75_input.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 99.74944320712696,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9748315246357127,
-        "confusion_matrix": [
-          [
-            3583,
-            9,
-            0,
-            0
-          ],
-          [
-            0,
-            20844,
-            139,
-            0
-          ],
-          [
-            0,
-            132,
-            3091,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            3
-          ]
-        ],
-        "fixation_recall": 99.33755897631416,
-        "fn_fix": 139,
-        "fn_sac": 132,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 23935,
-        "n_agree_all": 27521,
-        "n_correct_eynf": 3583,
-        "n_correct_uncl": 3,
-        "n_fix_in_gt": 20983,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 3592,
-        "n_gt_uncl": 3,
-        "n_pred_eynf": 3583,
-        "n_pred_uncl": 3,
-        "n_sac_in_gt": 3223,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 24206,
-        "n_samples_total": 27801,
-        "percentage_agreement": 98.88044286540527,
-        "percentage_agreement_all": 98.99284198410129,
-        "recall_eynf": 99.74944320712696,
-        "recall_uncl": 100.0,
-        "saccade_recall": 95.90443686006826,
-        "tp_fix": 20844,
-        "tp_sac": 3091
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": true,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 71.29558892599744,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 25,
-            "Fixation": 1
-          },
-          "Fixation": {
-            "FN": 69,
-            "Fixation": 780,
-            "Saccade": 8
-          },
-          "Saccade": {
-            "FN": 76,
-            "Fixation": 8,
-            "Saccade": 782
-          },
-          "Unclassified": {
-            "Unclassified": 2
-          }
-        },
-        "correct_type_rate": 0.9074814391776128,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 26,
-            "pred": 25
-          },
-          "Fixation": {
-            "gt": 857,
-            "pred": 834
-          },
-          "Saccade": {
-            "gt": 866,
-            "pred": 846
-          },
-          "Unclassified": {
-            "gt": 2,
-            "pred": 2
-          }
-        },
-        "match_rate": 0.9171901770416905,
-        "mean_iou": 0.9583514626586167,
-        "n_correct_type": 1589,
-        "n_fn": 145,
-        "n_fp": 101,
-        "n_gt_events": 1751,
-        "n_matched": 1606,
-        "n_pred_events": 1707,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 25,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 780,
-            "offset_dev_abs_mean_ms": 2.8098358974359225,
-            "offset_dev_mean_ms": -0.3098333333333136,
-            "offset_dev_std_ms": 17.496338241376414,
-            "onset_dev_abs_mean_ms": 3.237189743589779,
-            "onset_dev_mean_ms": -0.39529743589741123,
-            "onset_dev_std_ms": 23.97761060023019
-          },
-          "Saccade": {
-            "n_events": 782,
-            "offset_dev_abs_mean_ms": 0.8525204603581056,
-            "offset_dev_mean_ms": 0.5115051150895122,
-            "offset_dev_std_ms": 4.686968757363207,
-            "onset_dev_abs_mean_ms": 0.4156035805626941,
-            "onset_dev_mean_ms": -0.33035038363174124,
-            "onset_dev_std_ms": 2.793643412004906
-          },
-          "Unclassified": {
-            "n_events": 2,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "bothEyeT30W20Int75_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": true,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "bothEyeT30W20Int75_input.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 99.74944320712696,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9748315246357127,
-        "confusion_matrix": [
-          [
-            3583,
-            9,
-            0,
-            0
-          ],
-          [
-            0,
-            20844,
-            139,
-            0
-          ],
-          [
-            0,
-            132,
-            3091,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            3
-          ]
-        ],
-        "fixation_recall": 99.33755897631416,
-        "fn_fix": 139,
-        "fn_sac": 132,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 23935,
-        "n_agree_all": 27521,
-        "n_correct_eynf": 3583,
-        "n_correct_uncl": 3,
-        "n_fix_in_gt": 20983,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 3592,
-        "n_gt_uncl": 3,
-        "n_pred_eynf": 3583,
-        "n_pred_uncl": 3,
-        "n_sac_in_gt": 3223,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 24206,
-        "n_samples_total": 27801,
-        "percentage_agreement": 98.88044286540527,
-        "percentage_agreement_all": 98.99284198410129,
-        "recall_eynf": 99.74944320712696,
-        "recall_uncl": 100.0,
-        "saccade_recall": 95.90443686006826,
-        "tp_fix": 20844,
-        "tp_sac": 3091
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "duration_seconds": 0.06097554599546129,
-      "error_message": "raw gaze DataFrame is missing required columns: 'gaze_left_x_mm', 'gaze_left_y_mm', 'gaze_right_x_mm', 'gaze_right_y_mm'",
-      "error_type": "ValueError",
-      "file": "ivt_normal_input.tsv",
-      "status": "error"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "left",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 313.24607264199585,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 146
-          },
-          "Fixation": {
-            "FN": 40,
-            "Fixation": 920,
-            "Saccade": 9
-          },
-          "Saccade": {
-            "FN": 31,
-            "Fixation": 8,
-            "Saccade": 961
-          },
-          "Unclassified": {
-            "Unclassified": 60
-          }
-        },
-        "correct_type_rate": 0.9595402298850575,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 146,
-            "pred": 146
-          },
-          "Fixation": {
-            "gt": 969,
-            "pred": 1005
-          },
-          "Saccade": {
-            "gt": 1000,
-            "pred": 1056
-          },
-          "Unclassified": {
-            "gt": 60,
-            "pred": 60
-          }
-        },
-        "match_rate": 0.9673563218390805,
-        "mean_iou": 0.9629431810132745,
-        "n_correct_type": 2087,
-        "n_fn": 71,
-        "n_fp": 163,
-        "n_gt_events": 2175,
-        "n_matched": 2104,
-        "n_pred_events": 2267,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 146,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 920,
-            "offset_dev_abs_mean_ms": 1.6673913043478261,
-            "offset_dev_mean_ms": -1.5804347826086957,
-            "offset_dev_std_ms": 14.135749747383777,
-            "onset_dev_abs_mean_ms": 1.451086956521739,
-            "onset_dev_mean_ms": 1.275,
-            "onset_dev_std_ms": 12.366080225857322
-          },
-          "Saccade": {
-            "n_events": 961,
-            "offset_dev_abs_mean_ms": 0.4183142559833507,
-            "offset_dev_mean_ms": 0.2767950052029136,
-            "offset_dev_std_ms": 1.8423186615354286,
-            "onset_dev_abs_mean_ms": 0.5379812695109261,
-            "onset_dev_mean_ms": -0.413111342351717,
-            "onset_dev_std_ms": 2.745260081236682
-          },
-          "Unclassified": {
-            "n_events": 60,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "left20ms30_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "left",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "left20ms30_input.tsv",
+        "source_name": "LeftV30W20_extracted.tsv",
         "threshold_deg_per_sec": 30.0,
         "time_column": "time_ms",
         "time_unit": "ms",
@@ -4314,65 +2742,298 @@
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9816361391323999,
+        "cohen_kappa": 0.9897159401214299,
         "confusion_matrix": [
           [
-            3419,
+            927,
             0,
             0,
             0
           ],
           [
             0,
-            60042,
-            294,
+            14951,
+            48,
             0
           ],
           [
             0,
-            86,
-            8160,
+            6,
+            2058,
             0
           ],
           [
             0,
             0,
             0,
-            122
+            12
           ]
         ],
-        "fixation_recall": 99.51272871917264,
-        "fn_fix": 294,
-        "fn_sac": 86,
+        "fixation_recall": 99.67997866524435,
+        "fn_fix": 48,
+        "fn_sac": 6,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 68202,
-        "n_agree_all": 71743,
-        "n_correct_eynf": 3419,
-        "n_correct_uncl": 122,
-        "n_fix_in_gt": 60336,
+        "n_agree": 17009,
+        "n_agree_all": 17948,
+        "n_correct_eynf": 927,
+        "n_correct_uncl": 12,
+        "n_fix_in_gt": 14999,
         "n_fix_to_eynf": 0,
         "n_fix_to_uncl": 0,
-        "n_gt_eynf": 3419,
-        "n_gt_uncl": 122,
-        "n_pred_eynf": 3419,
-        "n_pred_uncl": 122,
-        "n_sac_in_gt": 8246,
+        "n_gt_eynf": 927,
+        "n_gt_uncl": 12,
+        "n_pred_eynf": 927,
+        "n_pred_uncl": 12,
+        "n_sac_in_gt": 2064,
         "n_sac_to_eynf": 0,
         "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 68582,
-        "n_samples_total": 72123,
-        "percentage_agreement": 99.44591875419206,
-        "percentage_agreement_all": 99.47312230495126,
+        "n_samples_gt_fix_or_sac": 17063,
+        "n_samples_total": 18002,
+        "percentage_agreement": 99.68352575748696,
+        "percentage_agreement_all": 99.70003332963005,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 98.95707009459132,
-        "tp_fix": 60042,
-        "tp_sac": 8160
+        "saccade_recall": 99.70930232558139,
+        "tp_fix": 14951,
+        "tp_sac": 2058
+      },
+      "output_path": null,
+      "status": "ok"
+    },
+    {
+      "config": {
+        "classifier": {
+          "confident_switch_margin_deg": 4.0,
+          "confident_switch_method": "ray3d_gaze_dir",
+          "enable_confident_switch": false,
+          "enable_eye_jump_rule": false,
+          "enable_hysteresis": false,
+          "enable_invalid_window_neighbor_confirmation": false,
+          "enable_near_threshold_hybrid": false,
+          "eye_jump_threshold_mm": 10.0,
+          "eye_jump_velocity_threshold": 50.0,
+          "hysteresis_width_deg_per_sec": 2.0,
+          "near_threshold_band": 5.0,
+          "near_threshold_band_lower": null,
+          "near_threshold_band_upper": null,
+          "near_threshold_confidence_margin": 0.4,
+          "near_threshold_max_delta": 2.0,
+          "near_threshold_neighbor_check": false,
+          "near_threshold_require_same_side": true,
+          "near_threshold_strategy": "inverse",
+          "velocity_threshold_deg_per_sec": 30.0
+        },
+        "classify": true,
+        "fixation_post": null,
+        "saccade_merge": null,
+        "velocity": {
+          "allow_asymmetric_window": false,
+          "asymmetric_neighbor_window": false,
+          "auto_fixed_window_from_ms": false,
+          "average_fallback_single_eye": false,
+          "average_window_impute_neighbor": false,
+          "average_window_single_eye": false,
+          "coordinate_rounding": "none",
+          "dt_calculation_method": "mean",
+          "eye_mode": "left",
+          "fixed_window_edge_fallback": false,
+          "fixed_window_samples": null,
+          "gap_fill_enabled": false,
+          "gap_fill_max_gap_ms": 75.0,
+          "max_validity": 1,
+          "min_dt_ms": 0.1,
+          "sample_symmetric_window": false,
+          "sampling_rate_method": "first_100",
+          "shifted_valid_fallback": "shrink",
+          "shifted_valid_window": false,
+          "smoothing_expansion_radius": 0,
+          "smoothing_min_samples": 1,
+          "smoothing_mode": "none",
+          "smoothing_window_samples": 5,
+          "symmetric_round_window": false,
+          "time_column": "time_ms",
+          "time_unit": "ms",
+          "tobii_eye_offset_interpolation": false,
+          "tobii_sample_interval_ms": null,
+          "tobii_window_mode": false,
+          "use_fallback_valid_samples": true,
+          "use_fixed_dt": false,
+          "velocity_method": "tobii_gaze_dir",
+          "window_length_ms": 20.0,
+          "window_policy": {
+            "kind": "time_symmetric"
+          }
+        }
+      },
+      "duration_seconds": 75.15166774099634,
+      "event_iou": {
+        "confusion_matrix": {
+          "EyesNotFound": {
+            "EyesNotFound": 59
+          },
+          "Fixation": {
+            "FN": 1,
+            "Fixation": 593,
+            "Saccade": 3
+          },
+          "Saccade": {
+            "Saccade": 615
+          },
+          "Unclassified": {
+            "Unclassified": 20
+          }
+        },
+        "correct_type_rate": 0.9969016266460109,
+        "event_counts": {
+          "EyesNotFound": {
+            "gt": 59,
+            "pred": 59
+          },
+          "Fixation": {
+            "gt": 597,
+            "pred": 597
+          },
+          "Saccade": {
+            "gt": 615,
+            "pred": 625
+          },
+          "Unclassified": {
+            "gt": 20,
+            "pred": 20
+          }
+        },
+        "match_rate": 0.9992254066615027,
+        "mean_iou": 0.9975152212128956,
+        "n_correct_type": 1287,
+        "n_fn": 1,
+        "n_fp": 11,
+        "n_gt_events": 1291,
+        "n_matched": 1290,
+        "n_pred_events": 1301,
+        "timing": {
+          "EyesNotFound": {
+            "n_events": 59,
+            "offset_dev_abs_mean_ms": 0.0,
+            "offset_dev_mean_ms": 0.0,
+            "offset_dev_std_ms": 0.0,
+            "onset_dev_abs_mean_ms": 0.0,
+            "onset_dev_mean_ms": 0.0,
+            "onset_dev_std_ms": 0.0
+          },
+          "Fixation": {
+            "n_events": 593,
+            "offset_dev_abs_mean_ms": 0.016863406408094434,
+            "offset_dev_mean_ms": -0.016863406408094434,
+            "offset_dev_std_ms": 0.31255098485686844,
+            "onset_dev_abs_mean_ms": 0.07419898819561552,
+            "onset_dev_mean_ms": 0.07419898819561552,
+            "onset_dev_std_ms": 0.7719045029588594
+          },
+          "Saccade": {
+            "n_events": 615,
+            "offset_dev_abs_mean_ms": 0.0065040650406504065,
+            "offset_dev_mean_ms": 0.0065040650406504065,
+            "offset_dev_std_ms": 0.16129556770910236,
+            "onset_dev_abs_mean_ms": 0.0065040650406504065,
+            "onset_dev_mean_ms": -0.0065040650406504065,
+            "onset_dev_std_ms": 0.16129556770910236
+          },
+          "Unclassified": {
+            "n_events": 20,
+            "offset_dev_abs_mean_ms": 0.0,
+            "offset_dev_mean_ms": 0.0,
+            "offset_dev_std_ms": 0.0,
+            "onset_dev_abs_mean_ms": 0.0,
+            "onset_dev_mean_ms": 0.0,
+            "onset_dev_std_ms": 0.0
+          }
+        }
+      },
+      "file": "left20ms30_extracted.tsv",
+      "inference_notes": {
+        "config_source": "configs.json",
+        "discard_short_fixations": false,
+        "entry_notes": "Left eye, 20ms window, threshold 30, 300 Hz \u2014 extracted version with gaze_dir columns",
+        "eye_mode": "left",
+        "gap_fill_enabled": false,
+        "gap_fill_max_gap_ms": 75.0,
+        "merge_adjacent_fixations": false,
+        "smoothing_mode": "none",
+        "smoothing_window_samples": 5,
+        "source_name": "left20ms30_extracted.tsv",
+        "threshold_deg_per_sec": 30.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
+        "window_length_ms": 20.0
+      },
+      "metrics": {
+        "accuracy_eynf": 100.0,
+        "accuracy_uncl": 100.0,
+        "cohen_kappa": 0.998032302656117,
+        "confusion_matrix": [
+          [
+            1443,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            37985,
+            24,
+            0
+          ],
+          [
+            0,
+            0,
+            5526,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            27
+          ]
+        ],
+        "fixation_recall": 99.93685706016996,
+        "fn_fix": 24,
+        "fn_sac": 0,
+        "labels": [
+          "EyesNotFound",
+          "Fixation",
+          "Saccade",
+          "Unclassified"
+        ],
+        "n_agree": 43511,
+        "n_agree_all": 44981,
+        "n_correct_eynf": 1443,
+        "n_correct_uncl": 27,
+        "n_fix_in_gt": 38009,
+        "n_fix_to_eynf": 0,
+        "n_fix_to_uncl": 0,
+        "n_gt_eynf": 1443,
+        "n_gt_uncl": 27,
+        "n_pred_eynf": 1443,
+        "n_pred_uncl": 27,
+        "n_sac_in_gt": 5526,
+        "n_sac_to_eynf": 0,
+        "n_sac_to_uncl": 0,
+        "n_samples_gt_fix_or_sac": 43535,
+        "n_samples_total": 45005,
+        "percentage_agreement": 99.94487194211554,
+        "percentage_agreement_all": 99.94667259193423,
+        "recall_eynf": 100.0,
+        "recall_uncl": 100.0,
+        "saccade_recall": 100.0,
+        "tp_fix": 37985,
+        "tp_sac": 5526
       },
       "output_path": null,
       "status": "ok"
@@ -4435,34 +3096,34 @@
           "tobii_window_mode": false,
           "use_fallback_valid_samples": true,
           "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
+          "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
             "kind": "time_symmetric"
           }
         }
       },
-      "duration_seconds": 196.0635084270034,
+      "duration_seconds": 63.94055923100677,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
             "EyesNotFound": 55
           },
           "Fixation": {
-            "FN": 7,
-            "Fixation": 420,
+            "FN": 5,
+            "Fixation": 422,
             "Saccade": 7
           },
           "Saccade": {
-            "FN": 10,
-            "Fixation": 7,
-            "Saccade": 426
+            "FN": 6,
+            "Fixation": 1,
+            "Saccade": 436
           },
           "Unclassified": {
             "Unclassified": 21
           }
         },
-        "correct_type_rate": 0.9674711437565582,
+        "correct_type_rate": 0.9800629590766002,
         "event_counts": {
           "EyesNotFound": {
             "gt": 55,
@@ -4470,25 +3131,25 @@
           },
           "Fixation": {
             "gt": 434,
-            "pred": 467
+            "pred": 493
           },
           "Saccade": {
             "gt": 443,
-            "pred": 479
+            "pred": 510
           },
           "Unclassified": {
             "gt": 21,
             "pred": 21
           }
         },
-        "match_rate": 0.9821615949632738,
-        "mean_iou": 0.954537646654148,
-        "n_correct_type": 922,
-        "n_fn": 17,
-        "n_fp": 86,
+        "match_rate": 0.9884575026232949,
+        "mean_iou": 0.9764941173692715,
+        "n_correct_type": 934,
+        "n_fn": 11,
+        "n_fp": 137,
         "n_gt_events": 953,
-        "n_matched": 936,
-        "n_pred_events": 1022,
+        "n_matched": 942,
+        "n_pred_events": 1079,
         "timing": {
           "EyesNotFound": {
             "n_events": 55,
@@ -4500,22 +3161,22 @@
             "onset_dev_std_ms": 0.0
           },
           "Fixation": {
-            "n_events": 420,
-            "offset_dev_abs_mean_ms": 3.4571428571428573,
-            "offset_dev_mean_ms": -3.361904761904762,
-            "offset_dev_std_ms": 33.94854278496224,
-            "onset_dev_abs_mean_ms": 4.0476190476190474,
-            "onset_dev_mean_ms": 3.238095238095238,
-            "onset_dev_std_ms": 31.40847180897466
+            "n_events": 422,
+            "offset_dev_abs_mean_ms": 2.234597156398104,
+            "offset_dev_mean_ms": -2.234597156398104,
+            "offset_dev_std_ms": 26.74014014044136,
+            "onset_dev_abs_mean_ms": 2.845971563981043,
+            "onset_dev_mean_ms": 2.751184834123223,
+            "onset_dev_std_ms": 32.74659324478123
           },
           "Saccade": {
-            "n_events": 426,
-            "offset_dev_abs_mean_ms": 0.6807511737089202,
-            "offset_dev_mean_ms": 0.3568075117370892,
-            "offset_dev_std_ms": 2.4281512009398827,
-            "onset_dev_abs_mean_ms": 0.6525821596244131,
-            "onset_dev_mean_ms": -0.23943661971830985,
-            "onset_dev_std_ms": 1.9315202575653334
+            "n_events": 436,
+            "offset_dev_abs_mean_ms": 0.36009174311926606,
+            "offset_dev_mean_ms": 0.10321100917431193,
+            "offset_dev_std_ms": 2.1087423416384348,
+            "onset_dev_abs_mean_ms": 0.30045871559633025,
+            "onset_dev_mean_ms": -0.1536697247706422,
+            "onset_dev_std_ms": 1.7608149422305719
           },
           "Unclassified": {
             "n_events": 21,
@@ -4530,7 +3191,9 @@
       },
       "file": "onlyvelocity100_extracted.tsv",
       "inference_notes": {
+        "config_source": "configs.json",
         "discard_short_fixations": false,
+        "entry_notes": "Average eye, Attention filter threshold 100 deg/s \u2014 extracted version with gaze_dir columns",
         "eye_mode": "average",
         "gap_fill_enabled": false,
         "gap_fill_max_gap_ms": 75.0,
@@ -4539,12 +3202,15 @@
         "smoothing_window_samples": 5,
         "source_name": "onlyvelocity100_extracted.tsv",
         "threshold_deg_per_sec": 100.0,
+        "time_column": "time_ms",
+        "time_unit": "ms",
+        "velocity_method": "tobii_gaze_dir",
         "window_length_ms": 20.0
       },
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.964531355133215,
+        "cohen_kappa": 0.9666420410707632,
         "confusion_matrix": [
           [
             1157,
@@ -4554,14 +3220,14 @@
           ],
           [
             0,
-            40525,
-            199,
+            40480,
+            244,
             0
           ],
           [
             0,
-            85,
-            3013,
+            26,
+            3072,
             0
           ],
           [
@@ -4571,17 +3237,17 @@
             26
           ]
         ],
-        "fixation_recall": 99.51134466162459,
-        "fn_fix": 199,
-        "fn_sac": 85,
+        "fixation_recall": 99.40084471073568,
+        "fn_fix": 244,
+        "fn_sac": 26,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 43538,
-        "n_agree_all": 44721,
+        "n_agree": 43552,
+        "n_agree_all": 44735,
         "n_correct_eynf": 1157,
         "n_correct_uncl": 26,
         "n_fix_in_gt": 40724,
@@ -4596,702 +3262,13 @@
         "n_sac_to_uncl": 0,
         "n_samples_gt_fix_or_sac": 43822,
         "n_samples_total": 45005,
-        "percentage_agreement": 99.3519236912966,
-        "percentage_agreement_all": 99.36895900455505,
+        "percentage_agreement": 99.38387111496509,
+        "percentage_agreement_all": 99.40006665926008,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 97.2562943834732,
-        "tp_fix": 40525,
-        "tp_sac": 3013
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 100.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 299.6522183489942,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 119
-          },
-          "Fixation": {
-            "FN": 27,
-            "Fixation": 591,
-            "Saccade": 14
-          },
-          "Saccade": {
-            "FN": 25,
-            "Fixation": 19,
-            "Saccade": 605
-          },
-          "Unclassified": {
-            "Unclassified": 51
-          }
-        },
-        "correct_type_rate": 0.9414197105444521,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 119,
-            "pred": 119
-          },
-          "Fixation": {
-            "gt": 632,
-            "pred": 729
-          },
-          "Saccade": {
-            "gt": 649,
-            "pred": 761
-          },
-          "Unclassified": {
-            "gt": 51,
-            "pred": 51
-          }
-        },
-        "match_rate": 0.9641626464507237,
-        "mean_iou": 0.9399628954835991,
-        "n_correct_type": 1366,
-        "n_fn": 52,
-        "n_fp": 261,
-        "n_gt_events": 1451,
-        "n_matched": 1399,
-        "n_pred_events": 1660,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 119,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 591,
-            "offset_dev_abs_mean_ms": 4.1844331641285955,
-            "offset_dev_mean_ms": -3.981387478849408,
-            "offset_dev_std_ms": 39.76777494622166,
-            "onset_dev_abs_mean_ms": 13.439932318104907,
-            "onset_dev_mean_ms": 12.363790186125211,
-            "onset_dev_std_ms": 97.38359226563422
-          },
-          "Saccade": {
-            "n_events": 605,
-            "offset_dev_abs_mean_ms": 0.7818181818181819,
-            "offset_dev_mean_ms": 0.33553719008264465,
-            "offset_dev_std_ms": 2.5794931064289757,
-            "onset_dev_abs_mean_ms": 0.7024793388429752,
-            "onset_dev_mean_ms": -0.28264462809917357,
-            "onset_dev_std_ms": 2.205001752711773
-          },
-          "Unclassified": {
-            "n_events": 51,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "onlyvelocity100_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "onlyvelocity100_input.tsv",
-        "threshold_deg_per_sec": 100.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.9560445937743179,
-        "confusion_matrix": [
-          [
-            2840,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            64268,
-            426,
-            0
-          ],
-          [
-            0,
-            185,
-            4321,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            83
-          ]
-        ],
-        "fixation_recall": 99.3415154419266,
-        "fn_fix": 426,
-        "fn_sac": 185,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 68589,
-        "n_agree_all": 71512,
-        "n_correct_eynf": 2840,
-        "n_correct_uncl": 83,
-        "n_fix_in_gt": 64694,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 2840,
-        "n_gt_uncl": 83,
-        "n_pred_eynf": 2840,
-        "n_pred_uncl": 83,
-        "n_sac_in_gt": 4506,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 69200,
-        "n_samples_total": 72123,
-        "percentage_agreement": 99.11705202312139,
-        "percentage_agreement_all": 99.15283612717164,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 95.89436307146028,
-        "tp_fix": 64268,
-        "tp_sac": 4321
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 100.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "average",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 157.20883335899998,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 55
-          },
-          "Fixation": {
-            "FN": 7,
-            "Fixation": 420,
-            "Saccade": 7
-          },
-          "Saccade": {
-            "FN": 10,
-            "Fixation": 7,
-            "Saccade": 426
-          },
-          "Unclassified": {
-            "Unclassified": 21
-          }
-        },
-        "correct_type_rate": 0.9674711437565582,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 55,
-            "pred": 55
-          },
-          "Fixation": {
-            "gt": 434,
-            "pred": 467
-          },
-          "Saccade": {
-            "gt": 443,
-            "pred": 479
-          },
-          "Unclassified": {
-            "gt": 21,
-            "pred": 21
-          }
-        },
-        "match_rate": 0.9821615949632738,
-        "mean_iou": 0.954537646654148,
-        "n_correct_type": 922,
-        "n_fn": 17,
-        "n_fp": 86,
-        "n_gt_events": 953,
-        "n_matched": 936,
-        "n_pred_events": 1022,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 55,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 420,
-            "offset_dev_abs_mean_ms": 3.4571428571428573,
-            "offset_dev_mean_ms": -3.361904761904762,
-            "offset_dev_std_ms": 33.94854278496224,
-            "onset_dev_abs_mean_ms": 4.0476190476190474,
-            "onset_dev_mean_ms": 3.238095238095238,
-            "onset_dev_std_ms": 31.40847180897466
-          },
-          "Saccade": {
-            "n_events": 426,
-            "offset_dev_abs_mean_ms": 0.6807511737089202,
-            "offset_dev_mean_ms": 0.3568075117370892,
-            "offset_dev_std_ms": 2.4281512009398827,
-            "onset_dev_abs_mean_ms": 0.6525821596244131,
-            "onset_dev_mean_ms": -0.23943661971830985,
-            "onset_dev_std_ms": 1.9315202575653334
-          },
-          "Unclassified": {
-            "n_events": 21,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          }
-        }
-      },
-      "file": "onlyvelocityT100_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "average",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "onlyvelocityT100_input.tsv",
-        "threshold_deg_per_sec": 100.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.964531355133215,
-        "confusion_matrix": [
-          [
-            1157,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            40525,
-            199,
-            0
-          ],
-          [
-            0,
-            85,
-            3013,
-            0
-          ],
-          [
-            0,
-            0,
-            0,
-            26
-          ]
-        ],
-        "fixation_recall": 99.51134466162459,
-        "fn_fix": 199,
-        "fn_sac": 85,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 43538,
-        "n_agree_all": 44721,
-        "n_correct_eynf": 1157,
-        "n_correct_uncl": 26,
-        "n_fix_in_gt": 40724,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 1157,
-        "n_gt_uncl": 26,
-        "n_pred_eynf": 1157,
-        "n_pred_uncl": 26,
-        "n_sac_in_gt": 3098,
-        "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 0,
-        "n_samples_gt_fix_or_sac": 43822,
-        "n_samples_total": 45005,
-        "percentage_agreement": 99.3519236912966,
-        "percentage_agreement_all": 99.36895900455505,
-        "recall_eynf": 100.0,
-        "recall_uncl": 100.0,
-        "saccade_recall": 97.2562943834732,
-        "tp_fix": 40525,
-        "tp_sac": 3013
-      },
-      "output_path": null,
-      "status": "ok"
-    },
-    {
-      "config": {
-        "classifier": {
-          "confident_switch_margin_deg": 4.0,
-          "confident_switch_method": "ray3d_gaze_dir",
-          "enable_confident_switch": false,
-          "enable_eye_jump_rule": false,
-          "enable_hysteresis": false,
-          "enable_invalid_window_neighbor_confirmation": false,
-          "enable_near_threshold_hybrid": false,
-          "eye_jump_threshold_mm": 10.0,
-          "eye_jump_velocity_threshold": 50.0,
-          "hysteresis_width_deg_per_sec": 2.0,
-          "near_threshold_band": 5.0,
-          "near_threshold_band_lower": null,
-          "near_threshold_band_upper": null,
-          "near_threshold_confidence_margin": 0.4,
-          "near_threshold_max_delta": 2.0,
-          "near_threshold_neighbor_check": false,
-          "near_threshold_require_same_side": true,
-          "near_threshold_strategy": "inverse",
-          "velocity_threshold_deg_per_sec": 30.0
-        },
-        "classify": true,
-        "fixation_post": null,
-        "saccade_merge": null,
-        "velocity": {
-          "allow_asymmetric_window": false,
-          "asymmetric_neighbor_window": false,
-          "auto_fixed_window_from_ms": false,
-          "average_fallback_single_eye": false,
-          "average_window_impute_neighbor": false,
-          "average_window_single_eye": false,
-          "coordinate_rounding": "none",
-          "dt_calculation_method": "mean",
-          "eye_mode": "right",
-          "fixed_window_edge_fallback": false,
-          "fixed_window_samples": null,
-          "gap_fill_enabled": false,
-          "gap_fill_max_gap_ms": 75.0,
-          "max_validity": 1,
-          "min_dt_ms": 0.1,
-          "sample_symmetric_window": false,
-          "sampling_rate_method": "first_100",
-          "shifted_valid_fallback": "shrink",
-          "shifted_valid_window": false,
-          "smoothing_expansion_radius": 0,
-          "smoothing_min_samples": 1,
-          "smoothing_mode": "none",
-          "smoothing_window_samples": 5,
-          "symmetric_round_window": false,
-          "time_column": "time_ms",
-          "time_unit": "ms",
-          "tobii_eye_offset_interpolation": false,
-          "tobii_sample_interval_ms": null,
-          "tobii_window_mode": false,
-          "use_fallback_valid_samples": true,
-          "use_fixed_dt": false,
-          "velocity_method": "olsen2d",
-          "window_length_ms": 20.0,
-          "window_policy": {
-            "kind": "time_symmetric"
-          }
-        }
-      },
-      "duration_seconds": 9.279219268995803,
-      "event_iou": {
-        "confusion_matrix": {
-          "EyesNotFound": {
-            "EyesNotFound": 5
-          },
-          "Fixation": {
-            "Fixation": 32
-          },
-          "Saccade": {
-            "FN": 1,
-            "Saccade": 37,
-            "Unclassified": 2
-          },
-          "Unclassified": {
-            "Fixation": 5,
-            "Unclassified": 1
-          }
-        },
-        "correct_type_rate": 0.9036144578313253,
-        "event_counts": {
-          "EyesNotFound": {
-            "gt": 5,
-            "pred": 12
-          },
-          "Fixation": {
-            "gt": 32,
-            "pred": 42
-          },
-          "Saccade": {
-            "gt": 40,
-            "pred": 44
-          },
-          "Unclassified": {
-            "gt": 6,
-            "pred": 8
-          }
-        },
-        "match_rate": 0.9879518072289156,
-        "mean_iou": 0.9438049643432628,
-        "n_correct_type": 75,
-        "n_fn": 1,
-        "n_fp": 24,
-        "n_gt_events": 83,
-        "n_matched": 82,
-        "n_pred_events": 106,
-        "timing": {
-          "EyesNotFound": {
-            "n_events": 5,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": 0.0,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": 0.0
-          },
-          "Fixation": {
-            "n_events": 32,
-            "offset_dev_abs_mean_ms": 12.1875,
-            "offset_dev_mean_ms": -12.1875,
-            "offset_dev_std_ms": 44.89517360366508,
-            "onset_dev_abs_mean_ms": 5.75,
-            "onset_dev_mean_ms": -1.8125,
-            "onset_dev_std_ms": 22.041657773846204
-          },
-          "Saccade": {
-            "n_events": 37,
-            "offset_dev_abs_mean_ms": 0.7837837837837838,
-            "offset_dev_mean_ms": -0.40540540540540543,
-            "offset_dev_std_ms": 2.852479033513943,
-            "onset_dev_abs_mean_ms": 0.8918918918918919,
-            "onset_dev_mean_ms": 0.6756756756756757,
-            "onset_dev_std_ms": 3.9584933585481314
-          },
-          "Unclassified": {
-            "n_events": 1,
-            "offset_dev_abs_mean_ms": 0.0,
-            "offset_dev_mean_ms": 0.0,
-            "offset_dev_std_ms": null,
-            "onset_dev_abs_mean_ms": 0.0,
-            "onset_dev_mean_ms": 0.0,
-            "onset_dev_std_ms": null
-          }
-        }
-      },
-      "file": "righteye_input.tsv",
-      "inference_notes": {
-        "discard_short_fixations": false,
-        "eye_mode": "right",
-        "gap_fill_enabled": false,
-        "gap_fill_max_gap_ms": 75.0,
-        "merge_adjacent_fixations": false,
-        "smoothing_mode": "none",
-        "smoothing_window_samples": 5,
-        "source_name": "righteye_input.tsv",
-        "threshold_deg_per_sec": 30.0,
-        "window_length_ms": 20.0
-      },
-      "metrics": {
-        "accuracy_eynf": 100.0,
-        "accuracy_uncl": 2.631578947368421,
-        "cohen_kappa": 0.963097750338691,
-        "confusion_matrix": [
-          [
-            1200,
-            0,
-            0,
-            0
-          ],
-          [
-            0,
-            3233,
-            22,
-            0
-          ],
-          [
-            12,
-            4,
-            351,
-            12
-          ],
-          [
-            0,
-            36,
-            1,
-            1
-          ]
-        ],
-        "fixation_recall": 99.32411674347158,
-        "fn_fix": 22,
-        "fn_sac": 4,
-        "labels": [
-          "EyesNotFound",
-          "Fixation",
-          "Saccade",
-          "Unclassified"
-        ],
-        "n_agree": 3584,
-        "n_agree_all": 4785,
-        "n_correct_eynf": 1200,
-        "n_correct_uncl": 1,
-        "n_fix_in_gt": 3255,
-        "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 0,
-        "n_gt_eynf": 1200,
-        "n_gt_uncl": 38,
-        "n_pred_eynf": 1212,
-        "n_pred_uncl": 13,
-        "n_sac_in_gt": 379,
-        "n_sac_to_eynf": 12,
-        "n_sac_to_uncl": 12,
-        "n_samples_gt_fix_or_sac": 3634,
-        "n_samples_total": 4872,
-        "percentage_agreement": 98.62410566868465,
-        "percentage_agreement_all": 98.21428571428571,
-        "recall_eynf": 100.0,
-        "recall_uncl": 2.631578947368421,
-        "saccade_recall": 92.61213720316623,
-        "tp_fix": 3233,
-        "tp_sac": 351
+        "saccade_recall": 99.16074887023886,
+        "tp_fix": 40480,
+        "tp_sac": 3072
       },
       "output_path": null,
       "status": "ok"
@@ -5300,110 +3277,104 @@
   "summary": {
     "best_files": [
       {
-        "cohen_kappa": 0.988404933324502,
-        "file": "I-VT-botheye20ms30threshold_extracted.tsv",
-        "percentage_agreement": 99.73051875140355,
-        "percentage_agreement_all": 99.73336295967114
+        "cohen_kappa": 0.998032302656117,
+        "file": "left20ms30_extracted.tsv",
+        "percentage_agreement": 99.94487194211554,
+        "percentage_agreement_all": 99.94667259193423
       },
       {
-        "cohen_kappa": 0.988404933324502,
-        "file": "I-VT-botheye20ms30threshold_input.tsv",
-        "percentage_agreement": 99.73051875140355,
-        "percentage_agreement_all": 99.73336295967114
+        "cohen_kappa": 0.9936894064091331,
+        "file": "LeftV30W20Discard60NoSaccade_extracted.tsv",
+        "percentage_agreement": 99.81729239111216,
+        "percentage_agreement_all": 99.81113209643372
       },
       {
-        "cohen_kappa": 0.988404933324502,
-        "file": "I-VT-botheye20ms30threshold_small.tsv",
-        "percentage_agreement": 99.73051875140355,
-        "percentage_agreement_all": 99.73336295967114
-      },
-      {
-        "cohen_kappa": 0.9884076487601829,
-        "file": "I-VT-botheye20ms30threshold_slim.tsv",
-        "percentage_agreement": 99.72619579794367,
-        "percentage_agreement_all": 99.72961041827612
-      },
-      {
-        "cohen_kappa": 0.9841105243642383,
+        "cohen_kappa": 0.989465346814921,
         "file": "IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv",
-        "percentage_agreement": 99.63618045449458,
-        "percentage_agreement_all": 99.63892900788801
-      }
-    ],
-    "errors": [
+        "percentage_agreement": 99.75931937758872,
+        "percentage_agreement_all": 99.76113765137207
+      },
       {
-        "error_message": "raw gaze DataFrame is missing required columns: 'gaze_left_x_mm', 'gaze_left_y_mm', 'gaze_right_x_mm', 'gaze_right_y_mm'",
-        "error_type": "ValueError",
-        "file": "ivt_normal_input.tsv"
+        "cohen_kappa": 0.9886889749335577,
+        "file": "IVT30_extracted.tsv",
+        "percentage_agreement": 99.68965359864907,
+        "percentage_agreement_all": 99.69781135429396
+      },
+      {
+        "cohen_kappa": 0.9897159401214299,
+        "file": "LeftV30W20_extracted.tsv",
+        "percentage_agreement": 99.68352575748696,
+        "percentage_agreement_all": 99.70003332963005
       }
     ],
+    "errors": [],
     "per_file_mean": {
-      "mean_cohen_kappa": 0.9337418862436369,
-      "mean_event_iou": 0.9641423196295098,
-      "mean_fixation_recall": 94.84327467372017,
-      "mean_percentage_agreement": 94.66234871583012,
-      "mean_percentage_agreement_all": 95.39177501935643,
-      "mean_saccade_recall": 93.21996996808004
+      "mean_cohen_kappa": 0.8725501587691645,
+      "mean_event_iou": 0.933221837063642,
+      "mean_fixation_recall": 91.90542010941547,
+      "mean_percentage_agreement": 91.1169802202032,
+      "mean_percentage_agreement_all": 91.53784500134905,
+      "mean_saccade_recall": 87.25692367477426
     },
-    "pooled_cohen_kappa": 0.889470232052605,
+    "pooled_cohen_kappa": 0.7838454708717139,
     "totals": {
-      "duration_seconds": 2771.0151699299604,
-      "event_n_correct_type": 35008,
-      "event_n_fn": 3963,
-      "event_n_fp": 2480,
-      "event_n_gt_events": 39736,
-      "event_n_matched": 35773,
-      "event_n_pred_events": 38253,
-      "files_error": 1,
-      "files_ok": 23,
-      "files_total": 24,
-      "n_agree": 630316,
-      "n_agree_all": 704895,
-      "n_fix_in_gt": 584527,
-      "n_sac_in_gt": 74242,
-      "n_samples_gt_fix_or_sac": 658769,
-      "n_samples_total": 734993,
-      "tp_fix": 561366,
-      "tp_sac": 68950
+      "duration_seconds": 533.5513972550252,
+      "event_n_correct_type": 14130,
+      "event_n_fn": 1719,
+      "event_n_fp": 1412,
+      "event_n_gt_events": 15956,
+      "event_n_matched": 14237,
+      "event_n_pred_events": 15649,
+      "files_error": 0,
+      "files_ok": 14,
+      "files_total": 14,
+      "n_agree": 300998,
+      "n_agree_all": 311452,
+      "n_fix_in_gt": 283425,
+      "n_sac_in_gt": 39136,
+      "n_samples_gt_fix_or_sac": 322561,
+      "n_samples_total": 333037,
+      "tp_fix": 266524,
+      "tp_sac": 34474
     },
     "weighted": {
-      "event_correct_type_rate": 0.8810146970002013,
-      "event_match_rate": 0.9002667606200926,
-      "fixation_recall": 96.03765095538786,
-      "percentage_agreement": 95.68088358741835,
-      "percentage_agreement_all": 95.90499501355795,
-      "saccade_recall": 92.87195926833867
+      "event_correct_type_rate": 0.8855602907996992,
+      "event_match_rate": 0.8922662321383805,
+      "fixation_recall": 94.0368704242745,
+      "percentage_agreement": 93.31506288732983,
+      "percentage_agreement_all": 93.51873815822266,
+      "saccade_recall": 88.08769419460344
     },
     "worst_files": [
       {
-        "cohen_kappa": 0.16336473137120766,
-        "file": "LeftV30W1_input.tsv",
+        "cohen_kappa": 0.049016136524501236,
+        "file": "LeftV30W1_extracted.tsv",
         "percentage_agreement": 0.0,
-        "percentage_agreement_all": 19.884176828171647
+        "percentage_agreement_all": 5.193867348072436
       },
       {
-        "cohen_kappa": 0.8651018309181507,
-        "file": "LeftFixation_input.tsv",
-        "percentage_agreement": 93.51613325765183,
-        "percentage_agreement_all": 93.75921729434194
+        "cohen_kappa": 0.6788279548289616,
+        "file": "LeftV30W20NoiseAvW9_extracted.tsv",
+        "percentage_agreement": 88.68311551309851,
+        "percentage_agreement_all": 89.27341406510388
       },
       {
-        "cohen_kappa": 0.9608005179529685,
-        "file": "I-VT-frequency120Fixation_input.tsv",
-        "percentage_agreement": 98.47618215954242,
-        "percentage_agreement_all": 98.25545843674688
+        "cohen_kappa": 0.7966399806286745,
+        "file": "LeftFixation_extracted.tsv",
+        "percentage_agreement": 94.63803956834532,
+        "percentage_agreement_all": 94.61170981002111
       },
       {
-        "cohen_kappa": 0.9784176883283252,
-        "file": "LeftV30W20NoiseAvW9_input.tsv",
-        "percentage_agreement": 98.5428217935206,
-        "percentage_agreement_all": 98.85615625337219
+        "cohen_kappa": 0.8774330104767863,
+        "file": "IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv",
+        "percentage_agreement": 96.94587918257355,
+        "percentage_agreement_all": 96.97811354293967
       },
       {
-        "cohen_kappa": 0.963097750338691,
-        "file": "righteye_input.tsv",
-        "percentage_agreement": 98.62410566868465,
-        "percentage_agreement_all": 98.21428571428571
+        "cohen_kappa": 0.948619560182253,
+        "file": "I-VT-frequency120Fixation export_extracted.tsv",
+        "percentage_agreement": 98.78597122302159,
+        "percentage_agreement_all": 98.78346850349962
       }
     ]
   }
