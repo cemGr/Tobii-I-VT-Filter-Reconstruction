@@ -6,7 +6,7 @@ import pytest
 
 from extractor import TobiiDataExtractor
 
-from ivt_filter.config import OlsenVelocityConfig
+from ivt_filter.config import OlsenVelocityConfig, TobiiWindowPolicy
 from ivt_filter.processing.velocity import (
     AverageNeighborImputer,
     FixedWindowEdgeFallbackContext,
@@ -80,6 +80,16 @@ def test_sampling_analyzer_derives_odd_fixed_sample_window():
     assert result.dt_ms == 10.0
     assert result.hz_measured == 100.0
     assert result.config.fixed_window_samples == 3
+
+
+def test_sampling_analyzer_resolves_default_tobii_sample_interval():
+    cfg = OlsenVelocityConfig()
+
+    result = SamplingAnalyzer().analyze(np.array([0.0, 10.0, 20.0, 30.0]), cfg)
+
+    assert result.dt_ms == 10.0
+    assert result.hz_measured == 100.0
+    assert result.config.window_policy == TobiiWindowPolicy(sample_interval_ms=10.0)
 
 
 def test_sampling_analyzer_uses_only_finite_strictly_positive_intervals():

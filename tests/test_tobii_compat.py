@@ -30,7 +30,7 @@ from ivt_filter.preprocessing.eye_selection import (
     _parse_validity,
 )
 from ivt_filter.postprocessing.merge_fixations import merge_adjacent_fixations
-from ivt_filter.config import OlsenVelocityConfig, FixationPostConfig
+from ivt_filter.config import OlsenVelocityConfig, FixationPostConfig, TobiiWindowPolicy
 
 
 # ---------------------------------------------------------------------------
@@ -763,16 +763,17 @@ class TestTobiiConfigFields:
         """tobii_sample_interval_ms ist standardmäßig None."""
         cfg = OlsenVelocityConfig()
         assert cfg.tobii_sample_interval_ms is None
+        assert cfg.window_policy == TobiiWindowPolicy(sample_interval_ms=None)
 
     def test_tobii_eye_offset_interpolation_default_false(self):
         """tobii_eye_offset_interpolation ist standardmäßig False."""
         cfg = OlsenVelocityConfig()
         assert cfg.tobii_eye_offset_interpolation is False
 
-    def test_tobii_window_mode_requires_sample_interval(self):
-        """Die Config lehnt Tobii-Fenster ohne Sample-Intervall ab."""
-        with pytest.raises(ValueError, match="tobii_sample_interval_ms"):
-            OlsenVelocityConfig(tobii_window_mode=True, tobii_sample_interval_ms=None)
+    def test_tobii_window_mode_without_interval_is_resolved_by_pipeline(self):
+        """Die Config erlaubt ein später aus Timestamps abgeleitetes Intervall."""
+        cfg = OlsenVelocityConfig(tobii_window_mode=True, tobii_sample_interval_ms=None)
+        assert cfg.window_policy == TobiiWindowPolicy(sample_interval_ms=None)
 
     def test_make_window_selector_returns_tobii_selector(self):
         """make_window_selector() gibt TobiiGazeVelocityWindowSelector zurück."""

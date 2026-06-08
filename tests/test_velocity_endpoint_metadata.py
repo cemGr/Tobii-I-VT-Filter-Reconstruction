@@ -6,7 +6,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ivt_filter.config import IVTClassifierConfig, OlsenVelocityConfig
+from ivt_filter.config import (
+    IVTClassifierConfig,
+    OlsenVelocityConfig,
+    TimeSymmetricWindowPolicy,
+)
 from ivt_filter.processing.classification import IVTClassifier
 from ivt_filter.processing.velocity import compute_olsen_velocity
 
@@ -110,7 +114,13 @@ def test_sample_symmetric_selector_records_time_selector_fallback() -> None:
 def test_time_window_records_valid_sample_endpoint_adjustment() -> None:
     df = _gaze_df(7)
     df.loc[1, ["validity_left", "validity_right"]] = 999
-    result = compute_olsen_velocity(df, OlsenVelocityConfig(window_length_ms=40.0))
+    result = compute_olsen_velocity(
+        df,
+        OlsenVelocityConfig(
+            window_length_ms=40.0,
+            window_policy=TimeSymmetricWindowPolicy(),
+        ),
+    )
 
     assert _metadata(result, 3) == (2, 5, "TimeSymmetricWindowSelector", True)
 

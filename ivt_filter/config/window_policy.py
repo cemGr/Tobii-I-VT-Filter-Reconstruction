@@ -87,6 +87,7 @@ def window_policy_from_dict(data: Mapping[str, Any]) -> WindowPolicy:
 
 def translate_legacy_window_flags(
     *,
+    time_symmetric_window: bool = False,
     sample_symmetric_window: bool = False,
     fixed_window_samples: Optional[int] = None,
     auto_fixed_window_from_ms: bool = False,
@@ -96,11 +97,13 @@ def translate_legacy_window_flags(
     shifted_valid_fallback: Literal["shrink", "unclassified"] = "shrink",
     tobii_window_mode: bool = False,
     tobii_sample_interval_ms: Optional[float] = None,
-) -> WindowPolicy:
+) -> Optional[WindowPolicy]:
     """Translate deprecated selector flags into exactly one explicit policy.
 
     Modifiers for fixed sample sizing remain compatible with each other. Selector
     modes that used to be silently hidden by precedence are rejected.
+    Returns ``None`` when no legacy selector was configured, allowing callers to
+    apply their current default policy.
     """
     fixed_mode = (
         fixed_window_samples is not None
@@ -110,6 +113,8 @@ def translate_legacy_window_flags(
     selectors = []
     if tobii_window_mode:
         selectors.append("tobii_window_mode")
+    if time_symmetric_window:
+        selectors.append("time_symmetric_window")
     if asymmetric_neighbor_window:
         selectors.append("asymmetric_neighbor_window")
     if shifted_valid_window:
@@ -129,6 +134,8 @@ def translate_legacy_window_flags(
 
     if tobii_window_mode:
         return TobiiWindowPolicy(sample_interval_ms=tobii_sample_interval_ms)
+    if time_symmetric_window:
+        return TimeSymmetricWindowPolicy()
     if asymmetric_neighbor_window:
         return AsymmetricNeighborWindowPolicy()
     if shifted_valid_window:
@@ -146,4 +153,4 @@ def translate_legacy_window_flags(
         )
     if sample_symmetric_window:
         return SampleSymmetricWindowPolicy()
-    return TimeSymmetricWindowPolicy()
+    return None

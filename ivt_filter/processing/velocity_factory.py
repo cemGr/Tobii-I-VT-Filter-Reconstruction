@@ -59,8 +59,9 @@ def make_window_selector(cfg: OlsenVelocityConfig) -> WindowSelector:
         sample_interval_ms = policy.sample_interval_ms
         if sample_interval_ms is None or sample_interval_ms <= 0:
             raise ValueError(
-                "TobiiWindowPolicy requires tobii_sample_interval_ms/sample_interval_ms > 0. "
-                "Set e.g. sample_interval_ms=16.67 for 60 Hz."
+                "TobiiWindowPolicy requires a resolved sample_interval_ms > 0. "
+                "Use compute_olsen_velocity/IVTPipeline to derive it from timestamps, "
+                "or set sample_interval_ms explicitly."
             )
         return TobiiGazeVelocityWindowSelector(sample_interval_ms=sample_interval_ms)
     if isinstance(policy, AsymmetricNeighborWindowPolicy):

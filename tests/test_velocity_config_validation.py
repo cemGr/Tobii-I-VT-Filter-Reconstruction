@@ -101,7 +101,6 @@ def test_shifted_valid_window_accepts_compatible_fixed_window_modes(
 @pytest.mark.parametrize(
     ("config_kwargs", "selector_type"),
     [
-        ({}, "TimeSymmetricWindowSelector"),
         ({"sample_symmetric_window": True}, "SampleSymmetricWindowSelector"),
         ({"fixed_window_samples": 5}, "FixedSampleSymmetricWindowSelector"),
         ({"shifted_valid_window": True}, "TimeBasedShiftedValidWindowSelector"),
@@ -120,6 +119,19 @@ def test_compatible_legacy_window_modes_keep_existing_selector_behavior(
     selector = make_window_selector(OlsenVelocityConfig(**config_kwargs))
 
     assert type(selector).__name__ == selector_type
+
+
+def test_default_window_policy_is_unresolved_tobii_policy() -> None:
+    cfg = OlsenVelocityConfig()
+
+    assert cfg.window_policy == TobiiWindowPolicy(sample_interval_ms=None)
+
+
+def test_unresolved_default_tobii_policy_requires_sampling_resolution() -> None:
+    from ivt_filter.processing.velocity import make_window_selector
+
+    with pytest.raises(ValueError, match="resolved sample_interval_ms"):
+        make_window_selector(OlsenVelocityConfig())
 
 @pytest.mark.parametrize(
     ("policy", "selector_type"),
@@ -180,6 +192,8 @@ def test_experiment_json_persists_and_restores_normalized_window_policy() -> Non
         ["--sample-symmetric-window", "--asymmetric-neighbor-window"],
         ["--fixed-window-samples", "5", "--asymmetric-neighbor-window"],
         ["--shifted-valid-window", "--asymmetric-neighbor-window"],
+        ["--time-symmetric-window", "--asymmetric-neighbor-window"],
+        ["--time-symmetric-window", "--fixed-window-samples", "5"],
     ],
 )
 def test_config_builder_rejects_contradictory_legacy_cli_flags(
@@ -206,6 +220,30 @@ def test_config_builder_translates_legacy_cli_flags_to_one_policy() -> None:
 
     assert config.window_policy == FixedSampleWindowPolicy(samples=5)
     assert config.fixed_window_samples is None
+
+
+def test_config_builder_uses_default_tobii_policy_without_window_flags() -> None:
+    from ivt_filter.cli import build_arg_parser
+    from ivt_filter.config import ConfigBuilder
+
+    args = build_arg_parser().parse_args(["--input", "gaze.tsv"])
+
+    config = ConfigBuilder.build_velocity_config(args)
+
+    assert config.window_policy == TobiiWindowPolicy(sample_interval_ms=None)
+
+
+def test_config_builder_can_request_legacy_time_symmetric_policy() -> None:
+    from ivt_filter.cli import build_arg_parser
+    from ivt_filter.config import ConfigBuilder
+
+    args = build_arg_parser().parse_args(
+        ["--input", "gaze.tsv", "--time-symmetric-window"]
+    )
+
+    config = ConfigBuilder.build_velocity_config(args)
+
+    assert config.window_policy == TimeSymmetricWindowPolicy()
 
 
 @pytest.mark.parametrize(

@@ -30,6 +30,7 @@ class ConfigBuilder:
     def build_velocity_config(args: argparse.Namespace) -> OlsenVelocityConfig:
         """Build velocity configuration from CLI arguments."""
         window_policy = translate_legacy_window_flags(
+            time_symmetric_window=getattr(args, "time_symmetric_window", False),
             sample_symmetric_window=args.sample_symmetric_window,
             fixed_window_samples=args.fixed_window_samples,
             auto_fixed_window_from_ms=args.auto_fixed_window_from_ms,

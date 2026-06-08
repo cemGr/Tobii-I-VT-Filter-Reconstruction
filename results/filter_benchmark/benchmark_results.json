@@ -61,11 +61,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 32.84065266601101,
+      "duration_seconds": 31.60057683000923,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -304,11 +305,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 35.41423457801284,
+      "duration_seconds": 29.498239107007976,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -538,11 +540,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 35.94519557899912,
+      "duration_seconds": 29.67938350199256,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -772,11 +775,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 34.79234176799946,
+      "duration_seconds": 29.847874109997065,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -981,11 +985,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 77.41388156299945,
+      "duration_seconds": 66.82419300101174,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -1224,11 +1229,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 35.54949777098955,
+      "duration_seconds": 28.350055429997155,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -1463,29 +1469,33 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 1.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 11.553247906005709,
+      "duration_seconds": 31.510382552005467,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
             "EyesNotFound": 65
           },
           "Fixation": {
-            "FN": 766,
-            "Unclassified": 53
+            "FN": 24,
+            "Fixation": 791,
+            "Unclassified": 4
           },
           "Saccade": {
-            "FN": 816,
-            "Unclassified": 4
+            "FN": 26,
+            "Fixation": 1,
+            "Saccade": 781,
+            "Unclassified": 12
           },
           "Unclassified": {
             "Unclassified": 8
           }
         },
-        "correct_type_rate": 0.04264018691588785,
+        "correct_type_rate": 0.9608644859813084,
         "event_counts": {
           "EyesNotFound": {
             "gt": 65,
@@ -1493,25 +1503,25 @@
           },
           "Fixation": {
             "gt": 819,
-            "pred": 0
+            "pred": 834
           },
           "Saccade": {
             "gt": 820,
-            "pred": 0
+            "pred": 835
           },
           "Unclassified": {
             "gt": 8,
             "pred": 65
           }
         },
-        "match_rate": 0.07593457943925233,
-        "mean_iou": 0.7291766344524088,
-        "n_correct_type": 73,
-        "n_fn": 1582,
-        "n_fp": 0,
+        "match_rate": 0.9707943925233645,
+        "mean_iou": 0.9607152704120128,
+        "n_correct_type": 1645,
+        "n_fn": 50,
+        "n_fp": 137,
         "n_gt_events": 1712,
-        "n_matched": 130,
-        "n_pred_events": 130,
+        "n_matched": 1662,
+        "n_pred_events": 1799,
         "timing": {
           "EyesNotFound": {
             "n_events": 65,
@@ -1521,6 +1531,24 @@
             "onset_dev_abs_mean_ms": 0.0,
             "onset_dev_mean_ms": 0.0,
             "onset_dev_std_ms": 0.0
+          },
+          "Fixation": {
+            "n_events": 791,
+            "offset_dev_abs_mean_ms": 1.95448798988622,
+            "offset_dev_mean_ms": -0.3413400758533502,
+            "offset_dev_std_ms": 12.38342288111637,
+            "onset_dev_abs_mean_ms": 2.676359039190898,
+            "onset_dev_mean_ms": 0.7496839443742098,
+            "onset_dev_std_ms": 12.392241213963104
+          },
+          "Saccade": {
+            "n_events": 781,
+            "offset_dev_abs_mean_ms": 0.45454545454545453,
+            "offset_dev_mean_ms": -0.024327784891165175,
+            "offset_dev_std_ms": 2.1347364492611103,
+            "onset_dev_abs_mean_ms": 0.44430217669654287,
+            "onset_dev_mean_ms": 0.11651728553137004,
+            "onset_dev_std_ms": 1.9163255862680126
           },
           "Unclassified": {
             "n_events": 8,
@@ -1554,7 +1582,7 @@
       "metrics": {
         "accuracy_eynf": 100.0,
         "accuracy_uncl": 100.0,
-        "cohen_kappa": 0.049016136524501236,
+        "cohen_kappa": 0.966489404961162,
         "confusion_matrix": [
           [
             927,
@@ -1564,15 +1592,15 @@
           ],
           [
             0,
-            0,
-            0,
-            14642
+            14533,
+            76,
+            33
           ],
           [
             0,
-            0,
-            0,
-            2425
+            60,
+            2341,
+            24
           ],
           [
             0,
@@ -1581,38 +1609,38 @@
             8
           ]
         ],
-        "fixation_recall": 0.0,
-        "fn_fix": 0,
-        "fn_sac": 0,
+        "fixation_recall": 99.25556617948368,
+        "fn_fix": 76,
+        "fn_sac": 60,
         "labels": [
           "EyesNotFound",
           "Fixation",
           "Saccade",
           "Unclassified"
         ],
-        "n_agree": 0,
-        "n_agree_all": 935,
+        "n_agree": 16874,
+        "n_agree_all": 17809,
         "n_correct_eynf": 927,
         "n_correct_uncl": 8,
         "n_fix_in_gt": 14642,
         "n_fix_to_eynf": 0,
-        "n_fix_to_uncl": 14642,
+        "n_fix_to_uncl": 33,
         "n_gt_eynf": 927,
         "n_gt_uncl": 8,
         "n_pred_eynf": 927,
-        "n_pred_uncl": 17075,
+        "n_pred_uncl": 65,
         "n_sac_in_gt": 2425,
         "n_sac_to_eynf": 0,
-        "n_sac_to_uncl": 2425,
+        "n_sac_to_uncl": 24,
         "n_samples_gt_fix_or_sac": 17067,
         "n_samples_total": 18002,
-        "percentage_agreement": 0.0,
-        "percentage_agreement_all": 5.193867348072436,
+        "percentage_agreement": 98.8691627116658,
+        "percentage_agreement_all": 98.92789690034441,
         "recall_eynf": 100.0,
         "recall_uncl": 100.0,
-        "saccade_recall": 0.0,
-        "tp_fix": 0,
-        "tp_sac": 0
+        "saccade_recall": 96.5360824742268,
+        "tp_fix": 14533,
+        "tp_sac": 2341
       },
       "output_path": null,
       "status": "ok"
@@ -1687,11 +1715,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 27.333717243003775,
+      "duration_seconds": 28.767258200998185,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -1931,11 +1960,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 26.71128970499558,
+      "duration_seconds": 27.56583357398631,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -2165,11 +2195,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 25.69515355200565,
+      "duration_seconds": 26.718924600994796,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -2400,11 +2431,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 25.893454420001945,
+      "duration_seconds": 28.35898057000304,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -2634,11 +2666,12 @@
           "velocity_method": "olsen2d",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 25.316503531998023,
+      "duration_seconds": 27.71155134298897,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -2866,11 +2899,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 75.15166774099634,
+      "duration_seconds": 65.81496857400634,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -3099,11 +3133,12 @@
           "velocity_method": "tobii_gaze_dir",
           "window_length_ms": 20.0,
           "window_policy": {
-            "kind": "time_symmetric"
+            "kind": "tobii",
+            "sample_interval_ms": null
           }
         }
       },
-      "duration_seconds": 63.94055923100677,
+      "duration_seconds": 66.31624585599639,
       "event_iou": {
         "confusion_matrix": {
           "EyesNotFound": {
@@ -3309,49 +3344,43 @@
     ],
     "errors": [],
     "per_file_mean": {
-      "mean_cohen_kappa": 0.8725501587691645,
-      "mean_event_iou": 0.933221837063642,
-      "mean_fixation_recall": 91.90542010941547,
-      "mean_percentage_agreement": 91.1169802202032,
-      "mean_percentage_agreement_all": 91.53784500134905,
-      "mean_saccade_recall": 87.25692367477426
+      "mean_cohen_kappa": 0.9380839636574975,
+      "mean_event_iou": 0.9497603110607565,
+      "mean_fixation_recall": 98.99510340795003,
+      "mean_percentage_agreement": 98.17906327103648,
+      "mean_percentage_agreement_all": 98.23313282651134,
+      "mean_saccade_recall": 94.15235813721903
     },
-    "pooled_cohen_kappa": 0.7838454708717139,
+    "pooled_cohen_kappa": 0.9459572725050986,
     "totals": {
-      "duration_seconds": 533.5513972550252,
-      "event_n_correct_type": 14130,
-      "event_n_fn": 1719,
-      "event_n_fp": 1412,
+      "duration_seconds": 518.5644672509952,
+      "event_n_correct_type": 15702,
+      "event_n_fn": 187,
+      "event_n_fp": 1549,
       "event_n_gt_events": 15956,
-      "event_n_matched": 14237,
-      "event_n_pred_events": 15649,
+      "event_n_matched": 15769,
+      "event_n_pred_events": 17318,
       "files_error": 0,
       "files_ok": 14,
       "files_total": 14,
-      "n_agree": 300998,
-      "n_agree_all": 311452,
+      "n_agree": 317872,
+      "n_agree_all": 328326,
       "n_fix_in_gt": 283425,
       "n_sac_in_gt": 39136,
       "n_samples_gt_fix_or_sac": 322561,
       "n_samples_total": 333037,
-      "tp_fix": 266524,
-      "tp_sac": 34474
+      "tp_fix": 281057,
+      "tp_sac": 36815
     },
     "weighted": {
-      "event_correct_type_rate": 0.8855602907996992,
-      "event_match_rate": 0.8922662321383805,
-      "fixation_recall": 94.0368704242745,
-      "percentage_agreement": 93.31506288732983,
-      "percentage_agreement_all": 93.51873815822266,
-      "saccade_recall": 88.08769419460344
+      "event_correct_type_rate": 0.9840812233642517,
+      "event_match_rate": 0.9882802707445475,
+      "fixation_recall": 99.16450560112905,
+      "percentage_agreement": 98.54632147097759,
+      "percentage_agreement_all": 98.58544245834547,
+      "saccade_recall": 94.06939901880621
     },
     "worst_files": [
-      {
-        "cohen_kappa": 0.049016136524501236,
-        "file": "LeftV30W1_extracted.tsv",
-        "percentage_agreement": 0.0,
-        "percentage_agreement_all": 5.193867348072436
-      },
       {
         "cohen_kappa": 0.6788279548289616,
         "file": "LeftV30W20NoiseAvW9_extracted.tsv",
@@ -3375,6 +3404,12 @@
         "file": "I-VT-frequency120Fixation export_extracted.tsv",
         "percentage_agreement": 98.78597122302159,
         "percentage_agreement_all": 98.78346850349962
+      },
+      {
+        "cohen_kappa": 0.966489404961162,
+        "file": "LeftV30W1_extracted.tsv",
+        "percentage_agreement": 98.8691627116658,
+        "percentage_agreement_all": 98.92789690034441
       }
     ]
   }
