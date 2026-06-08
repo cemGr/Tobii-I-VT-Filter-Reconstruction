@@ -285,6 +285,7 @@ class OlsenVelocityConfig:
             )
 
         legacy_policy = translate_legacy_window_flags(
+            time_symmetric_window=False,
             sample_symmetric_window=self.sample_symmetric_window,
             fixed_window_samples=self.fixed_window_samples,
             auto_fixed_window_from_ms=self.auto_fixed_window_from_ms,
@@ -298,8 +299,10 @@ class OlsenVelocityConfig:
         if isinstance(self.window_policy, dict):
             self.window_policy = window_policy_from_dict(self.window_policy)
         if self.window_policy is None:
-            self.window_policy = legacy_policy
-        elif legacy_policy.kind != "time_symmetric" and self.window_policy != legacy_policy:
+            self.window_policy = legacy_policy or TobiiWindowPolicy(
+                sample_interval_ms=self.tobii_sample_interval_ms
+            )
+        elif legacy_policy is not None and self.window_policy != legacy_policy:
             raise ValueError(
                 "window_policy cannot be combined with contradictory deprecated legacy window flags."
             )
@@ -313,9 +316,11 @@ class OlsenVelocityConfig:
                     allow_even=self.allow_asymmetric_window,
                 )
         if isinstance(policy, TobiiWindowPolicy):
-            if policy.sample_interval_ms is None:
-                raise ValueError("Tobii window mode requires tobii_sample_interval_ms/sample_interval_ms")
-            _require_positive("tobii_sample_interval_ms/sample_interval_ms", policy.sample_interval_ms)
+            if policy.sample_interval_ms is not None:
+                _require_positive(
+                    "tobii_sample_interval_ms/sample_interval_ms",
+                    policy.sample_interval_ms,
+                )
 
 
 @dataclass

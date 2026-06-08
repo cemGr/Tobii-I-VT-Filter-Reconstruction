@@ -176,6 +176,14 @@ def _add_window_arguments(parser: argparse.ArgumentParser) -> None:
     )
     # Fenster-Strategien
     parser.add_argument(
+        "--time-symmetric-window",
+        action="store_true",
+        help=(
+            "Nutze das klassische Olsen-Zeitfenster. Ohne explizite Fensterstrategie "
+            "wird standardmaessig Tobii-kompatibles Windowing verwendet."
+        ),
+    )
+    parser.add_argument(
         "--sample-symmetric-window",
         action="store_true",
         help="Nutze sample-symmetrisches Fenster innerhalb des Zeitfensters.",
@@ -585,4 +593,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

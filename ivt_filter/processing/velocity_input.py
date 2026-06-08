@@ -9,7 +9,12 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from ..config import FixedSampleWindowPolicy, OlsenVelocityConfig, ShiftedValidWindowPolicy
+from ..config import (
+    FixedSampleWindowPolicy,
+    OlsenVelocityConfig,
+    ShiftedValidWindowPolicy,
+    TobiiWindowPolicy,
+)
 from ..domain.schema import validate_preprocessed_frame, validate_raw_gaze_frame
 from ..utils.sampling import (
     coerce_finite_timestamps,
@@ -103,6 +108,18 @@ class SamplingAnalyzer:
             nearest = min(self.NOMINAL_RATES, key=lambda rate: abs(rate - hz_measured))
             logger.info("[Sampling] nearest nominal rate: %.1f Hz", nearest)
         policy = cfg.window_policy
+        if (
+            isinstance(policy, TobiiWindowPolicy)
+            and policy.sample_interval_ms is None
+            and dt_ms > 0
+        ):
+            effective_policy = dataclasses.replace(policy, sample_interval_ms=dt_ms)
+            cfg = dataclasses.replace(cfg, window_policy=effective_policy)
+            policy = effective_policy
+            logger.info(
+                "[Window] Tobii sample interval derived from timestamps: %.3f ms",
+                dt_ms,
+            )
         should_convert = isinstance(policy, (FixedSampleWindowPolicy, ShiftedValidWindowPolicy)) and (
             policy.derive_from_window_ms or policy.symmetric_round
         )

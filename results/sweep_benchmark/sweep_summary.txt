@@ -21,4 +21,39 @@ Baseline (Tobii IVT Fixation Preset):
   tobii_gaze_dir *   agr=98.8828% (+0.0000)  κ=0.9532 (+0.0000)  IoU=0.9824 (+0.0000)
   ray3d_gaze_dir     agr=98.9726% (+0.0898)  κ=0.9562 (+0.0030)  IoU=0.9660 (-0.0165)
 
+[velocity_threshold]  (I-VT-botheye20ms30threshold_input.tsv)
+  30_deg_s *    agr=98.8828% (+0.0000)  κ=0.9532 (+0.0000)  IoU=0.9824 (+0.0000)
+  100_deg_s     agr=94.3802% (-4.5026)  κ=0.7259 (-0.2274)  IoU=0.7535 (-0.2289)
+
+[window_length_ms]  (LeftV30W20_input.tsv)
+  1ms      agr=92.9295% (-5.9533)  κ=0.7742 (-0.1791)  IoU=0.7716 (-0.2109)
+  20ms *   agr=97.3239% (-1.5589)  κ=0.8582 (-0.0951)  IoU=0.8838 (-0.0986)
+
+[smoothing]  (LeftV30W20_input.tsv)
+  none             agr=97.3239% (-1.5589)  κ=0.8582 (-0.0950)  IoU=0.8838 (-0.0986)
+  median_3 *       agr=97.3239% (-1.5589)  κ=0.8582 (-0.0951)  IoU=0.8838 (-0.0986)
+  median_9         agr=97.3193% (-1.5634)  κ=0.8581 (-0.0951)  IoU=0.8835 (-0.0990)
+  moving_avg_3     agr=97.3239% (-1.5589)  κ=0.8582 (-0.0951)  IoU=0.8838 (-0.0986)
+  moving_avg_9     agr=97.3193% (-1.5634)  κ=0.8581 (-0.0951)  IoU=0.8838 (-0.0987)
+
+[gap_fill]  (I-VT-botheye20ms30threshold_input.tsv)
+  disabled *   agr=98.8828% (+0.0000)  κ=0.9532 (+0.0000)  IoU=0.9824 (+0.0000)
+  75ms         agr=99.6070% (+0.7242)  κ=0.9699 (+0.0167)  IoU=0.9839 (+0.0014)
+
+[window_policy]  (LeftV30W20_input.tsv)
+  time_symmetric *        agr=97.3239% (-1.5589)  κ=0.8582 (-0.0951)  IoU=0.8838 (-0.0986)
+  auto_fixed_from_ms      agr=97.4202% (-1.4626)  κ=0.8596 (-0.0936)  IoU=0.8851 (-0.0973)
+  shifted_valid           agr=97.3193% (-1.5634)  κ=0.8576 (-0.0957)  IoU=0.8878 (-0.0946)
+  asymmetric_neighbor     agr=93.0395% (-5.8433)  κ=0.7537 (-0.1995)  IoU=0.7847 (-0.1977)
+
+[postprocessing]  (LeftV30W20_input.tsv)
+  none             agr=98.3091% (-0.5737)  κ=0.8716 (-0.0817)  IoU=0.8841 (-0.0983)
+  merge_only       agr=98.3229% (-0.5599)  κ=0.8712 (-0.0820)  IoU=0.8838 (-0.0986)
+  discard_only     agr=97.3056% (-1.5772)  κ=0.8581 (-0.0952)  IoU=0.8841 (-0.0983)
+  full_preset *    agr=97.3239% (-1.5589)  κ=0.8582 (-0.0951)  IoU=0.8838 (-0.0986)
+
+[tobii_eye_offset_interp]  (I-VT-botheye20ms30threshold_input.tsv)
+  disabled *   agr=98.8828% (+0.0000)  κ=0.9532 (+0.0000)  IoU=0.9824 (+0.0000)
+  enabled      agr=95.4076% (-3.4752)  κ=0.8250 (-0.1283)  IoU=0.9787 (-0.0038)
+
 * = baseline variant for this dimension

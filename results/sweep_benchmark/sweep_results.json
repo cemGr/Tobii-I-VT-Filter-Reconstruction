@@ -1,6 +1,6 @@
 {
   "baseline": {
-    "duration_s": 54.234,
+    "duration_s": 53.775,
     "event_iou": {
       "correct_type_rate": 0.975914362176628,
       "mean_iou": 0.9824373325666481,
@@ -99,7 +99,7 @@
   "sweep": {
     "eye_mode": [
       {
-        "duration_s": 51.509,
+        "duration_s": 53.47,
         "event_iou": {
           "correct_type_rate": 0.9090098126672613,
           "mean_iou": 0.9443759447928853,
@@ -181,7 +181,7 @@
         "status": "ok"
       },
       {
-        "duration_s": 55.516,
+        "duration_s": 56.332,
         "event_iou": {
           "correct_type_rate": 0.975914362176628,
           "mean_iou": 0.9824373325666481,
@@ -261,7 +261,7 @@
         "status": "ok"
       },
       {
-        "duration_s": 50.28,
+        "duration_s": 49.615,
         "event_iou": {
           "correct_type_rate": 0.9598572702943801,
           "mean_iou": 0.9606399033269326,
@@ -343,9 +343,1080 @@
         "status": "ok"
       }
     ],
+    "gap_fill": [
+      {
+        "duration_s": 28.139,
+        "event_iou": {
+          "correct_type_rate": 0.975914362176628,
+          "mean_iou": 0.9824373325666481,
+          "n_fn": 16,
+          "n_fp": 111,
+          "n_gt_events": 1121,
+          "n_matched": 1105,
+          "n_pred_events": 1216
+        },
+        "input_file": "I-VT-botheye20ms30threshold_input.tsv",
+        "is_baseline_variant": true,
+        "label": "disabled",
+        "metrics": {
+          "accuracy_eynf": 100.0,
+          "accuracy_uncl": 100.0,
+          "cohen_kappa": 0.9532456642063725,
+          "confusion_matrix": [
+            [
+              184,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15479,
+              82,
+              101
+            ],
+            [
+              0,
+              14,
+              2134,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              6
+            ]
+          ],
+          "fixation_recall": 98.83156684969991,
+          "fn_fix": 82,
+          "fn_sac": 14,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 17613,
+          "n_agree_all": 17803,
+          "n_correct_eynf": 184,
+          "n_correct_uncl": 6,
+          "n_fix_in_gt": 15662,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 101,
+          "n_gt_eynf": 184,
+          "n_gt_uncl": 6,
+          "n_pred_eynf": 184,
+          "n_pred_uncl": 109,
+          "n_sac_in_gt": 2150,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 2,
+          "n_samples_gt_fix_or_sac": 17812,
+          "n_samples_total": 18002,
+          "percentage_agreement": 98.88277565686055,
+          "percentage_agreement_all": 98.8945672703033,
+          "recall_eynf": 100.0,
+          "recall_uncl": 100.0,
+          "saccade_recall": 99.25581395348837,
+          "tp_fix": 15479,
+          "tp_sac": 2134
+        },
+        "overrides": {},
+        "status": "ok"
+      },
+      {
+        "duration_s": 31.111,
+        "event_iou": {
+          "correct_type_rate": 0.9509366636931311,
+          "mean_iou": 0.9838759478083862,
+          "n_fn": 40,
+          "n_fp": 12,
+          "n_gt_events": 1121,
+          "n_matched": 1081,
+          "n_pred_events": 1093
+        },
+        "input_file": "I-VT-botheye20ms30threshold_input.tsv",
+        "is_baseline_variant": false,
+        "label": "75ms",
+        "metrics": {
+          "accuracy_eynf": 73.91304347826086,
+          "accuracy_uncl": 0.0,
+          "cohen_kappa": 0.969907586651669,
+          "confusion_matrix": [
+            [
+              136,
+              12,
+              25,
+              11
+            ],
+            [
+              0,
+              15620,
+              24,
+              18
+            ],
+            [
+              0,
+              22,
+              2122,
+              6
+            ],
+            [
+              0,
+              1,
+              5,
+              0
+            ]
+          ],
+          "fixation_recall": 99.73183501468522,
+          "fn_fix": 24,
+          "fn_sac": 22,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 17742,
+          "n_agree_all": 17878,
+          "n_correct_eynf": 136,
+          "n_correct_uncl": 0,
+          "n_fix_in_gt": 15662,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 18,
+          "n_gt_eynf": 184,
+          "n_gt_uncl": 6,
+          "n_pred_eynf": 136,
+          "n_pred_uncl": 35,
+          "n_sac_in_gt": 2150,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 6,
+          "n_samples_gt_fix_or_sac": 17812,
+          "n_samples_total": 18002,
+          "percentage_agreement": 99.6070065124635,
+          "percentage_agreement_all": 99.31118764581713,
+          "recall_eynf": 73.91304347826086,
+          "recall_uncl": 0.0,
+          "saccade_recall": 98.69767441860465,
+          "tp_fix": 15620,
+          "tp_sac": 2122
+        },
+        "overrides": {
+          "gap_fill_enabled": true,
+          "gap_fill_max_gap_ms": 75.0
+        },
+        "status": "ok"
+      }
+    ],
+    "postprocessing": [
+      {
+        "duration_s": 60.933,
+        "event_iou": {
+          "correct_type_rate": 0.882901994060246,
+          "mean_iou": 0.8841289700636541,
+          "n_fn": 142,
+          "n_fp": 328,
+          "n_gt_events": 2357,
+          "n_matched": 2215,
+          "n_pred_events": 2543
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "none",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 86.73946957878314,
+          "cohen_kappa": 0.871555322644007,
+          "confusion_matrix": [
+            [
+              4132,
+              817,
+              254,
+              134
+            ],
+            [
+              0,
+              18985,
+              228,
+              0
+            ],
+            [
+              0,
+              141,
+              2469,
+              0
+            ],
+            [
+              0,
+              14,
+              71,
+              556
+            ]
+          ],
+          "fixation_recall": 98.81330349242701,
+          "fn_fix": 228,
+          "fn_sac": 141,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21454,
+          "n_agree_all": 26142,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 556,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 0,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 690,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 0,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 98.30912340191541,
+          "percentage_agreement_all": 94.03258875580015,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 86.73946957878314,
+          "saccade_recall": 94.59770114942529,
+          "tp_fix": 18985,
+          "tp_sac": 2469
+        },
+        "overrides": {
+          "discard_short_fixations": false,
+          "merge_adjacent_fixations": false
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 72.58,
+        "event_iou": {
+          "correct_type_rate": 0.8748408994484514,
+          "mean_iou": 0.8838409731023551,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "merge_only",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 85.95943837753511,
+          "cohen_kappa": 0.8712168946018235,
+          "confusion_matrix": [
+            [
+              4132,
+              821,
+              252,
+              132
+            ],
+            [
+              0,
+              18997,
+              216,
+              0
+            ],
+            [
+              0,
+              150,
+              2460,
+              0
+            ],
+            [
+              0,
+              19,
+              71,
+              551
+            ]
+          ],
+          "fixation_recall": 98.8757612033519,
+          "fn_fix": 216,
+          "fn_sac": 150,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21457,
+          "n_agree_all": 26140,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 551,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 0,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 683,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 0,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 98.32287036612747,
+          "percentage_agreement_all": 94.02539476997231,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 85.95943837753511,
+          "saccade_recall": 94.25287356321839,
+          "tp_fix": 18997,
+          "tp_sac": 2460
+        },
+        "overrides": {
+          "discard_short_fixations": false
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 70.748,
+        "event_iou": {
+          "correct_type_rate": 0.8633856597369538,
+          "mean_iou": 0.8841289700636541,
+          "n_fn": 142,
+          "n_fp": 328,
+          "n_gt_events": 2357,
+          "n_matched": 2215,
+          "n_pred_events": 2543
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "discard_only",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.8580766003524437,
+          "confusion_matrix": [
+            [
+              4132,
+              745,
+              254,
+              206
+            ],
+            [
+              0,
+              18766,
+              228,
+              219
+            ],
+            [
+              0,
+              120,
+              2469,
+              21
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.67345026804767,
+          "fn_fix": 228,
+          "fn_sac": 120,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21235,
+          "n_agree_all": 25937,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 219,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1016,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 21,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.3055950144343,
+          "percentage_agreement_all": 93.29520520844574,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.59770114942529,
+          "tp_fix": 18766,
+          "tp_sac": 2469
+        },
+        "overrides": {
+          "merge_adjacent_fixations": false
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 63.843,
+        "event_iou": {
+          "correct_type_rate": 0.8570216376750106,
+          "mean_iou": 0.8838409731023551,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": true,
+        "label": "full_preset",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.858175122262166,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18779,
+              216,
+              218
+            ],
+            [
+              0,
+              128,
+              2460,
+              22
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 216,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21239,
+          "n_agree_all": 25941,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 218,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1008,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 22,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.32392430005041,
+          "percentage_agreement_all": 93.30959318010143,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.25287356321839,
+          "tp_fix": 18779,
+          "tp_sac": 2460
+        },
+        "overrides": {},
+        "status": "ok"
+      }
+    ],
+    "smoothing": [
+      {
+        "duration_s": 71.269,
+        "event_iou": {
+          "correct_type_rate": 0.8587187102248621,
+          "mean_iou": 0.8838119999767534,
+          "n_fn": 153,
+          "n_fp": 308,
+          "n_gt_events": 2357,
+          "n_matched": 2204,
+          "n_pred_events": 2512
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "none",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.8582081719548896,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18776,
+              217,
+              220
+            ],
+            [
+              0,
+              126,
+              2463,
+              21
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.72549836048509,
+          "fn_fix": 217,
+          "fn_sac": 126,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21239,
+          "n_agree_all": 25941,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 220,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1009,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 21,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.32392430005041,
+          "percentage_agreement_all": 93.30959318010143,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.36781609195403,
+          "tp_fix": 18776,
+          "tp_sac": 2463
+        },
+        "overrides": {
+          "smoothing_mode": "none"
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 51.455,
+        "event_iou": {
+          "correct_type_rate": 0.8570216376750106,
+          "mean_iou": 0.8838409731023551,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": true,
+        "label": "median_3",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.858175122262166,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18779,
+              216,
+              218
+            ],
+            [
+              0,
+              128,
+              2460,
+              22
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 216,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21239,
+          "n_agree_all": 25941,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 218,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1008,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 22,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.32392430005041,
+          "percentage_agreement_all": 93.30959318010143,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.25287356321839,
+          "tp_fix": 18779,
+          "tp_sac": 2460
+        },
+        "overrides": {},
+        "status": "ok"
+      },
+      {
+        "duration_s": 44.522,
+        "event_iou": {
+          "correct_type_rate": 0.8570216376750106,
+          "mean_iou": 0.8834620129689611,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "median_9",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.8580996386445691,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18779,
+              216,
+              218
+            ],
+            [
+              0,
+              128,
+              2459,
+              23
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 216,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21238,
+          "n_agree_all": 25940,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 218,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1009,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 23,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.31934197864638,
+          "percentage_agreement_all": 93.30599618718752,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.21455938697318,
+          "tp_fix": 18779,
+          "tp_sac": 2459
+        },
+        "overrides": {
+          "smoothing_mode": "median",
+          "smoothing_window_samples": 9
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 51.299,
+        "event_iou": {
+          "correct_type_rate": 0.8570216376750106,
+          "mean_iou": 0.8838409731023551,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "moving_avg_3",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.858175122262166,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18779,
+              216,
+              218
+            ],
+            [
+              0,
+              128,
+              2460,
+              22
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 216,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21239,
+          "n_agree_all": 25941,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 218,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1008,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 22,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.32392430005041,
+          "percentage_agreement_all": 93.30959318010143,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.25287356321839,
+          "tp_fix": 18779,
+          "tp_sac": 2460
+        },
+        "overrides": {
+          "smoothing_mode": "moving_average",
+          "smoothing_window_samples": 3
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 49.2,
+        "event_iou": {
+          "correct_type_rate": 0.8565973695375477,
+          "mean_iou": 0.8837691839446178,
+          "n_fn": 158,
+          "n_fp": 311,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2510
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "moving_avg_9",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.8581102623112183,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18777,
+              219,
+              217
+            ],
+            [
+              0,
+              128,
+              2461,
+              21
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.73070316972883,
+          "fn_fix": 219,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21238,
+          "n_agree_all": 25940,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 217,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1006,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 21,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.31934197864638,
+          "percentage_agreement_all": 93.30599618718752,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.2911877394636,
+          "tp_fix": 18777,
+          "tp_sac": 2461
+        },
+        "overrides": {
+          "smoothing_mode": "moving_average",
+          "smoothing_window_samples": 9
+        },
+        "status": "ok"
+      }
+    ],
+    "tobii_eye_offset_interp": [
+      {
+        "duration_s": 27.499,
+        "event_iou": {
+          "correct_type_rate": 0.975914362176628,
+          "mean_iou": 0.9824373325666481,
+          "n_fn": 16,
+          "n_fp": 111,
+          "n_gt_events": 1121,
+          "n_matched": 1105,
+          "n_pred_events": 1216
+        },
+        "input_file": "I-VT-botheye20ms30threshold_input.tsv",
+        "is_baseline_variant": true,
+        "label": "disabled",
+        "metrics": {
+          "accuracy_eynf": 100.0,
+          "accuracy_uncl": 100.0,
+          "cohen_kappa": 0.9532456642063725,
+          "confusion_matrix": [
+            [
+              184,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15479,
+              82,
+              101
+            ],
+            [
+              0,
+              14,
+              2134,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              6
+            ]
+          ],
+          "fixation_recall": 98.83156684969991,
+          "fn_fix": 82,
+          "fn_sac": 14,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 17613,
+          "n_agree_all": 17803,
+          "n_correct_eynf": 184,
+          "n_correct_uncl": 6,
+          "n_fix_in_gt": 15662,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 101,
+          "n_gt_eynf": 184,
+          "n_gt_uncl": 6,
+          "n_pred_eynf": 184,
+          "n_pred_uncl": 109,
+          "n_sac_in_gt": 2150,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 2,
+          "n_samples_gt_fix_or_sac": 17812,
+          "n_samples_total": 18002,
+          "percentage_agreement": 98.88277565686055,
+          "percentage_agreement_all": 98.8945672703033,
+          "recall_eynf": 100.0,
+          "recall_uncl": 100.0,
+          "saccade_recall": 99.25581395348837,
+          "tp_fix": 15479,
+          "tp_sac": 2134
+        },
+        "overrides": {},
+        "status": "ok"
+      },
+      {
+        "duration_s": 27.36,
+        "event_iou": {
+          "correct_type_rate": 0.9214986619090099,
+          "mean_iou": 0.9786663112378754,
+          "n_fn": 57,
+          "n_fp": 56,
+          "n_gt_events": 1121,
+          "n_matched": 1064,
+          "n_pred_events": 1120
+        },
+        "input_file": "I-VT-botheye20ms30threshold_input.tsv",
+        "is_baseline_variant": false,
+        "label": "enabled",
+        "metrics": {
+          "accuracy_eynf": 100.0,
+          "accuracy_uncl": 100.0,
+          "cohen_kappa": 0.8249915904514686,
+          "confusion_matrix": [
+            [
+              184,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15034,
+              5,
+              623
+            ],
+            [
+              0,
+              13,
+              1960,
+              177
+            ],
+            [
+              0,
+              0,
+              0,
+              6
+            ]
+          ],
+          "fixation_recall": 95.99029498148384,
+          "fn_fix": 5,
+          "fn_sac": 13,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 16994,
+          "n_agree_all": 17184,
+          "n_correct_eynf": 184,
+          "n_correct_uncl": 6,
+          "n_fix_in_gt": 15662,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 623,
+          "n_gt_eynf": 184,
+          "n_gt_uncl": 6,
+          "n_pred_eynf": 184,
+          "n_pred_uncl": 806,
+          "n_sac_in_gt": 2150,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 177,
+          "n_samples_gt_fix_or_sac": 17812,
+          "n_samples_total": 18002,
+          "percentage_agreement": 95.40759038850213,
+          "percentage_agreement_all": 95.45606043772914,
+          "recall_eynf": 100.0,
+          "recall_uncl": 100.0,
+          "saccade_recall": 91.16279069767442,
+          "tp_fix": 15034,
+          "tp_sac": 1960
+        },
+        "overrides": {
+          "tobii_eye_offset_interpolation": true
+        },
+        "status": "ok"
+      }
+    ],
     "velocity_method": [
       {
-        "duration_s": 41.263,
+        "duration_s": 42.929,
         "event_iou": {
           "correct_type_rate": 0.9527207850133809,
           "mean_iou": 0.9752168800916333,
@@ -427,7 +1498,7 @@
         "status": "ok"
       },
       {
-        "duration_s": 42.774,
+        "duration_s": 41.404,
         "event_iou": {
           "correct_type_rate": 0.975914362176628,
           "mean_iou": 0.9824373325666481,
@@ -507,7 +1578,7 @@
         "status": "ok"
       },
       {
-        "duration_s": 49.036,
+        "duration_s": 39.04,
         "event_iou": {
           "correct_type_rate": 0.9661016949152542,
           "mean_iou": 0.9659586093825464,
@@ -585,6 +1656,663 @@
         },
         "overrides": {
           "velocity_method": "ray3d_gaze_dir"
+        },
+        "status": "ok"
+      }
+    ],
+    "velocity_threshold": [
+      {
+        "duration_s": 38.099,
+        "event_iou": {
+          "correct_type_rate": 0.975914362176628,
+          "mean_iou": 0.9824373325666481,
+          "n_fn": 16,
+          "n_fp": 111,
+          "n_gt_events": 1121,
+          "n_matched": 1105,
+          "n_pred_events": 1216
+        },
+        "input_file": "I-VT-botheye20ms30threshold_input.tsv",
+        "is_baseline_variant": true,
+        "label": "30_deg_s",
+        "metrics": {
+          "accuracy_eynf": 100.0,
+          "accuracy_uncl": 100.0,
+          "cohen_kappa": 0.9532456642063725,
+          "confusion_matrix": [
+            [
+              184,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15479,
+              82,
+              101
+            ],
+            [
+              0,
+              14,
+              2134,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              6
+            ]
+          ],
+          "fixation_recall": 98.83156684969991,
+          "fn_fix": 82,
+          "fn_sac": 14,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 17613,
+          "n_agree_all": 17803,
+          "n_correct_eynf": 184,
+          "n_correct_uncl": 6,
+          "n_fix_in_gt": 15662,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 101,
+          "n_gt_eynf": 184,
+          "n_gt_uncl": 6,
+          "n_pred_eynf": 184,
+          "n_pred_uncl": 109,
+          "n_sac_in_gt": 2150,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 2,
+          "n_samples_gt_fix_or_sac": 17812,
+          "n_samples_total": 18002,
+          "percentage_agreement": 98.88277565686055,
+          "percentage_agreement_all": 98.8945672703033,
+          "recall_eynf": 100.0,
+          "recall_uncl": 100.0,
+          "saccade_recall": 99.25581395348837,
+          "tp_fix": 15479,
+          "tp_sac": 2134
+        },
+        "overrides": {},
+        "status": "ok"
+      },
+      {
+        "duration_s": 30.651,
+        "event_iou": {
+          "correct_type_rate": 0.7582515611061552,
+          "mean_iou": 0.7535246005004135,
+          "n_fn": 259,
+          "n_fp": 122,
+          "n_gt_events": 1121,
+          "n_matched": 862,
+          "n_pred_events": 984
+        },
+        "input_file": "I-VT-botheye20ms30threshold_input.tsv",
+        "is_baseline_variant": false,
+        "label": "100_deg_s",
+        "metrics": {
+          "accuracy_eynf": 100.0,
+          "accuracy_uncl": 100.0,
+          "cohen_kappa": 0.7258918401569325,
+          "confusion_matrix": [
+            [
+              184,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              15497,
+              77,
+              88
+            ],
+            [
+              0,
+              804,
+              1314,
+              32
+            ],
+            [
+              0,
+              0,
+              0,
+              6
+            ]
+          ],
+          "fixation_recall": 98.94649470054911,
+          "fn_fix": 77,
+          "fn_sac": 804,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 16811,
+          "n_agree_all": 17001,
+          "n_correct_eynf": 184,
+          "n_correct_uncl": 6,
+          "n_fix_in_gt": 15662,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 88,
+          "n_gt_eynf": 184,
+          "n_gt_uncl": 6,
+          "n_pred_eynf": 184,
+          "n_pred_uncl": 126,
+          "n_sac_in_gt": 2150,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 32,
+          "n_samples_gt_fix_or_sac": 17812,
+          "n_samples_total": 18002,
+          "percentage_agreement": 94.38019312822816,
+          "percentage_agreement_all": 94.4395067214754,
+          "recall_eynf": 100.0,
+          "recall_uncl": 100.0,
+          "saccade_recall": 61.116279069767444,
+          "tp_fix": 15497,
+          "tp_sac": 1314
+        },
+        "overrides": {
+          "velocity_threshold_deg_per_sec": 100.0
+        },
+        "status": "ok"
+      }
+    ],
+    "window_length_ms": [
+      {
+        "duration_s": 67.255,
+        "event_iou": {
+          "correct_type_rate": 0.8141705557912601,
+          "mean_iou": 0.7715795913996535,
+          "n_fn": 126,
+          "n_fp": 794,
+          "n_gt_events": 2357,
+          "n_matched": 2231,
+          "n_pred_events": 3025
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "1ms",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 60.68642745709828,
+          "cohen_kappa": 0.7741707439813962,
+          "confusion_matrix": [
+            [
+              4132,
+              700,
+              347,
+              158
+            ],
+            [
+              0,
+              18216,
+              620,
+              377
+            ],
+            [
+              0,
+              462,
+              2064,
+              84
+            ],
+            [
+              0,
+              0,
+              252,
+              389
+            ]
+          ],
+          "fixation_recall": 94.81080518399001,
+          "fn_fix": 620,
+          "fn_sac": 462,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 20280,
+          "n_agree_all": 24801,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 389,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 377,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1008,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 84,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 92.9294780735921,
+          "percentage_agreement_all": 89.20902125822812,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 60.68642745709828,
+          "saccade_recall": 79.08045977011494,
+          "tp_fix": 18216,
+          "tp_sac": 2064
+        },
+        "overrides": {
+          "window_length_ms": 1.0
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 78.154,
+        "event_iou": {
+          "correct_type_rate": 0.8570216376750106,
+          "mean_iou": 0.8838409731023551,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": true,
+        "label": "20ms",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.858175122262166,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18779,
+              216,
+              218
+            ],
+            [
+              0,
+              128,
+              2460,
+              22
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 216,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21239,
+          "n_agree_all": 25941,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 218,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1008,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 22,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.32392430005041,
+          "percentage_agreement_all": 93.30959318010143,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.25287356321839,
+          "tp_fix": 18779,
+          "tp_sac": 2460
+        },
+        "overrides": {},
+        "status": "ok"
+      }
+    ],
+    "window_policy": [
+      {
+        "duration_s": 44.541,
+        "event_iou": {
+          "correct_type_rate": 0.8570216376750106,
+          "mean_iou": 0.8838409731023551,
+          "n_fn": 158,
+          "n_fp": 309,
+          "n_gt_events": 2357,
+          "n_matched": 2199,
+          "n_pred_events": 2508
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": true,
+        "label": "time_symmetric",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.858175122262166,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18779,
+              216,
+              218
+            ],
+            [
+              0,
+              128,
+              2460,
+              22
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 216,
+          "fn_sac": 128,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21239,
+          "n_agree_all": 25941,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 218,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1008,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 22,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.32392430005041,
+          "percentage_agreement_all": 93.30959318010143,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.25287356321839,
+          "tp_fix": 18779,
+          "tp_sac": 2460
+        },
+        "overrides": {},
+        "status": "ok"
+      },
+      {
+        "duration_s": 43.573,
+        "event_iou": {
+          "correct_type_rate": 0.8574459058124735,
+          "mean_iou": 0.8851132412465327,
+          "n_fn": 162,
+          "n_fp": 303,
+          "n_gt_events": 2357,
+          "n_matched": 2195,
+          "n_pred_events": 2498
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "auto_fixed_from_ms",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 88.9235569422777,
+          "cohen_kappa": 0.8596397704649951,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              252,
+              198
+            ],
+            [
+              0,
+              18797,
+              214,
+              202
+            ],
+            [
+              0,
+              129,
+              2463,
+              18
+            ],
+            [
+              0,
+              0,
+              71,
+              570
+            ]
+          ],
+          "fixation_recall": 97.83479935460365,
+          "fn_fix": 214,
+          "fn_sac": 129,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21260,
+          "n_agree_all": 25962,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 570,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 202,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 988,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 18,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.4201530495349,
+          "percentage_agreement_all": 93.38513003129384,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 88.9235569422777,
+          "saccade_recall": 94.36781609195403,
+          "tp_fix": 18797,
+          "tp_sac": 2463
+        },
+        "overrides": {
+          "auto_fixed_window_from_ms": true
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 44.318,
+        "event_iou": {
+          "correct_type_rate": 0.8527789563003818,
+          "mean_iou": 0.8878478165172563,
+          "n_fn": 170,
+          "n_fp": 282,
+          "n_gt_events": 2357,
+          "n_matched": 2187,
+          "n_pred_events": 2469
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "shifted_valid",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 87.83151326053043,
+          "cohen_kappa": 0.8575555592578461,
+          "confusion_matrix": [
+            [
+              4132,
+              755,
+              260,
+              190
+            ],
+            [
+              0,
+              18779,
+              205,
+              229
+            ],
+            [
+              0,
+              129,
+              2459,
+              22
+            ],
+            [
+              0,
+              0,
+              78,
+              563
+            ]
+          ],
+          "fixation_recall": 97.74111278821631,
+          "fn_fix": 205,
+          "fn_sac": 129,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 21238,
+          "n_agree_all": 25933,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 563,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 229,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 1004,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 22,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 97.31934197864638,
+          "percentage_agreement_all": 93.28081723679004,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 87.83151326053043,
+          "saccade_recall": 94.21455938697318,
+          "tp_fix": 18779,
+          "tp_sac": 2459
+        },
+        "overrides": {
+          "auto_fixed_window_from_ms": true,
+          "shifted_valid_window": true
+        },
+        "status": "ok"
+      },
+      {
+        "duration_s": 53.765,
+        "event_iou": {
+          "correct_type_rate": 0.7187102248621129,
+          "mean_iou": 0.7846968555755152,
+          "n_fn": 155,
+          "n_fp": 448,
+          "n_gt_events": 2357,
+          "n_matched": 2202,
+          "n_pred_events": 2650
+        },
+        "input_file": "LeftV30W20_input.tsv",
+        "is_baseline_variant": false,
+        "label": "asymmetric_neighbor",
+        "metrics": {
+          "accuracy_eynf": 77.42177253138468,
+          "accuracy_uncl": 15.912636505460217,
+          "cohen_kappa": 0.7537040380032919,
+          "confusion_matrix": [
+            [
+              4132,
+              703,
+              410,
+              92
+            ],
+            [
+              0,
+              18228,
+              626,
+              359
+            ],
+            [
+              0,
+              462,
+              2076,
+              72
+            ],
+            [
+              0,
+              0,
+              539,
+              102
+            ]
+          ],
+          "fixation_recall": 94.8732628949149,
+          "fn_fix": 626,
+          "fn_sac": 462,
+          "labels": [
+            "EyesNotFound",
+            "Fixation",
+            "Saccade",
+            "Unclassified"
+          ],
+          "n_agree": 20304,
+          "n_agree_all": 24538,
+          "n_correct_eynf": 4132,
+          "n_correct_uncl": 102,
+          "n_fix_in_gt": 19213,
+          "n_fix_to_eynf": 0,
+          "n_fix_to_uncl": 359,
+          "n_gt_eynf": 5337,
+          "n_gt_uncl": 641,
+          "n_pred_eynf": 4132,
+          "n_pred_uncl": 625,
+          "n_sac_in_gt": 2610,
+          "n_sac_to_eynf": 0,
+          "n_sac_to_uncl": 72,
+          "n_samples_gt_fix_or_sac": 21823,
+          "n_samples_total": 27801,
+          "percentage_agreement": 93.03945378728864,
+          "percentage_agreement_all": 88.26301212186613,
+          "recall_eynf": 77.42177253138468,
+          "recall_uncl": 15.912636505460217,
+          "saccade_recall": 79.54022988505747,
+          "tp_fix": 18228,
+          "tp_sac": 2076
+        },
+        "overrides": {
+          "asymmetric_neighbor_window": true
         },
         "status": "ok"
       }
