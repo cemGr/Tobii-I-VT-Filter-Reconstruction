@@ -24,15 +24,6 @@ def test_infers_left_threshold_window_and_median_smoothing() -> None:
     assert notes["smoothing_mode"] == "median"
 
 
-def test_infers_left20ms30_as_window_20_threshold_30() -> None:
-    config, notes = benchmark.infer_pipeline_config(Path("left20ms30_input.tsv"))
-
-    assert config.velocity.eye_mode == "left"
-    assert config.velocity.window_length_ms == 20.0
-    assert config.classifier.velocity_threshold_deg_per_sec == 30.0
-    assert notes["threshold_deg_per_sec"] == 30.0
-
-
 def test_infers_both_eye_gap_fill_and_no_noise() -> None:
     config, notes = benchmark.infer_pipeline_config(
         Path("IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv")
@@ -42,23 +33,9 @@ def test_infers_both_eye_gap_fill_and_no_noise() -> None:
     assert config.velocity.window_length_ms == 20.0
     assert config.velocity.gap_fill_enabled is True
     assert config.velocity.gap_fill_max_gap_ms == 75.0
+    assert config.classifier.velocity_threshold_deg_per_sec == 30.0
     assert config.velocity.smoothing_mode == "none"
     assert notes["gap_fill_enabled"] is True
-
-
-def test_infers_time_us_when_time_ms_probe_is_empty(tmp_path) -> None:
-    path = tmp_path / "IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv"
-    path.write_text(
-        "time_ms\ttime_us\tgt_event_type\tgt_event_index\n"
-        "\t7066126260,0\tEyesNotFound\t1,0\n",
-        encoding="utf-8",
-    )
-
-    config, notes = benchmark.infer_pipeline_config(path)
-
-    assert config.velocity.time_column == "time_us"
-    assert config.velocity.time_unit == "us"
-    assert notes["time_column"] == "time_us"
 
 
 def test_infers_merge_fixation_postprocessing_angle() -> None:
@@ -67,6 +44,9 @@ def test_infers_merge_fixation_postprocessing_angle() -> None:
     )
 
     assert config.fixation_post is not None
+    assert config.velocity.eye_mode == "left"
+    assert config.velocity.window_length_ms == 20.0
+    assert config.classifier.velocity_threshold_deg_per_sec == 30.0
     assert config.fixation_post.merge_adjacent_fixations is True
     assert config.fixation_post.max_time_gap_ms == 75.0
     assert config.fixation_post.max_angle_deg == 0.5

@@ -1,0 +1,24 @@
+I-VT Sweep Benchmark
+========================================================================
+Input (botheye): I-VT-botheye20ms30threshold_input.tsv
+Input (left):    LeftV30W20_input.tsv
+
+Baseline (Tobii IVT Fixation Preset):
+  Agreement Fix/Sac : 98.8828 %
+  Agreement all     : 98.8946 %
+  Cohen's kappa     : 0.9532
+  Fixation recall   : 98.8316 %
+  Saccade recall    : 99.2558 %
+  Event mean IoU    : 0.9824
+
+[eye_mode]  (I-VT-botheye20ms30threshold_input.tsv)
+  left        agr=94.5767% (-4.3061)  κ=0.7962 (-0.1571)  IoU=0.9444 (-0.0381)
+  average *   agr=98.8828% (+0.0000)  κ=0.9532 (+0.0000)  IoU=0.9824 (+0.0000)
+  right       agr=98.5122% (-0.3705)  κ=0.9373 (-0.0159)  IoU=0.9606 (-0.0218)
+
+[velocity_method]  (I-VT-botheye20ms30threshold_input.tsv)
+  olsen2d            agr=99.3207% (+0.4379)  κ=0.9708 (+0.0175)  IoU=0.9752 (-0.0072)
+  tobii_gaze_dir *   agr=98.8828% (+0.0000)  κ=0.9532 (+0.0000)  IoU=0.9824 (+0.0000)
+  ray3d_gaze_dir     agr=98.9726% (+0.0898)  κ=0.9562 (+0.0030)  IoU=0.9660 (-0.0165)
+
+* = baseline variant for this dimension

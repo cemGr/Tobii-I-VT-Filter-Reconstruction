@@ -1,42 +1,39 @@
 I-VT Filter Benchmark Gesamtstatistik
 ====================================
 
-Dateien: 23 erfolgreich / 24 gesamt
-Fehlerhafte Dateien: 1
-Laufzeit gesamt: 2771.0152 s
-Samples gesamt: 734993
-GT Fixation/Saccade Samples: 658769
+Dateien: 14 erfolgreich / 14 gesamt
+Fehlerhafte Dateien: 0
+Laufzeit gesamt: 533.5514 s
+Samples gesamt: 333037
+GT Fixation/Saccade Samples: 322561
 
 Gewichtete Gesamtmetriken
-- Agreement Fix/Sac: 95.6809 %
-- Agreement alle Labels: 95.9050 %
-- Fixation Recall: 96.0377 %
-- Saccade Recall: 92.8720 %
-- Cohen's Kappa gepoolt: 0.8895
-- Event Match Rate: 0.9003
-- Event Correct-Type Rate: 0.8810
+- Agreement Fix/Sac: 93.3151 %
+- Agreement alle Labels: 93.5187 %
+- Fixation Recall: 94.0369 %
+- Saccade Recall: 88.0877 %
+- Cohen's Kappa gepoolt: 0.7838
+- Event Match Rate: 0.8923
+- Event Correct-Type Rate: 0.8856
 
 Ungewichtete Mittelwerte pro Datei
-- Agreement Fix/Sac: 94.6623 %
-- Agreement alle Labels: 95.3918 %
-- Fixation Recall: 94.8433 %
-- Saccade Recall: 93.2200 %
-- Cohen's Kappa: 0.9337
-- Event Mean IoU: 0.9641
+- Agreement Fix/Sac: 91.1170 %
+- Agreement alle Labels: 91.5378 %
+- Fixation Recall: 91.9054 %
+- Saccade Recall: 87.2569 %
+- Cohen's Kappa: 0.8726
+- Event Mean IoU: 0.9332
 
 Beste Dateien nach Fix/Sac Agreement
-- I-VT-botheye20ms30threshold_extracted.tsv: 99.7305 % (alle Labels 99.7334 %, kappa 0.9884)
-- I-VT-botheye20ms30threshold_input.tsv: 99.7305 % (alle Labels 99.7334 %, kappa 0.9884)
-- I-VT-botheye20ms30threshold_small.tsv: 99.7305 % (alle Labels 99.7334 %, kappa 0.9884)
-- I-VT-botheye20ms30threshold_slim.tsv: 99.7262 % (alle Labels 99.7296 %, kappa 0.9884)
-- IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv: 99.6362 % (alle Labels 99.6389 %, kappa 0.9841)
+- left20ms30_extracted.tsv: 99.9449 % (alle Labels 99.9467 %, kappa 0.9980)
+- LeftV30W20Discard60NoSaccade_extracted.tsv: 99.8173 % (alle Labels 99.8111 %, kappa 0.9937)
+- IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv: 99.7593 % (alle Labels 99.7611 %, kappa 0.9895)
+- IVT30_extracted.tsv: 99.6897 % (alle Labels 99.6978 %, kappa 0.9887)
+- LeftV30W20_extracted.tsv: 99.6835 % (alle Labels 99.7000 %, kappa 0.9897)
 
 Schlechteste Dateien nach Fix/Sac Agreement
-- LeftV30W1_input.tsv: 0.0000 % (alle Labels 19.8842 %, kappa 0.1634)
-- LeftFixation_input.tsv: 93.5161 % (alle Labels 93.7592 %, kappa 0.8651)
-- I-VT-frequency120Fixation_input.tsv: 98.4762 % (alle Labels 98.2555 %, kappa 0.9608)
-- LeftV30W20NoiseAvW9_input.tsv: 98.5428 % (alle Labels 98.8562 %, kappa 0.9784)
-- righteye_input.tsv: 98.6241 % (alle Labels 98.2143 %, kappa 0.9631)
-
-Fehler
-- ivt_normal_input.tsv: ValueError: raw gaze DataFrame is missing required columns: 'gaze_left_x_mm', 'gaze_left_y_mm', 'gaze_right_x_mm', 'gaze_right_y_mm'
+- LeftV30W1_extracted.tsv: 0.0000 % (alle Labels 5.1939 %, kappa 0.0490)
+- LeftV30W20NoiseAvW9_extracted.tsv: 88.6831 % (alle Labels 89.2734 %, kappa 0.6788)
+- LeftFixation_extracted.tsv: 94.6380 % (alle Labels 94.6117 %, kappa 0.7966)
+- IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv: 96.9459 % (alle Labels 96.9781 %, kappa 0.8774)
+- I-VT-frequency120Fixation export_extracted.tsv: 98.7860 % (alle Labels 98.7835 %, kappa 0.9486)
