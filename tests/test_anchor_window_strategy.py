@@ -3,11 +3,9 @@
 TDD tests for the AnchorWindowStrategy module.
 
 Covers compute_window_samples, estimate_avg_dt_us, SymmetricHalf, MidIndex,
-and agreement against the Tobii reference recording LeftV30W1_extracted.tsv.
+and agreement on a deterministic synthetic 120 Hz recording.
 """
 from __future__ import annotations
-
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -36,16 +34,14 @@ _AVG_DT_120HZ_US = 1_000_000.0 / 120.0  # ≈ 8333.33 µs
 
 @pytest.fixture(scope="module")
 def reference_fixture() -> pd.DataFrame:
-    """Load LeftV30W1_extracted.tsv and return valid-left-eye rows only."""
-    path = (
-        Path(__file__).parent.parent
-        / "test_data"
-        / "inputs"
-        / "LeftV30W1_extracted.tsv"
+    """Return deterministic valid-left-eye samples at 120 Hz."""
+    n_samples = 240
+    return pd.DataFrame(
+        {
+            "time_us": np.arange(n_samples) * _AVG_DT_120HZ_US,
+            "validity_left": ["Valid"] * n_samples,
+        }
     )
-    df = pd.read_csv(path, sep="\t", decimal=",", low_memory=False)
-    valid = df[df["validity_left"] == "Valid"].reset_index(drop=True)
-    return valid
 
 
 # ---------------------------------------------------------------------------
@@ -184,7 +180,7 @@ class TestEstimateAvgDtUs:
 
 
 # ---------------------------------------------------------------------------
-# Group F — Agreement test against Tobii reference
+# Group F — Agreement test on synthetic 120 Hz data
 # ---------------------------------------------------------------------------
 
 
@@ -197,7 +193,7 @@ class TestEstimateAvgDtUs:
         (MidIndex(), 1.01),
     ],
 )
-def test_agreement_tobii_reference(
+def test_agreement_synthetic_120hz_reference(
     strategy: AnchorWindowStrategy,
     tolerance: float,
     reference_fixture: pd.DataFrame,

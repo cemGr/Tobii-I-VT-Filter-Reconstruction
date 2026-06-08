@@ -104,17 +104,7 @@ jobs:
         working-directory: /tmp
         run: |
           /tmp/ivt-wheel-smoke/bin/python -c "import ivt_filter"
-          /tmp/ivt-wheel-smoke/bin/python - <<'PY'
-          from importlib.metadata import metadata
-
-          meta = metadata("tobii-ivt-filter")
-          requirements = meta.get_all("Requires-Dist") or []
-          assert meta["Requires-Python"] == ">=3.10"
-          assert "numpy>=1.21" in requirements
-          assert "pandas>=1.3" in requirements
-          assert "plot" in meta.get_all("Provides-Extra")
-          assert "parallel" in meta.get_all("Provides-Extra")
-          PY
+          /tmp/ivt-wheel-smoke/bin/python -c "from importlib.metadata import metadata; meta = metadata('tobii-ivt-filter'); requirements = {req.replace(' ', '') for req in (meta.get_all('Requires-Dist') or [])}; extras = set(meta.get_all('Provides-Extra') or []); assert meta['Requires-Python'] == '>=3.10'; assert 'numpy>=1.21' in requirements; assert 'pandas>=1.3' in requirements; assert {'plot', 'parallel'} <= extras"
           /tmp/ivt-wheel-smoke/bin/python -m ivt_filter.cli --help
       - name: Upload distributions
         uses: actions/upload-artifact@v4

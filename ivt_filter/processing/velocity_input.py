@@ -113,9 +113,9 @@ class SamplingAnalyzer:
             and policy.sample_interval_ms is None
             and dt_ms > 0
         ):
-            effective_policy = dataclasses.replace(policy, sample_interval_ms=dt_ms)
-            cfg = dataclasses.replace(cfg, window_policy=effective_policy)
-            policy = effective_policy
+            effective_tobii_policy = dataclasses.replace(policy, sample_interval_ms=dt_ms)
+            cfg = dataclasses.replace(cfg, window_policy=effective_tobii_policy)
+            policy = effective_tobii_policy
             logger.info(
                 "[Window] Tobii sample interval derived from timestamps: %.3f ms",
                 dt_ms,
