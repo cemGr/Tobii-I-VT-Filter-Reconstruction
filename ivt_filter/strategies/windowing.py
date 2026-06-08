@@ -6,6 +6,8 @@ from typing import Optional, Tuple
 
 import numpy as np
 
+from .anchor_window import AnchorWindowStrategy, MidIndex, compute_window_samples
+
 IndexPair = Tuple[Optional[int], Optional[int]]
 
 
@@ -317,50 +319,56 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 class TobiiGazeVelocityWindowSelector(WindowSelector):
 	"""Sample-count window selector matching Tobii Pro Lab behaviour.
 
-	Window size is calculated as:
+	Window size N is calculated via the Olsen (2012) formula::
 
-	.. code-block:: text
-
-	    window_samples = floor(window_ms / sample_interval_ms * tolerance) + 1
+	    N = max(1, int(window_ms / sample_interval_ms * tolerance)) + 1
 
 	where *tolerance* (here 1.01) accounts for sampling irregularities.
-	This formula is reconstructed from the behaviour described in Olsen (2012).
+	N is always >= 2.
 
-	``half = (window_samples − 1) // 2``
+	Window bounds are determined by the injected :class:`AnchorWindowStrategy`
+	(default: :class:`MidIndex`)::
+
+	    mid_pos = N // 2
+	    first   = anchor − mid_pos
+	    last    = first + N − 1
 
 	Behaviour:
-	- Symmetric sample window around idx: [idx − half, idx + half]
-	- Requires valid endpoints (first_idx and last_idx must be valid)
-	- Velocity is assigned to the centre sample (= idx for a symmetric window)
-	- For invalid samples within the window: the nearest valid sample at the
-	  window boundary is used
+	- Requires a valid centre sample (idx)
+	- Searches for the first valid sample in [first, idx] from the left
+	- Searches for the last valid sample in [last, idx] from the right
+	- Returns (None, None) when no valid pair with first < last is found
 	"""
 
-	def __init__(self, sample_interval_ms: float):
+	def __init__(
+		self,
+		sample_interval_ms: float,
+		strategy: AnchorWindowStrategy | None = None,
+	):
 		"""
 		Args:
 		    sample_interval_ms: Nominal sample interval in ms.
 		        Examples: 16.67 for 60 Hz, 8.33 for 120 Hz, 4.17 for 240 Hz.
-		        Used to compute the window size via the Olsen (2012) formula.
+		    strategy: Window role strategy. Defaults to :class:`MidIndex`, which
+		        correctly handles N=2 windows (e.g. 120 Hz / 1 ms).
 		"""
 		if sample_interval_ms <= 0:
 			raise ValueError("sample_interval_ms must be > 0.")
 		self.sample_interval_ms = float(sample_interval_ms)
+		self.strategy: AnchorWindowStrategy = MidIndex() if strategy is None else strategy
 
-	def _compute_half_size(self, half_window_ms: float) -> int:
-		"""Compute half-window size in samples using the Olsen (2012) formula.
+	def _compute_window_samples(self, half_window_ms: float) -> int:
+		"""Compute window size N using the Olsen (2012) formula.
 
 		Args:
 		    half_window_ms: Half window length in ms (from ``window_length_ms / 2``).
 
 		Returns:
-		    Integer half-size of the window in samples.
+		    Integer window size N >= 2.
 		"""
-		window_ms = half_window_ms * 2.0
-		# Olsen (2012): floor(window_ms / sample_ms * 1.01) + 1
-		window_samples = int(window_ms / self.sample_interval_ms * 1.01) + 1
-		window_samples = max(1, window_samples)
-		return (window_samples - 1) // 2
+		window_us = half_window_ms * 2.0 * 1000.0
+		avg_dt_us = self.sample_interval_ms * 1000.0
+		return compute_window_samples(window_us, avg_dt_us, tolerance=1.01)
 
 	def select(
 		self,
@@ -372,10 +380,11 @@ class TobiiGazeVelocityWindowSelector(WindowSelector):
 		if not bool(valid[idx]):
 			return None, None
 
-		half = self._compute_half_size(half_window_ms)
+		N = self._compute_window_samples(half_window_ms)
+		roles = self.strategy.get_roles(idx, N)
 		n = len(times)
-		window_start = max(0, idx - half)
-		window_end = min(n - 1, idx + half)
+		window_start = max(0, roles.first)
+		window_end = min(n - 1, roles.last)
 
 		# Find first valid sample from the left within the window
 		first_idx = None
