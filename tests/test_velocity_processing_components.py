@@ -204,3 +204,121 @@ def test_prepare_velocity_input_runs_preprocessing_steps_in_order(monkeypatch):
 
 def test_velocity_strategy_factory_builds_requested_strategy():
     assert isinstance(VelocityStrategyFactory.create("olsen2d"), Olsen2DApproximation)
+
+
+def _minimal_prepared_velocity_frame() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "time_ms": [0.0, 10.0, 20.0],
+            "smoothed_x_mm": [0.0, 1.0, 2.0],
+            "smoothed_y_mm": [0.0, 0.5, 1.0],
+            "eye_x_mm": [0.0, 0.0, 0.0],
+            "eye_y_mm": [0.0, 0.0, 0.0],
+            "eye_z_mm": [600.0, 600.0, 600.0],
+            "left_eye_valid": [True, True, False],
+            "right_eye_valid": [True, False, True],
+            "combined_valid": [True, True, True],
+            "gaze_left_x_mm": [0.0, 1.0, np.nan],
+            "gaze_left_y_mm": [0.0, 0.0, np.nan],
+            "gaze_right_x_mm": [0.0, np.nan, 2.0],
+            "gaze_right_y_mm": [0.0, np.nan, 1.0],
+        }
+    )
+
+
+def test_initialize_velocity_columns_returns_copy_with_diagnostics():
+    from ivt_filter.processing.velocity import _initialize_velocity_columns
+
+    original = pd.DataFrame({"time_ms": [0.0, 10.0]})
+    result = _initialize_velocity_columns(original)
+
+    assert "velocity_deg_per_sec" not in original
+    assert result["velocity_deg_per_sec"].isna().all()
+    assert result["dt_ms"].isna().all()
+    assert result["window_any_invalid"].tolist() == [False, False]
+    for column in (
+        "velocity_first_idx",
+        "velocity_last_idx",
+        "velocity_eye_used",
+        "velocity_window_selector",
+        "velocity_fallback_applied",
+        "env_has_invalid_above",
+        "env_has_invalid_below",
+        "env_rule_triggered",
+        "gap_rule_triggered",
+        "gap_left_invalid_idx",
+        "gap_right_invalid_idx",
+    ):
+        assert column in result.columns
+
+
+def test_combine_direction_vectors_uses_valid_eye_fallbacks():
+    from ivt_filter.processing.velocity import _combine_direction_vectors
+
+    combined = _combine_direction_vectors(
+        np.array([True, True, False, False]),
+        np.array([True, False, True, False]),
+        np.array([1.0, 2.0, 3.0, 4.0]),
+        np.array([10.0, 20.0, 30.0, 40.0]),
+        np.array([100.0, 200.0, 300.0, 400.0]),
+        np.array([5.0, 6.0, 7.0, 8.0]),
+        np.array([50.0, 60.0, 70.0, 80.0]),
+        np.array([500.0, 600.0, 700.0, 800.0]),
+    )
+
+    np.testing.assert_allclose(combined[0][:3], [3.0, 2.0, 7.0])
+    np.testing.assert_allclose(combined[1][:3], [30.0, 20.0, 70.0])
+    np.testing.assert_allclose(combined[2][:3], [300.0, 200.0, 700.0])
+    assert np.isnan(combined[0][3])
+    assert np.isnan(combined[1][3])
+    assert np.isnan(combined[2][3])
+
+
+def test_prepare_velocity_arrays_selects_mode_validity_and_missing_directions():
+    from ivt_filter.processing.velocity import _prepare_velocity_arrays
+
+    df = _minimal_prepared_velocity_frame()
+    arrays = _prepare_velocity_arrays(df, OlsenVelocityConfig(eye_mode="left"))
+
+    assert arrays.eye_mode == "left"
+    np.testing.assert_array_equal(arrays.valid, df["left_eye_valid"].to_numpy())
+    assert np.isnan(arrays.directions.left_x).all()
+    assert np.isnan(arrays.directions.combined_x).all()
+
+
+def test_prepare_velocity_arrays_combines_present_direction_columns():
+    from ivt_filter.processing.velocity import _prepare_velocity_arrays
+
+    df = _minimal_prepared_velocity_frame().assign(
+        gaze_dir_left_x=[1.0, 2.0, 3.0],
+        gaze_dir_left_y=[10.0, 20.0, 30.0],
+        gaze_dir_left_z=[100.0, 200.0, 300.0],
+        gaze_dir_right_x=[5.0, 6.0, 7.0],
+        gaze_dir_right_y=[50.0, 60.0, 70.0],
+        gaze_dir_right_z=[500.0, 600.0, 700.0],
+    )
+    arrays = _prepare_velocity_arrays(df, OlsenVelocityConfig())
+
+    np.testing.assert_allclose(arrays.directions.combined_x, [3.0, 2.0, 7.0])
+    np.testing.assert_allclose(arrays.directions.combined_y, [30.0, 20.0, 70.0])
+    np.testing.assert_allclose(arrays.directions.combined_z, [300.0, 200.0, 700.0])
+
+
+def test_velocity_computation_context_builds_sampling_window_and_strategy():
+    from ivt_filter.processing.velocity import (
+        VelocityComputationContext,
+        _prepare_velocity_arrays,
+    )
+    from ivt_filter.strategies import TimeSymmetricWindowSelector
+
+    arrays = _prepare_velocity_arrays(_minimal_prepared_velocity_frame(), OlsenVelocityConfig())
+    context = VelocityComputationContext.create(arrays, OlsenVelocityConfig())
+
+    assert context.dt_med == 10.0
+    assert context.hz_measured == 100.0
+    assert context.half_window == 10.0
+    assert isinstance(context.selector, TimeSymmetricWindowSelector)
+    assert context.fallback_selector is None
+    np.testing.assert_array_equal(context.prev_invalid_idx, [-1, -1, -1])
+    np.testing.assert_array_equal(context.next_invalid_idx, [-1, -1, -1])
+    assert context.neighbor_imputer.arrays is arrays.input
