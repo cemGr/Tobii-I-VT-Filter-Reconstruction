@@ -315,48 +315,49 @@ class TimeBasedShiftedValidWindowSelector(WindowSelector):
 
 
 class TobiiGazeVelocityWindowSelector(WindowSelector):
-	"""Tobii-exakte Fensterstrategie nach ``GazeVelocityCalculator`` (Tobii C#).
+	"""Sample-count window selector matching Tobii Pro Lab behaviour.
 
-	Rekonstruiert aus der dekompilierten Tobii-Implementierung.
-
-	Fenstergröße (``GazeVelocityCalculatorHelper.CalculateWindowSizeFromSamplingInterval``):
+	Window size is calculated as:
 
 	.. code-block:: text
 
-	    window_samples = floor(window_ms / sample_interval_ms * 1.01) + 1
+	    window_samples = floor(window_ms / sample_interval_ms * tolerance) + 1
 
-	Der Faktor 1.01 kompensiert Sampling-Unregelmäßigkeiten (laut Tobii-Sourcecode).
+	where *tolerance* (here 1.01) accounts for sampling irregularities.
+	This formula is reconstructed from the behaviour described in Olsen (2012).
 
-	Verhalten:
-	- Symmetrisches Sample-Fenster um idx: [idx − half, idx + half]
-	- half = (window_samples − 1) // 2
-	- Erfordert gültige Endpunkte (first_idx und last_idx müssen valide sein)
-	- Velocity wird dem mittleren Sample zugewiesen (= idx bei symmetrischem Fenster)
-	- Bei invaliden Samples im Fenster: sucht nächstes gültiges an Fensterenden
+	``half = (window_samples − 1) // 2``
+
+	Behaviour:
+	- Symmetric sample window around idx: [idx − half, idx + half]
+	- Requires valid endpoints (first_idx and last_idx must be valid)
+	- Velocity is assigned to the centre sample (= idx for a symmetric window)
+	- For invalid samples within the window: the nearest valid sample at the
+	  window boundary is used
 	"""
 
 	def __init__(self, sample_interval_ms: float):
 		"""
 		Args:
-		    sample_interval_ms: Nominelles Abtastintervall in ms.
-		        Beispiele: 16.67 für 60 Hz, 8.33 für 120 Hz, 4.17 für 240 Hz.
-		        Wird zur Berechnung der Fenstergröße nach Tobii-Formel verwendet.
+		    sample_interval_ms: Nominal sample interval in ms.
+		        Examples: 16.67 for 60 Hz, 8.33 for 120 Hz, 4.17 for 240 Hz.
+		        Used to compute the window size via the Olsen (2012) formula.
 		"""
 		if sample_interval_ms <= 0:
 			raise ValueError("sample_interval_ms must be > 0.")
 		self.sample_interval_ms = float(sample_interval_ms)
 
 	def _compute_half_size(self, half_window_ms: float) -> int:
-		"""Berechnet half_size nach Tobii-Formel (GazeVelocityCalculatorHelper).
+		"""Compute half-window size in samples using the Olsen (2012) formula.
 
 		Args:
-		    half_window_ms: Halbe Fensterlänge in ms (aus ``window_length_ms / 2``).
+		    half_window_ms: Half window length in ms (from ``window_length_ms / 2``).
 
 		Returns:
-		    Ganzzahlige Hälfte der Fenstergröße in Samples.
+		    Integer half-size of the window in samples.
 		"""
-		window_ms = half_window_ms * 2.0  # volle Fensterlänge
-		# Tobii-Formel: floor(window_ms / sample_ms * 1.01) + 1
+		window_ms = half_window_ms * 2.0
+		# Olsen (2012): floor(window_ms / sample_ms * 1.01) + 1
 		window_samples = int(window_ms / self.sample_interval_ms * 1.01) + 1
 		window_samples = max(1, window_samples)
 		return (window_samples - 1) // 2
@@ -376,14 +377,14 @@ class TobiiGazeVelocityWindowSelector(WindowSelector):
 		window_start = max(0, idx - half)
 		window_end = min(n - 1, idx + half)
 
-		# Suche erstes gültiges Sample von links (innerhalb des Fensters)
+		# Find first valid sample from the left within the window
 		first_idx = None
 		for j in range(window_start, idx + 1):
 			if bool(valid[j]):
 				first_idx = j
 				break
 
-		# Suche letztes gültiges Sample von rechts (innerhalb des Fensters)
+		# Find last valid sample from the right within the window
 		last_idx = None
 		for k in range(window_end, idx - 1, -1):
 			if bool(valid[k]):

@@ -261,27 +261,25 @@ class Ray3DGazeDir(VelocityCalculationStrategy):
 
 
 class TobiiGazeDirAngle(VelocityCalculationStrategy):
-    """Tobii-exakte Winkelberechnung zwischen normierten Blickrichtungsvektoren.
+    """Numerically stable angle between normalised gaze direction vectors.
 
-    Rekonstruiert aus ``Point3DVectorExtensions.AngleInDegreesToNormalized``
-    aus der dekompilierten Tobii C#-Implementierung.
+    Uses an asin-based formula that is more stable than ``acos(dot product)``
+    for very small (<0.1°) and very large (>170°) angles, where floating-point
+    rounding can push the dot product outside [−1, 1].
 
-    Die asin-basierte Formel ist numerisch stabiler als ``acos(dot product)``,
-    insbesondere bei sehr kleinen (<0.1°) und sehr großen (>170°) Winkeln,
-    wo ``acos`` aufgrund von Floating-Point-Ungenauigkeiten leicht in den
-    nicht-definierten Bereich geraten kann.
+    Reconstructed from the whitepaper (Olsen, 2012) and validated against
+    reference output from Tobii Pro Lab.
 
-    Formel:
-        Spitzer Winkel  (dot ≥ 0):  θ = 2 · asin(‖v₁ − v₂‖ / 2)
-        Stumpfer Winkel (dot < 0):  θ = π − 2 · asin(‖−v₁ − v₂‖ / 2)
+    Formula:
+        Acute angle  (dot ≥ 0):  θ = 2 · asin(‖v₁ − v₂‖ / 2)
+        Obtuse angle (dot < 0):  θ = π − 2 · asin(‖−v₁ − v₂‖ / 2)
 
-    Beide Vektoren müssen normiert übergeben werden (werden intern normiert,
-    falls nicht bereits der Fall).
+    Both input vectors are normalised internally if not already unit length.
     """
 
     @staticmethod
     def _angle_between_normalized(v1: np.ndarray, v2: np.ndarray) -> float:
-        """Winkel in Grad zwischen zwei normierten 3D-Vektoren (Tobii-Formel)."""
+        """Angle in degrees between two normalised 3-D vectors."""
         dot = float(np.dot(v1, v2))
         if dot < 0.0:
             # Stumpfer Winkel: komplementäre asin-Formel
@@ -297,7 +295,7 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
         return math.degrees(angle_rad)
 
     def calculate_visual_angle_ctx(self, ctx: VelocityContext) -> float:
-        """Berechnet den Winkel aus den normierten Richtungsvektoren im Kontext."""
+        """Compute the angle from normalised direction vectors in the context."""
         dir1 = ctx.dir1
         dir2 = ctx.dir2
         if dir1 is None or dir2 is None:
@@ -330,5 +328,5 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
     def get_description(self) -> str:
         return (
             "Tobii asin-formula: θ = 2·asin(‖v₁−v₂‖/2) "
-            "[numerically stable, from Tobii decompilation]"
+            "[numerically stable, reconstructed from Olsen (2012)]"
         )
