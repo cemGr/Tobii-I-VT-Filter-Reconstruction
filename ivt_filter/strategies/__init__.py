@@ -1,5 +1,13 @@
 """Velocity calculation strategies and windowing strategies."""
 
+from .anchor_window import (
+    AnchorRoles,
+    AnchorWindowStrategy,
+    SymmetricHalf,
+    MidIndex,
+    compute_window_samples,
+    estimate_avg_dt_us,
+)
 from .velocity_calculation import (
     VelocityCalculationStrategy,
     VelocityContext,
@@ -32,6 +40,12 @@ from .smoothing_strategy import (
 )
 
 __all__ = [
+    "AnchorRoles",
+    "AnchorWindowStrategy",
+    "SymmetricHalf",
+    "MidIndex",
+    "compute_window_samples",
+    "estimate_avg_dt_us",
     "VelocityCalculationStrategy",
     "VelocityContext",
     "Olsen2DApproximation",
