@@ -6,8 +6,36 @@
 
 ### Installation
 
+Pick one installation path:
+
+**Normal user installation from PyPI**
+
 ```bash
-pip install -e .
+python -m pip install --upgrade pip
+python -m pip install tobii-ivt-filter
+```
+
+**Local checkout for development or examples from this repository**
+
+```bash
+git clone git@github.com:cemGr/Tobii-I-VT-Filter-Reconstruction.git
+cd Tobii-I-VT-Filter-Reconstruction
+python -m pip install --editable .
+```
+
+**Optional extras**
+
+```bash
+python -m pip install "tobii-ivt-filter[plot]"      # plotting helpers
+python -m pip install "tobii-ivt-filter[parallel]"  # parallel processing support
+```
+
+**Local wheel build**
+
+```bash
+python -m pip install --requirement constraints-dev.txt
+python -m build
+python -m pip install dist/*.whl
 ```
 
 ### Basic Usage

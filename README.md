@@ -80,7 +80,24 @@ Classifier output contains diagnostic columns including `classifier_refinement_r
 
 ## Installation & Setup
 
-### 1. Clone and Install
+This project is packaged through `pyproject.toml`. Choose the installation path that
+matches how you want to use the filter:
+
+### 1. Install from PyPI for normal use
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install tobii-ivt-filter
+```
+
+Install extras only when you need their features:
+
+```bash
+python -m pip install "tobii-ivt-filter[plot]"      # matplotlib-based plots
+python -m pip install "tobii-ivt-filter[parallel]"  # joblib parallel processing
+```
+
+### 2. Install from a local checkout for development
 
 ```bash
 git clone git@github.com:cemGr/Tobii-I-VT-Filter-Reconstruction.git
@@ -89,15 +106,24 @@ cd Tobii-I-VT-Filter-Reconstruction
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-pip install --upgrade pip
-pip install -r requirements.txt
-pip install -e .
+python -m pip install --upgrade pip
+python -m pip install --editable .
 ```
 
-Plotting is optional. Install the plotting extra only if you want to generate figures:
+Install pinned development and CI tooling when you also want to run tests, linting,
+type checks, or package builds locally:
 
 ```bash
-pip install tobii-ivt-filter[plot]
+python -m pip install --requirement constraints-dev.txt
+```
+
+### 3. Build and install a local wheel
+
+```bash
+python -m pip install --requirement constraints-dev.txt
+python -m build
+python -m pip install dist/*.whl
+python -m ivt_filter.cli --help
 ```
 
 ### Supported Python Import Paths
