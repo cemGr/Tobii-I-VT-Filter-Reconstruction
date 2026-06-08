@@ -16,7 +16,7 @@ from .io.pipeline import IVTPipeline
 
 def build_arg_parser() -> argparse.ArgumentParser:
     """Build CLI argument parser.
-    
+
     Responsibility: Only parsing and describing options (SRP).
     No business logic.
     """
@@ -27,6 +27,19 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "post-processing (gap-filling, smoothing, Tobii-like fixation filters)."
         ),
     )
+    _add_io_arguments(parser)
+    _add_velocity_arguments(parser)
+    _add_window_arguments(parser)
+    _add_smoothing_arguments(parser)
+    _add_classifier_arguments(parser)
+    _add_refinement_arguments(parser)
+    _add_postprocessing_arguments(parser)
+    _add_evaluation_arguments(parser)
+    _add_plotting_arguments(parser)
+    return parser
+
+
+def _add_io_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--input",
         required=True,
@@ -60,13 +73,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Einheit der gewählten Zeitspalte (default: ms).",
     )
 
-    # Velocity / Fenster-Konfiguration
-    parser.add_argument(
-        "--window",
-        type=float,
-        default=20.0,
-        help="Zeitfenster-Laenge in ms fuer Olsen-Window (default: 20.0).",
-    )
+
+def _add_velocity_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--eye",
         choices=["left", "right", "average"],
@@ -74,36 +82,98 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Eye-Selection-Mode (default: average).",
     )
     parser.add_argument(
-        "--smoothing",
-        choices=[
-            "none", "median", "moving_average", 
-            "median_strict", "moving_average_strict",
-            "median_adaptive", "moving_average_adaptive"
-        ],
+        "--sampling-rate-method",
+        choices=["all_samples", "first_100"],
+        default="first_100",
+        help=(
+            "Methode zur Bestimmung der Sampling-Rate. "
+            "'all_samples' (Standard): Alle Samples verwenden. "
+            "'first_100': (standarsyd) Nur die ersten 100 Samples verwenden (wie im Tobii-Paper)."
+        ),
+    )
+    parser.add_argument(
+        "--dt-calculation-method",
+        choices=["median", "mean"],
+        default="median",
+        help=(
+            "Methode zur Berechnung der Zeitdifferenzen. "
+            "'median' (Standard): Robuster gegenüber Ausreißern. "
+            "'mean': Arithmetisches Mittel (wie im Tobii-Paper erwähnt)."
+        ),
+    )
+    parser.add_argument(
+        "--no-fallback-valid-samples",
+        action="store_true",
+        help="Bei ungültigen first/last Samples: nächstes gültiges Sample verwenden (Standard: an).",
+    )
+    # Average-Auge Strategien
+    parser.add_argument(
+        "--average-window-single-eye",
+        action="store_true",
+        help=(
+            "Bei Mixed mono/binokular innerhalb eines Fensters das Auge mit "
+            "stabilerer Validitaet fuer Start/Ende verwenden."
+        ),
+    )
+    parser.add_argument(
+        "--average-window-impute-neighbor",
+        action="store_true",
+        help=(
+            "Fehlende Augenkoordinate am Fensterrand anhand naechstem Nachbarn "
+            "mit gueltigem Auge imputieren (nur eye_mode=average)."
+        ),
+    )
+    parser.add_argument(
+        "--average-fallback-single-eye",
+        action="store_true",
+        help=(
+            "Wenn im Fenster oder mittleren Sample nur ein Auge valide ist, "
+            "verwende durchgehend NUR dieses Auge (kein Average). "
+            "Verhindert Parallaxe-Effekte bei Augen-Wechsel."
+        ),
+    )
+    parser.add_argument(
+        "--coordinate-rounding",
+        choices=["none", "nearest", "halfup", "floor", "ceil"],
         default="none",
-        help="Raeumliches Smoothing auf kombinierten Gaze-Koordinaten. "
-             "_strict Varianten ueberspringen Smoothing wenn invalide Samples im Fenster, "
-             "_adaptive sammelt nur gueltige Samples und kann Suche erweitern (default: none).",
+        help=(
+            "Rundet Gaze/Eye-Koordinaten vor der Velocity-Berechnung auf ganze Zahlen. "
+            "'none': keine Rundung (default), "
+            "'nearest': Banker's Rounding (bei 0.5 zur geraden Zahl), "
+            "'halfup': bei 0.5 immer aufrunden, "
+            "'floor': immer abrunden, "
+            "'ceil': immer aufrunden."
+        ),
     )
     parser.add_argument(
-        "--smooth-window-samples",
-        type=int,
-        default=5,
-        help="Fensterbreite in Samples fuer Smoothing (default: 5).",
+        "--tobii-eye-offset-interpolation",
+        action="store_true",
+        help=(
+            "Rekonstruiert fehlendes Auge via zuletzt bekanntem L→R Versatz "
+            "(Tobii-Referenzlogik). Verhindert Phantom-Velocities an Gap-Rändern "
+            "wenn ein Auge kurzzeitig ausfällt."
+        ),
     )
     parser.add_argument(
-        "--smoothing-min-samples",
-        type=int,
-        default=1,
-        help="(Nur adaptive) Mindestanzahl gueltiger Samples fuer Smoothing (default: 1).",
-    )
-    parser.add_argument(
-        "--smoothing-expansion-radius",
-        type=int,
-        default=0,
-        help="(Nur adaptive) Samples ueber Standard-Fenster hinaus durchsuchen (default: 0).",
+        "--velocity-method",
+        choices=["olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"],
+        default="olsen2d",
+        help=(
+            "Methode zur Berechnung des visuellen Winkels zwischen zwei Gaze-Punkten. "
+            "'olsen2d': Olsen's 2D-Approximation (tan(θ)=s/d, nur eye_z nötig, schnell), "
+            "'ray3d': physikalisch korrekte 3D-Winkel-Methode (acos(ray0·ray1), benötigt eye_x/y/z, präziser), "
+            "'ray3d_gaze_dir': nutzt normalisierte Blickrichtungs-Vektoren (DACS norm), acos(dir0·dir1); benötigt keine Bildschirm- oder Eye-Position."
+        ),
     )
 
+
+def _add_window_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--window",
+        type=float,
+        default=20.0,
+        help="Zeitfenster-Laenge in ms fuer Olsen-Window (default: 20.0).",
+    )
     # Fenster-Strategien
     parser.add_argument(
         "--sample-symmetric-window",
@@ -188,105 +258,42 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "Vermeidet Jitter durch Rundung. Nur mit --asymmetric-neighbor-window."
         ),
     )
-    parser.add_argument(
-        "--sampling-rate-method",
-        choices=["all_samples", "first_100"],
-        default="first_100",
-        help=(
-            "Methode zur Bestimmung der Sampling-Rate. "
-            "'all_samples' (Standard): Alle Samples verwenden. "
-            "'first_100': (standarsyd) Nur die ersten 100 Samples verwenden (wie im Tobii-Paper)."
-        ),
-    )
-    parser.add_argument(
-        "--dt-calculation-method",
-        choices=["median", "mean"],
-        default="median",
-        help=(
-            "Methode zur Berechnung der Zeitdifferenzen. "
-            "'median' (Standard): Robuster gegenüber Ausreißern. "
-            "'mean': Arithmetisches Mittel (wie im Tobii-Paper erwähnt)."
-        ),
-    )
-    parser.add_argument(
-        "--no-fallback-valid-samples",
-        action="store_true",
-        help="Bei ungültigen first/last Samples: nächstes gültiges Sample verwenden (Standard: an).",
-    )
 
-    # Average-Auge Strategien
-    parser.add_argument(
-        "--average-window-single-eye",
-        action="store_true",
-        help=(
-            "Bei Mixed mono/binokular innerhalb eines Fensters das Auge mit "
-            "stabilerer Validitaet fuer Start/Ende verwenden."
-        ),
-    )
-    parser.add_argument(
-        "--average-window-impute-neighbor",
-        action="store_true",
-        help=(
-            "Fehlende Augenkoordinate am Fensterrand anhand naechstem Nachbarn "
-            "mit gueltigem Auge imputieren (nur eye_mode=average)."
-        ),
-    )
-    parser.add_argument(
-        "--average-fallback-single-eye",
-        action="store_true",
-        help=(
-            "Wenn im Fenster oder mittleren Sample nur ein Auge valide ist, "
-            "verwende durchgehend NUR dieses Auge (kein Average). "
-            "Verhindert Parallaxe-Effekte bei Augen-Wechsel."
-        ),
-    )
 
-    # Gap-Filling
+def _add_smoothing_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "--gap-fill",
-        action="store_true",
-        help="Aktiviere zeitliches Gap-Filling (Interpolation pro Auge).",
-    )
-    parser.add_argument(
-        "--gap-fill-max-ms",
-        type=float,
-        default=75.0,
-        help="Maximale Luecken-Dauer in ms, die per Interpolation gefuellt wird (default: 75).",
-    )
-    parser.add_argument(
-        "--coordinate-rounding",
-        choices=["none", "nearest", "halfup", "floor", "ceil"],
+        "--smoothing",
+        choices=[
+            "none", "median", "moving_average", 
+            "median_strict", "moving_average_strict",
+            "median_adaptive", "moving_average_adaptive"
+        ],
         default="none",
-        help=(
-            "Rundet Gaze/Eye-Koordinaten vor der Velocity-Berechnung auf ganze Zahlen. "
-            "'none': keine Rundung (default), "
-            "'nearest': Banker's Rounding (bei 0.5 zur geraden Zahl), "
-            "'halfup': bei 0.5 immer aufrunden, "
-            "'floor': immer abrunden, "
-            "'ceil': immer aufrunden."
-        ),
+        help="Raeumliches Smoothing auf kombinierten Gaze-Koordinaten. "
+             "_strict Varianten ueberspringen Smoothing wenn invalide Samples im Fenster, "
+             "_adaptive sammelt nur gueltige Samples und kann Suche erweitern (default: none).",
     )
     parser.add_argument(
-        "--tobii-eye-offset-interpolation",
-        action="store_true",
-        help=(
-            "Rekonstruiert fehlendes Auge via zuletzt bekanntem L→R Versatz "
-            "(Tobii-Referenzlogik). Verhindert Phantom-Velocities an Gap-Rändern "
-            "wenn ein Auge kurzzeitig ausfällt."
-        ),
+        "--smooth-window-samples",
+        type=int,
+        default=5,
+        help="Fensterbreite in Samples fuer Smoothing (default: 5).",
     )
     parser.add_argument(
-        "--velocity-method",
-        choices=["olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"],
-        default="olsen2d",
-        help=(
-            "Methode zur Berechnung des visuellen Winkels zwischen zwei Gaze-Punkten. "
-            "'olsen2d': Olsen's 2D-Approximation (tan(θ)=s/d, nur eye_z nötig, schnell), "
-            "'ray3d': physikalisch korrekte 3D-Winkel-Methode (acos(ray0·ray1), benötigt eye_x/y/z, präziser), "
-            "'ray3d_gaze_dir': nutzt normalisierte Blickrichtungs-Vektoren (DACS norm), acos(dir0·dir1); benötigt keine Bildschirm- oder Eye-Position."
-        ),
+        "--smoothing-min-samples",
+        type=int,
+        default=1,
+        help="(Nur adaptive) Mindestanzahl gueltiger Samples fuer Smoothing (default: 1).",
+    )
+    parser.add_argument(
+        "--smoothing-expansion-radius",
+        type=int,
+        default=0,
+        help="(Nur adaptive) Samples ueber Standard-Fenster hinaus durchsuchen (default: 0).",
     )
 
+
+def _add_classifier_arguments(parser: argparse.ArgumentParser) -> None:
     # Klassifikation
     parser.add_argument(
         "--classify",
@@ -302,7 +309,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=30.0,
         help="Velocity-Threshold in deg/s fuer I-VT (default: 30).",
     )
-    
+
     # Optional classifier reconstruction heuristics
     parser.add_argument(
         "--enable-invalid-window-neighbor-confirmation",
@@ -327,6 +334,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Width of the optional hysteresis band in deg/s (default: 2.0).",
     )
 
+
+def _add_refinement_arguments(parser: argparse.ArgumentParser) -> None:
     # Near-threshold hybrid strategy
     parser.add_argument(
         "--enable-near-threshold-hybrid",
@@ -417,7 +426,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default="ray3d_gaze_dir",
         help="Alternative velocity method to consult for confident switches (default: ray3d_gaze_dir).",
     )
-    
+
     # Eye-position jump rule
     parser.add_argument(
         "--enable-eye-jump-rule",
@@ -440,6 +449,20 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Velocity threshold (deg/s) for 'clear saccade' in jump rule (default: 50.0).",
     )
 
+
+def _add_postprocessing_arguments(parser: argparse.ArgumentParser) -> None:
+    # Gap-Filling
+    parser.add_argument(
+        "--gap-fill",
+        action="store_true",
+        help="Aktiviere zeitliches Gap-Filling (Interpolation pro Auge).",
+    )
+    parser.add_argument(
+        "--gap-fill-max-ms",
+        type=float,
+        default=75.0,
+        help="Maximale Luecken-Dauer in ms, die per Interpolation gefuellt wird (default: 75).",
+    )
     # GT-based Saccaden-Glättung
     parser.add_argument(
         "--post-smoothing-ms",
@@ -503,6 +526,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Ziel-Label fuer verworfene kurze Fixationen (default: Unclassified).",
     )
 
+
+def _add_evaluation_arguments(parser: argparse.ArgumentParser) -> None:
     # Evaluation
     parser.add_argument(
         "--evaluate",
@@ -515,6 +540,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Exclude samples whose presented stimulus name is 'Eyetracker Calibration' during evaluation.",
     )
 
+
+def _add_plotting_arguments(parser: argparse.ArgumentParser) -> None:
     # Plotting
     parser.add_argument(
         "--no-plot",
@@ -526,10 +553,6 @@ def build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Velocity + GT-Event-Plot anzeigen (sonst nur Velocity).",
     )
-
-    return parser
-
-
 
 
 def main() -> None:
