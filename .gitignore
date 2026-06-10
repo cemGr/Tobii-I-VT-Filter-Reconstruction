@@ -85,3 +85,28 @@ data/
 temp/
 *.tmp
 *.bak
+test_data/study_a1/
+
+# Linter cache
+.ruff_cache/
+
+# LaTeX build artifacts (thesis is maintained in a separate repository)
+*.aux
+*.toc
+*.lof
+*.lot
+*.out
+*.synctex.gz
+texput.log
+thesis.log
+
+# Thesis-specific analysis outputs and scratch artifacts (kept locally, not versioned)
+EVAL_DONE.md
+results/j_analysis/
+results/study_a1_benchmark/
+results/study_a1_benchmark_ma_rerun/
+results/sweep_benchmark_ma_only/
+scripts/anomaly_analysis_outputs/
+scripts/analyse_ma_output.py
+scripts/generate_sensitivity_figure.py
+scripts/run_j_analysis.py

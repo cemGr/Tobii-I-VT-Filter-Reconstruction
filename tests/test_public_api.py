@@ -57,7 +57,6 @@ EXAMPLE_MODULES = [
     "example_experiment_tracking.py",
     "example_sample_based_window.py",
     "example_window_sweep.py",
-    "quick_window_test.py",
     "examples/velocity_comparison.py",
 ]
 
@@ -384,7 +383,7 @@ def test_productive_modules_do_not_import_legacy_facades() -> None:
 
 
 def _documentation_and_example_files() -> set[Path]:
-    paths = {REPOSITORY_ROOT / "README.md", REPOSITORY_ROOT / "quick_window_test.py"}
+    paths = {REPOSITORY_ROOT / "README.md"}
     paths.update(REPOSITORY_ROOT.glob("example_*.py"))
     paths.update((REPOSITORY_ROOT / "docs").rglob("*.md"))
     paths.update((REPOSITORY_ROOT / "examples").rglob("*.py"))
