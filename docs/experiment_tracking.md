@@ -1,16 +1,16 @@
 # Experiment Tracking & Observer Pattern
 
-## Übersicht
+## Overview
 
-Dieses System implementiert **automatisches Experiment-Tracking** für systematisches Reverse Engineering der I-VT Filter Parameter. Es basiert auf zwei Design Patterns:
+This system implements **automatic experiment tracking** for systematic reverse engineering of the I-VT filter parameters. It is based on two design patterns:
 
-1. **Observer Pattern**: Automatische Benachrichtigung bei Pipeline-Events
-2. **Information Expert (GRASP)**: `ExperimentManager` verwaltet Experiment-Daten
+1. **Observer Pattern**: Automatic notification on pipeline events
+2. **Information Expert (GRASP)**: `ExperimentManager` manages experiment data
 
-## Hauptkomponenten
+## Main Components
 
 ### 1. ExperimentConfig
-Definiert eine komplette Experiment-Konfiguration:
+Defines a complete experiment configuration:
 
 ```python
 from ivt_filter.evaluation.experiment import ExperimentConfig
@@ -33,26 +33,26 @@ config = ExperimentConfig(
 ```
 
 ### 2. ExperimentManager
-Verwaltet gespeicherte Experimente (Information Expert Pattern):
+Manages stored experiments (Information Expert pattern):
 
 ```python
 from ivt_filter.evaluation.experiment import ExperimentManager
 
 manager = ExperimentManager("experiments/")
 
-# Experiment speichern
+# Save experiment
 manager.save_experiment(config, results_df, metrics)
 
-# Experiment laden
+# Load experiment
 config, df, metrics = manager.load_experiment("olsen2d_median_20ms")
 
-# Experimente vergleichen
+# Compare experiments
 comparison = manager.compare_experiments([
     "exp1", "exp2", "exp3"
 ])
 print(comparison)
 
-# Beste Konfiguration finden
+# Find the best configuration
 best_name, best_value, best_config = manager.get_best_configuration(
     metric="fixation_recall",
     maximize=True
@@ -60,11 +60,11 @@ best_name, best_value, best_config = manager.get_best_configuration(
 ```
 
 ### 3. Observer Pattern
-Automatische Benachrichtigungen bei Pipeline-Events:
+Automatic notifications on pipeline events:
 
-#### Verfügbare Observer:
+#### Available observers:
 
-**ConsoleReporter** - Konsolen-Ausgabe:
+**ConsoleReporter** - Console output:
 ```python
 from ivt_filter.io.observers import ConsoleReporter
 
@@ -72,7 +72,7 @@ reporter = ConsoleReporter(verbose=True)
 pipeline.register_observer(reporter)
 ```
 
-**MetricsLogger** - CSV-Logging:
+**MetricsLogger** - CSV logging:
 ```python
 from ivt_filter.io.observers import MetricsLogger
 
@@ -80,7 +80,7 @@ logger = MetricsLogger("experiments/metrics_log.csv")
 pipeline.register_observer(logger)
 ```
 
-**ExperimentTracker** - Vollständiges Tracking:
+**ExperimentTracker** - Full tracking:
 ```python
 from ivt_filter.io.observers import ExperimentTracker
 
@@ -88,7 +88,7 @@ tracker = ExperimentTracker("experiments/")
 pipeline.register_observer(tracker)
 ```
 
-**ResultsPlotter** - Automatische Plots:
+**ResultsPlotter** - Automatic plots:
 ```python
 from ivt_filter.io.observers import ResultsPlotter
 
@@ -100,22 +100,22 @@ plotter = ResultsPlotter(
 pipeline.register_observer(plotter)
 ```
 
-## Verwendung
+## Usage
 
-### Einfaches Experiment
+### Simple Experiment
 
 ```python
 from ivt_filter.io.pipeline import IVTPipeline
 from ivt_filter.evaluation.experiment import ExperimentConfig
 from ivt_filter.io.observers import ConsoleReporter, MetricsLogger, ExperimentTracker
 
-# Pipeline mit Observers erstellen
+# Create pipeline with observers
 pipeline = IVTPipeline(velocity_config, classifier_config)
 pipeline.register_observer(ConsoleReporter(verbose=True))
 pipeline.register_observer(MetricsLogger("logs/metrics.csv"))
 pipeline.register_observer(ExperimentTracker("experiments/"))
 
-# Experiment-Konfiguration
+# Experiment configuration
 exp_config = ExperimentConfig(
     name="baseline_test",
     description="Baseline configuration test",
@@ -124,7 +124,7 @@ exp_config = ExperimentConfig(
     tags=["baseline"]
 )
 
-# Mit Tracking ausführen
+# Run with tracking
 df = pipeline.run_with_tracking(
     input_path="data.tsv",
     config=exp_config,
@@ -137,7 +137,7 @@ df = pipeline.run_with_tracking(
 ```python
 from ivt_filter.config import OlsenVelocityConfig, IVTClassifierConfig
 
-# Verschiedene Thresholds testen
+# Test different thresholds
 thresholds = [20.0, 30.0, 40.0, 50.0]
 
 for threshold in thresholds:
@@ -165,17 +165,17 @@ for threshold in thresholds:
     df = pipeline.run_with_tracking("data.tsv", exp_config)
 ```
 
-### Experimente vergleichen
+### Compare Experiments
 
 ```python
 from ivt_filter.evaluation.experiment import ExperimentManager
 
 manager = ExperimentManager("experiments/")
 
-# Alle Experimente mit "threshold" Tag auflisten
+# List all experiments tagged with "threshold"
 threshold_experiments = manager.list_experiments(tags=["threshold"])
 
-# Top 5 vergleichen
+# Compare the top 5
 exp_names = [e["name"] for e in threshold_experiments[:5]]
 comparison = manager.compare_experiments(exp_names)
 
@@ -183,7 +183,7 @@ print("\nComparison Results:")
 print(comparison[["experiment", "threshold", "percentage_agreement", 
                  "fixation_recall", "saccade_recall"]])
 
-# Beste Konfiguration finden
+# Find the best configuration
 best_name, best_value, best_config = manager.get_best_configuration(
     metric="percentage_agreement",
     tags=["threshold"]
@@ -194,15 +194,15 @@ print(f"   Agreement: {best_value:.2f}%")
 print(f"   Threshold: {best_config.classifier_config.velocity_threshold_deg_per_sec} deg/s")
 ```
 
-## Experiment-Struktur auf der Festplatte
+## Experiment Structure on Disk
 
 ```
 experiments/
-├── experiments_index.json          # Index aller Experimente
+├── experiments_index.json          # Index of all experiments
 ├── baseline_test/
-│   ├── config.json                # Experiment-Konfiguration
-│   ├── results.tsv               # Vollständige Ergebnisse
-│   └── metrics.json              # Evaluation-Metriken
+│   ├── config.json                # Experiment configuration
+│   ├── results.tsv               # Full results
+│   └── metrics.json              # Evaluation metrics
 ├── threshold_20deg/
 │   ├── config.json
 │   ├── results.tsv
@@ -213,41 +213,41 @@ experiments/
     └── metrics.json
 ```
 
-## Vorteile für Reverse Engineering
+## Benefits for Reverse Engineering
 
-✅ **Systematisches Testen**: Alle Konfigurationen automatisch geloggt  
-✅ **Reproduzierbarkeit**: Vollständige Config + Ergebnisse gespeichert  
-✅ **Vergleichbarkeit**: Einfacher Vergleich mehrerer Experimente  
-✅ **Best-Config-Suche**: Automatisch beste Parameter finden  
-✅ **Tag-basierte Organisation**: Experimente kategorisieren (baseline, high-frequency, etc.)  
-✅ **Automatische Plots**: Observer generiert Plots automatisch  
-✅ **CSV-Export**: Metriken für Excel/R/Python-Analyse  
+✅ **Systematic testing**: All configurations logged automatically  
+✅ **Reproducibility**: Full config + results stored  
+✅ **Comparability**: Easy comparison of multiple experiments  
+✅ **Best-config search**: Automatically find the best parameters  
+✅ **Tag-based organization**: Categorize experiments (baseline, high-frequency, etc.)  
+✅ **Automatic plots**: The observer generates plots automatically  
+✅ **CSV export**: Metrics for Excel/R/Python analysis  
 
-## Vollständiges Beispiel
+## Complete Example
 
-Siehe `example_experiment_tracking.py` für ein vollständiges Beispiel mit:
-- Einzelnen Experimenten
-- Parameter Sweeps
-- Experiment-Vergleichen
-- Best-Configuration-Suche
-- Tag-basierter Filterung
+See `example_experiment_tracking.py` for a complete example with:
+- Individual experiments
+- Parameter sweeps
+- Experiment comparisons
+- Best-configuration search
+- Tag-based filtering
 
 ```bash
-# Beispiel ausführen
+# Run the example
 python example_experiment_tracking.py
 ```
 
 ## Design Patterns
 
 ### Observer Pattern
-**Zweck**: Entkopplung von Pipeline-Ausführung und Tracking
+**Purpose**: Decouple pipeline execution from tracking
 
-**Vorteile**:
-- Pipeline weiß nichts über Logging/Plotting
-- Neue Observer einfach hinzufügbar
-- Mehrere Observer gleichzeitig möglich
+**Advantages**:
+- The pipeline knows nothing about logging/plotting
+- New observers are easy to add
+- Multiple observers can run simultaneously
 
-**Implementierung**:
+**Implementation**:
 ```python
 class PipelineObserver(ABC):
     @abstractmethod
@@ -261,47 +261,47 @@ class PipelineObserver(ABC):
 ```
 
 ### Information Expert (GRASP)
-**Zweck**: ExperimentManager kennt die Experiment-Daten am besten
+**Purpose**: ExperimentManager knows the experiment data best
 
-**Verantwortlichkeiten**:
-- Speichern/Laden von Experimenten
-- Vergleichen von Experimenten
-- Finden der besten Konfiguration
-- Index-Verwaltung
+**Responsibilities**:
+- Saving/loading experiments
+- Comparing experiments
+- Finding the best configuration
+- Index management
 
-## Erweiterbarkeit
+## Extensibility
 
-### Eigene Observer erstellen
+### Creating Your Own Observer
 
 ```python
 from ivt_filter.io.observers import PipelineObserver
 
 class SlackNotifier(PipelineObserver):
-    """Sendet Benachrichtigungen an Slack."""
+    """Sends notifications to Slack."""
     
     def __init__(self, webhook_url):
         self.webhook_url = webhook_url
     
     def on_pipeline_start(self, config):
-        # Slack-Nachricht senden
+        # Send Slack message
         pass
     
     def on_pipeline_complete(self, config, df, metrics):
-        # Erfolgs-Nachricht senden
+        # Send success message
         pass
     
     def on_pipeline_error(self, config, error):
-        # Fehler-Nachricht senden
+        # Send error message
         pass
 
-# Verwenden
+# Usage
 pipeline.register_observer(SlackNotifier("https://hooks.slack.com/..."))
 ```
 
-### Weitere Metriken tracken
+### Tracking Additional Metrics
 
 ```python
-# In ExperimentConfig.metadata beliebige Daten speichern
+# Store arbitrary data in ExperimentConfig.metadata
 exp_config = ExperimentConfig(
     name="custom_exp",
     ...,
@@ -316,11 +316,11 @@ exp_config = ExperimentConfig(
 
 ## Troubleshooting
 
-**Problem**: Observer wirft Fehler  
-**Lösung**: Observer-Fehler werden abgefangen, Pipeline läuft weiter
+**Problem**: Observer throws an error  
+**Solution**: Observer errors are caught and the pipeline continues
 
-**Problem**: Experimente nicht gefunden  
-**Lösung**: `experiments_index.json` prüfen oder neu erstellen
+**Problem**: Experiments not found  
+**Solution**: Check or recreate `experiments_index.json`
 
-**Problem**: Metriken fehlen  
-**Lösung**: `evaluate=True` in `run_with_tracking()` setzen
+**Problem**: Metrics missing  
+**Solution**: Set `evaluate=True` in `run_with_tracking()`

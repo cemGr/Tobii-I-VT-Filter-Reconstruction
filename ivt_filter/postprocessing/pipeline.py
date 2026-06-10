@@ -29,15 +29,15 @@ def apply_fixation_postprocessing(
     use_ray3d: bool = False,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
-    Tobii-aehnliches Fixations-Postprocessing auf IVT-Predictions:
+    Tobii-like fixation post-processing on IVT predictions:
 
-      1) benachbarte Fixationen mergen (zeit-/raum-nahe)
-      2) kurze Fixationen verwerfen
+      1) merge adjacent fixations (close in time/space)
+      2) discard short fixations
 
     Single Responsibility:
-      - arbeitet nur auf einer gegebenen Sample-Spalte (z.B. 'ivt_sample_type')
-      - erzeugt neue Event-Spalten (event_type_col / event_index_col)
-      - gibt Stats zurueck, Drucken ist Aufgabe der CLI/UI-Schicht.
+      - operates only on a given sample column (e.g. 'ivt_sample_type')
+      - creates new event columns (event_type_col / event_index_col)
+      - returns stats; printing is the responsibility of the CLI/UI layer.
     """
     if not (cfg.merge_adjacent_fixations or cfg.discard_short_fixations):
         return df, {
@@ -59,7 +59,7 @@ def apply_fixation_postprocessing(
         "discarded_samples": 0,
     }
 
-    # 1) Merge naher Fixationen
+    # 1) Merge nearby fixations
     if cfg.merge_adjacent_fixations:
         df, merge_stats = _merge_adjacent_fixations_internal(
             df,
@@ -72,7 +72,7 @@ def apply_fixation_postprocessing(
             use_ray3d=use_ray3d,
         )
 
-    # 2) Events aus Sample-Spalte aufbauen (für Discard benötigt)
+    # 2) Build events from the sample column (needed for discard)
     df = _rebuild_ivt_events_from_sample_types(
         df,
         sample_col=sample_col,
@@ -80,7 +80,7 @@ def apply_fixation_postprocessing(
         event_index_col=event_index_col,
     )
 
-    # 3) Kurze Fixationen verwerfen (arbeitet auf Events)
+    # 3) Discard short fixations (operates on events)
     if cfg.discard_short_fixations:
         df, discard_stats = _discard_short_fixations_internal(
             df,

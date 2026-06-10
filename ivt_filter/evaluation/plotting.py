@@ -13,7 +13,7 @@ plt = require_matplotlib_pyplot()
 
 def plot_velocity_only(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> None:
     """
-    Zeitverlauf der Winkelgeschwindigkeit plotten.
+    Plot the angular velocity over time.
     """
     mask = df["velocity_deg_per_sec"].notna()
     times = df.loc[mask, "time_ms"]
@@ -37,17 +37,17 @@ def plot_velocity_and_classification(
     type_col: Optional[str] = None,
 ) -> None:
     """
-    Geschwindigkeit + Ereignis Labels plotten.
+    Plot velocity + event labels.
 
     type_col:
-      - wenn None: versucht zuerst postprocessed Spalten, dann "ivt_event_type", dann GT
-      - Zeigt sowohl Ground Truth als auch IVT-Klassifikation an, falls beide vorhanden
+      - if None: tries postprocessed columns first, then "ivt_event_type", then GT
+      - Shows both ground truth and IVT classification if both are present
     """
     mask = df["velocity_deg_per_sec"].notna()
     times_vel = df.loc[mask, "time_ms"]
     vels = df.loc[mask, "velocity_deg_per_sec"]
 
-    # Bestimme Klassifikationsspalten
+    # Determine classification columns
     gt_col = None
     ivt_col = None
     
@@ -56,7 +56,7 @@ def plot_velocity_and_classification(
     elif "Eye movement type" in df.columns:
         gt_col = "Eye movement type"
     
-    # Versuche zuerst postprocessed Spalten zu nutzen (falls vorhanden)
+    # Try to use postprocessed columns first (if present)
     if "ivt_event_type_post" in df.columns:
         ivt_col = "ivt_event_type_post"
     elif "ivt_event_type" in df.columns:
@@ -69,7 +69,7 @@ def plot_velocity_and_classification(
 
     times_evt = df["time_ms"]
 
-    # Erstelle Subplots basierend auf verfügbaren Spalten
+    # Create subplots based on the available columns
     num_class_plots = (1 if gt_col else 0) + (1 if ivt_col else 0)
     if num_class_plots == 0:
         fig, ax1 = plt.subplots(1, 1, figsize=(10, 4))
@@ -92,7 +92,7 @@ def plot_velocity_and_classification(
     )
     
     if num_class_plots + 1 == 1:
-        axes = [axes]  # falls nur ein Plot
+        axes = [axes]  # in case there is only one plot
     
     ax1 = axes[0]
     ax1.plot(times_vel, vels)

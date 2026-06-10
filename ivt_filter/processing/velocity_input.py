@@ -14,6 +14,7 @@ from ..config import (
     OlsenVelocityConfig,
     ShiftedValidWindowPolicy,
     TobiiWindowPolicy,
+    WindowPolicy,
 )
 from ..domain.schema import validate_preprocessed_frame, validate_raw_gaze_frame
 from ..utils.sampling import (
@@ -113,7 +114,7 @@ class SamplingAnalyzer:
             and policy.sample_interval_ms is None
             and dt_ms > 0
         ):
-            effective_policy = dataclasses.replace(policy, sample_interval_ms=dt_ms)
+            effective_policy: WindowPolicy = dataclasses.replace(policy, sample_interval_ms=dt_ms)
             cfg = dataclasses.replace(cfg, window_policy=effective_policy)
             policy = effective_policy
             logger.info(
@@ -145,8 +146,8 @@ class SamplingAnalyzer:
             else:
                 cfg = dataclasses.replace(cfg, window_policy=effective_policy)
             logger.info(
-                "[Window] auto sample window: %s samples total (~%.1f pro Seite um "
-                "das Zentrum, effektive Spannweite ~%.2f ms)",
+                "[Window] auto sample window: %s samples total (~%.1f per side around "
+                "the center, effective span ~%.2f ms)",
                 samples,
                 (samples - 1) / 2.0,
                 effective_ms,

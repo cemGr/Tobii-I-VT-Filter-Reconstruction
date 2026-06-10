@@ -1,14 +1,14 @@
 # tests/test_tobii_compat.py
 """
-Tests für die neuen Tobii-kompatiblen Strategy-Klassen und Algorithmen.
+Tests for the new Tobii-compatible strategy classes and algorithms.
 
-Getestete Komponenten:
-  1. TobiiGazeDirAngle  – asin-basierte Winkelberechnung (numerisch stabil)
-  2. TobiiGazeVelocityWindowSelector – Tobii-Fenstergröße mit 1.01-Faktor
-  3. apply_tobii_eye_offset_interpolation – Offset-basierte Augen-Schätzung
-  4. merge_adjacent_fixations(weighting="sample_count") – Sample-Anzahl-Gewichtung
+Components tested:
+  1. TobiiGazeDirAngle  – asin-based angle computation (numerically stable)
+  2. TobiiGazeVelocityWindowSelector – Tobii window size with 1.01 factor
+  3. apply_tobii_eye_offset_interpolation – offset-based eye estimation
+  4. merge_adjacent_fixations(weighting="sample_count") – sample-count weighting
 
-Quellreferenz: Dekompilierter Tobii C#-Quellcode (Point3DVectorExtensions,
+Source reference: decompiled Tobii C# source code (Point3DVectorExtensions,
 GazeVelocityCalculatorHelper, RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter,
 MergeFixationsFilter).
 """
@@ -34,27 +34,27 @@ from ivt_filter.config import OlsenVelocityConfig, FixationPostConfig, TobiiWind
 
 
 # ---------------------------------------------------------------------------
-# Hilfsfunktionen
+# Helper functions
 # ---------------------------------------------------------------------------
 
 def _make_unit_vec(x: float, y: float, z: float) -> np.ndarray:
-    """Gibt normierten 3D-Vektor zurück."""
+    """Return a normalized 3D vector."""
     v = np.array([x, y, z], dtype=float)
     return v / np.linalg.norm(v)
 
 
 def _angle_ref(v1: np.ndarray, v2: np.ndarray) -> float:
-    """Referenz-Winkelberechnung via acos (Standard-Methode) in Grad."""
+    """Reference angle computation via acos (standard method) in degrees."""
     dot = float(np.clip(np.dot(v1, v2), -1.0, 1.0))
     return math.degrees(math.acos(dot))
 
 
 # ---------------------------------------------------------------------------
-# 1. TobiiGazeDirAngle – Winkelberechnung
+# 1. TobiiGazeDirAngle – angle computation
 # ---------------------------------------------------------------------------
 
 class TestTobiiGazeDirAngle:
-    """Tests für die asin-basierte Winkelformel."""
+    """Tests for the asin-based angle formula."""
 
     def setup_method(self):
         self.strat = TobiiGazeDirAngle()
@@ -67,70 +67,70 @@ class TestTobiiGazeDirAngle:
         )
 
     def test_zero_angle(self):
-        """Identische Vektoren → 0°."""
+        """Identical vectors → 0°."""
         v = _make_unit_vec(0, 0, 1)
         assert self.strat.calculate_visual_angle_ctx(self._ctx(v, v)) == pytest.approx(0.0, abs=1e-8)
 
     def test_90_degrees(self):
-        """Orthogonale Vektoren → 90°."""
+        """Orthogonal vectors → 90°."""
         v1 = _make_unit_vec(1, 0, 0)
         v2 = _make_unit_vec(0, 1, 0)
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert angle == pytest.approx(90.0, abs=1e-6)
 
     def test_45_degrees(self):
-        """45°-Winkel."""
+        """45° angle."""
         v1 = _make_unit_vec(1, 0, 0)
         v2 = _make_unit_vec(1, 1, 0)
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert angle == pytest.approx(45.0, abs=1e-5)
 
     def test_180_degrees(self):
-        """Entgegengesetzte Vektoren → 180°."""
+        """Opposite vectors → 180°."""
         v1 = _make_unit_vec(0, 0, 1)
         v2 = _make_unit_vec(0, 0, -1)
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert angle == pytest.approx(180.0, abs=1e-5)
 
     def test_small_angle_numerical_stability(self):
-        """Sehr kleiner Winkel (~0.001°) – numerische Stabilität gegenüber acos."""
+        """Very small angle (~0.001°) – numerical stability versus acos."""
         v1 = _make_unit_vec(0, 0, 1)
-        # Leicht abweichender Vektor (sehr kleiner Winkel)
+        # Slightly deviating vector (very small angle)
         epsilon = 1e-5
         v2 = _make_unit_vec(epsilon, 0, 1)
         angle_tobii = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         angle_ref = _angle_ref(v1, v2)
-        # Beide sollten sehr nahe beieinander sein, aber Tobii-Formel stabiler
+        # Both should be very close, but the Tobii formula is more stable
         assert angle_tobii >= 0.0
         assert angle_tobii == pytest.approx(angle_ref, abs=1e-4)
 
     def test_obtuse_angle_uses_complement_formula(self):
-        """Stumpfer Winkel (>90°) – komplementäre Formel wird verwendet."""
-        # 150° zwischen den Vektoren
+        """Obtuse angle (>90°) – the complementary formula is used."""
+        # 150° between the vectors
         v1 = _make_unit_vec(0, 0, 1)
         angle_target = 150.0
-        # Rotiere um x-Achse
+        # Rotate about the x-axis
         rad = math.radians(angle_target)
         v2 = np.array([0, math.sin(rad), math.cos(rad)])
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert angle == pytest.approx(angle_target, abs=1e-4)
 
     def test_unnormalized_vectors_are_handled(self):
-        """Nicht-normierte Vektoren werden intern normiert."""
-        v1 = np.array([3.0, 0.0, 0.0])   # wird normiert zu [1, 0, 0]
-        v2 = np.array([0.0, 5.0, 0.0])   # wird normiert zu [0, 1, 0]
+        """Non-normalized vectors are normalized internally."""
+        v1 = np.array([3.0, 0.0, 0.0])   # normalized to [1, 0, 0]
+        v2 = np.array([0.0, 5.0, 0.0])   # normalized to [0, 1, 0]
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert angle == pytest.approx(90.0, abs=1e-6)
 
     def test_zero_vector_returns_nan(self):
-        """Nullvektor → NaN, da der Winkel nicht berechenbar ist."""
+        """Zero vector → NaN, since the angle is not computable."""
         v1 = np.array([0.0, 0.0, 0.0])
         v2 = _make_unit_vec(0, 0, 1)
         angle = self.strat.calculate_visual_angle_ctx(self._ctx(v1, v2))
         assert math.isnan(angle)
 
     def test_none_direction_returns_nan(self):
-        """Fehlende Richtung (None) → NaN."""
+        """Missing direction (None) → NaN."""
         ctx = VelocityContext(
             x1_mm=0.0, y1_mm=0.0, x2_mm=0.0, y2_mm=0.0,
             eye_x_mm=None, eye_y_mm=None, eye_z_mm=None,
@@ -139,8 +139,8 @@ class TestTobiiGazeDirAngle:
         assert math.isnan(self.strat.calculate_visual_angle_ctx(ctx))
 
     def test_consistent_with_ray3d_gaze_dir_for_moderate_angles(self):
-        """Für moderate Winkel (<90°) sollten TobiiGazeDirAngle und Ray3DGazeDir
-        sehr ähnliche Ergebnisse liefern (beide auf Dot-Product-Basis)."""
+        """For moderate angles (<90°), TobiiGazeDirAngle and Ray3DGazeDir
+        should produce very similar results (both dot-product based)."""
         ref_strat = Ray3DGazeDir()
         for angle_deg in [5.0, 15.0, 30.0, 45.0, 60.0, 80.0]:
             rad = math.radians(angle_deg)
@@ -149,17 +149,17 @@ class TestTobiiGazeDirAngle:
             ctx = self._ctx(v1, v2)
             angle_tobii = self.strat.calculate_visual_angle_ctx(ctx)
             angle_ray = ref_strat.calculate_visual_angle_ctx(ctx)
-            # Beide Methoden sollten innerhalb von 0.001° übereinstimmen
+            # Both methods should agree within 0.001°
             assert abs(angle_tobii - angle_ray) < 0.001, (
                 f"Angle {angle_deg}°: Tobii={angle_tobii:.6f}, Ray3D={angle_ray:.6f}"
             )
 
     def test_description_contains_asin(self):
-        """Beschreibung soll 'asin' enthalten."""
+        """The description should contain 'asin'."""
         assert "asin" in self.strat.get_description().lower()
 
     def test_tobii_asin_formula_matches_reference_cases(self):
-        """Überprüfe konkrete Winkel gegen analytische Werte."""
+        """Check specific angles against analytical values."""
         strat = self.strat
         cases = [
             (10.0,),
@@ -181,7 +181,7 @@ class TestTobiiGazeDirAngle:
 
 
 # ---------------------------------------------------------------------------
-# 2. TobiiGazeVelocityWindowSelector – Fensterberechnung
+# 2. TobiiGazeVelocityWindowSelector – window computation
 # ---------------------------------------------------------------------------
 
 class TestTobiiGazeVelocityWindowSelector:
@@ -295,16 +295,16 @@ class TestTobiiGazeVelocityWindowSelector:
 # ---------------------------------------------------------------------------
 
 class TestTobiiEyeOffsetInterpolation:
-    """Tests für die Tobii Auge-Offset-Interpolation."""
+    """Tests for the Tobii eye-offset interpolation."""
 
     def _make_df(self, n: int = 10) -> pd.DataFrame:
-        """Einfaches DataFrame mit beiden Augen valide."""
+        """Simple DataFrame with both eyes valid."""
         return pd.DataFrame({
             "time_ms": np.arange(n, dtype=float),
             "gaze_left_x_mm": np.full(n, 100.0),
             "gaze_left_y_mm": np.full(n, 200.0),
-            "gaze_right_x_mm": np.full(n, 110.0),  # right ist 10 mm weiter rechts
-            "gaze_right_y_mm": np.full(n, 205.0),  # right ist 5 mm weiter unten
+            "gaze_right_x_mm": np.full(n, 110.0),  # right is 10 mm further to the right
+            "gaze_right_y_mm": np.full(n, 205.0),  # right is 5 mm further down
             "eye_left_x_mm": np.zeros(n),
             "eye_left_y_mm": np.zeros(n),
             "eye_left_z_mm": np.full(n, 600.0),
@@ -319,7 +319,7 @@ class TestTobiiEyeOffsetInterpolation:
         return OlsenVelocityConfig(max_validity=1)
 
     def test_both_valid_no_change(self):
-        """Wenn beide Augen valide → keine Veränderung der Gaze-Daten."""
+        """If both eyes are valid → no change to the gaze data."""
         df = self._make_df(5)
         cfg = self._cfg()
         result = apply_tobii_eye_offset_interpolation(df, cfg)
@@ -327,19 +327,19 @@ class TestTobiiEyeOffsetInterpolation:
         pd.testing.assert_series_equal(result["gaze_right_x_mm"], df["gaze_right_x_mm"])
 
     def test_missing_right_eye_reconstructed_from_offset(self):
-        """Rechtes Auge fehlt → wird via gespeichertem Offset rekonstruiert."""
+        """Right eye missing → reconstructed via the stored offset."""
         df = self._make_df(10)
         cfg = self._cfg()
 
-        # Sample 0: beide valid → Offset = (10, 5) wird gespeichert
-        # Sample 1–5: rechtes Auge ungültig
-        df.loc[1:5, "validity_right"] = 2   # > max_validity=1 → ungültig
+        # Sample 0: both valid → offset = (10, 5) is stored
+        # Samples 1–5: right eye invalid
+        df.loc[1:5, "validity_right"] = 2   # > max_validity=1 → invalid
         df.loc[1:5, "gaze_right_x_mm"] = float("nan")
         df.loc[1:5, "gaze_right_y_mm"] = float("nan")
 
         result = apply_tobii_eye_offset_interpolation(df, cfg)
 
-        # Rekonstruierte rechte Gaze = linke Gaze + offset(10, 5)
+        # Reconstructed right gaze = left gaze + offset(10, 5)
         for i in range(1, 6):
             expected_rx = df.loc[i, "gaze_left_x_mm"] + 10.0
             expected_ry = df.loc[i, "gaze_left_y_mm"] + 5.0
@@ -347,12 +347,12 @@ class TestTobiiEyeOffsetInterpolation:
             assert result.loc[i, "gaze_right_y_mm"] == pytest.approx(expected_ry, abs=1e-6)
 
     def test_missing_left_eye_reconstructed_from_offset(self):
-        """Linkes Auge fehlt → wird via gespeichertem Offset rekonstruiert."""
+        """Left eye missing → reconstructed via the stored offset."""
         df = self._make_df(10)
         cfg = self._cfg()
 
-        # Sample 0: beide valid → Offset = (10, 5)
-        # Sample 1–3: linkes Auge ungültig
+        # Sample 0: both valid → offset = (10, 5)
+        # Samples 1–3: left eye invalid
         df.loc[1:3, "validity_left"] = 2
         df.loc[1:3, "gaze_left_x_mm"] = float("nan")
         df.loc[1:3, "gaze_left_y_mm"] = float("nan")
@@ -367,21 +367,21 @@ class TestTobiiEyeOffsetInterpolation:
             assert result.loc[i, "gaze_left_y_mm"] == pytest.approx(expected_ly, abs=1e-6)
 
     def test_no_offset_yet_missing_eye_stays_nan(self):
-        """Wenn noch kein Offset bekannt und Auge fehlt → NaN bleibt NaN."""
+        """If no offset is known yet and an eye is missing → NaN stays NaN."""
         df = self._make_df(5)
         cfg = self._cfg()
 
-        # Alle Samples: rechtes Auge ungültig (kein vorheriges valid-Paar)
+        # All samples: right eye invalid (no preceding valid pair)
         df["validity_right"] = 2
         df["gaze_right_x_mm"] = float("nan")
         df["gaze_right_y_mm"] = float("nan")
 
         result = apply_tobii_eye_offset_interpolation(df, cfg)
-        # Kein Offset bekannt → NaN bleibt
+        # No offset known → NaN stays
         assert result["gaze_right_x_mm"].isna().all()
 
     def test_original_df_not_modified(self):
-        """Original DataFrame wird nicht modifiziert (copy)."""
+        """Original DataFrame is not modified (copy)."""
         df = self._make_df(5)
         cfg = self._cfg()
         df.loc[2, "validity_right"] = 2
@@ -392,11 +392,11 @@ class TestTobiiEyeOffsetInterpolation:
         pd.testing.assert_series_equal(df["gaze_right_x_mm"], original_rx)
 
     def test_eye_origin_offset_also_reconstructed(self):
-        """Eye-Origin-Positions werden ebenfalls via Offset rekonstruiert."""
+        """Eye-origin positions are also reconstructed via the offset."""
         df = self._make_df(10)
         cfg = self._cfg()
 
-        # Sample 0: beide valid → eye_offset = (65, 0, 0) gespeichert
+        # Sample 0: both valid → eye_offset = (65, 0, 0) stored
         df.loc[1, "validity_right"] = 2
         df.loc[1, "eye_right_x_mm"] = float("nan")
         df.loc[1, "eye_right_y_mm"] = float("nan")
@@ -404,37 +404,37 @@ class TestTobiiEyeOffsetInterpolation:
 
         result = apply_tobii_eye_offset_interpolation(df, cfg)
 
-        # Rekonstruiertes rechtes Auge = linkes Auge + IPD-Offset
+        # Reconstructed right eye = left eye + IPD offset
         expected_rex = df.loc[1, "eye_left_x_mm"] + 65.0
         assert result.loc[1, "eye_right_x_mm"] == pytest.approx(expected_rex, abs=1e-6)
 
     def test_validity_flag_updated_after_interpolation(self):
-        """Kritisch: validity_right wird nach erfolgreicher Interpolation auf den
-        gültigen Marker gesetzt (0 für int-Spalten), damit prepare_combined_columns
-        das interpolierte Auge in den Average einbezieht."""
-        df = self._make_df(5)  # nutzt int-Validity (0 = valid, 2 = invalid)
+        """Critical: validity_right is set to the valid marker after successful
+        interpolation (0 for int columns), so that prepare_combined_columns
+        includes the interpolated eye in the average."""
+        df = self._make_df(5)  # uses int validity (0 = valid, 2 = invalid)
         cfg = self._cfg()
 
-        # Sample 2: rechtes Auge ungültig → soll interpoliert werden
+        # Sample 2: right eye invalid → should be interpolated
         df.loc[2, "validity_right"] = 2
         df.loc[2, "gaze_right_x_mm"] = float("nan")
         df.loc[2, "gaze_right_y_mm"] = float("nan")
 
         result = apply_tobii_eye_offset_interpolation(df, cfg)
 
-        # Koordinaten müssen rekonstruiert sein
+        # Coordinates must be reconstructed
         assert pd.notna(result.loc[2, "gaze_right_x_mm"])
-        # Validity muss als "gültig" erkannt werden (int→0, str→"Valid")
+        # Validity must be recognized as "valid" (int→0, str→"Valid")
         parsed = _parse_validity(result.loc[2, "validity_right"])
         assert parsed <= cfg.max_validity, (
-            f"Nach Interpolation muss validity gültig sein (≤{cfg.max_validity}), "
+            f"After interpolation validity must be valid (≤{cfg.max_validity}), "
             f"got: {result.loc[2, 'validity_right']!r} → parsed={parsed}"
         )
-        # Unberührte Samples bleiben unverändert
+        # Untouched samples remain unchanged
         assert result.loc[0, "validity_right"] == df.loc[0, "validity_right"]
 
     def test_validity_flag_left_updated_after_interpolation(self):
-        """validity_left wird auf gültigen Marker gesetzt wenn linkes Auge interpoliert."""
+        """validity_left is set to the valid marker when the left eye is interpolated."""
         df = self._make_df(5)
         cfg = self._cfg()
 
@@ -449,27 +449,27 @@ class TestTobiiEyeOffsetInterpolation:
         assert parsed <= cfg.max_validity
 
     def test_no_validity_update_when_no_offset_known(self):
-        """Wenn kein Offset bekannt → Validity bleibt ungültig."""
+        """If no offset is known → validity stays invalid."""
         df = self._make_df(5)
         cfg = self._cfg()
 
-        # Alle Samples: rechtes Auge ungültig (nie ein valid-Paar → kein Offset)
+        # All samples: right eye invalid (never a valid pair → no offset)
         df["validity_right"] = 2
         df["gaze_right_x_mm"] = float("nan")
         df["gaze_right_y_mm"] = float("nan")
 
         result = apply_tobii_eye_offset_interpolation(df, cfg)
 
-        # Kein Offset → bleibt ungültig
+        # No offset → stays invalid
         for v in result["validity_right"]:
             assert _parse_validity(v) > cfg.max_validity
 
     def test_velocity_artifact_reduced_with_interpolation(self):
-        """Phantom-Velocity an Gap-Rändern wird durch Offset-Interpolation reduziert.
+        """Phantom velocity at gap edges is reduced by offset interpolation.
 
-        Szenario: linkes Auge springt zwischen valid/invalid – ohne Interpolation
-        entsteht am Gap-Rand eine hohe Phantom-Velocity (Positions-Sprung wegen
-        einseitigem Average). Mit Interpolation bleibt die Velocity niedrig.
+        Scenario: the left eye toggles between valid/invalid – without interpolation
+        a high phantom velocity appears at the gap edge (position jump due to a
+        one-sided average). With interpolation the velocity stays low.
         """
         from ivt_filter.processing.velocity import compute_olsen_velocity
 
@@ -478,9 +478,9 @@ class TestTobiiEyeOffsetInterpolation:
         hz = 120.0
         dt = 1000.0 / hz  # ~8.33 ms
 
-        # Stabile Fixation auf konstantem Punkt
-        lx = np.full(n, 260.0)  # linkes Auge immer ~260 mm
-        rx = np.full(n, 265.0)  # rechtes Auge immer ~265 mm  (IPD-Offset=5mm)
+        # Stable fixation on a constant point
+        lx = np.full(n, 260.0)  # left eye always ~260 mm
+        rx = np.full(n, 265.0)  # right eye always ~265 mm  (IPD offset = 5 mm)
         ly = np.full(n, 133.0)
         ry = np.full(n, 133.0)
 
@@ -494,7 +494,7 @@ class TestTobiiEyeOffsetInterpolation:
             "eye_right_z_mm": np.full(n, 600.0),
         })
 
-        # Gap: Sample 10-12 linkes Auge invalid
+        # Gap: samples 10-12 left eye invalid
         for i in [10, 11, 12]:
             df.loc[i, "validity_left"] = "Invalid"
             df.loc[i, "gaze_left_x_mm"] = float("nan")
@@ -514,19 +514,19 @@ class TestTobiiEyeOffsetInterpolation:
         df_base   = compute_olsen_velocity(df.copy(), cfg_base)
         df_interp = compute_olsen_velocity(df.copy(), cfg_interp)
 
-        # Samples direkt nach dem Gap (idx 13-15) – hier entsteht Phantom-Velocity
+        # Samples directly after the gap (idx 13-15) – phantom velocity appears here
         post_gap = slice(13, 16)
         max_vel_base   = df_base.loc[post_gap, "velocity_deg_per_sec"].max()
         max_vel_interp = df_interp.loc[post_gap, "velocity_deg_per_sec"].max()
 
-        # Mit Interpolation muss die Phantom-Velocity deutlich kleiner sein
+        # With interpolation the phantom velocity must be clearly smaller
         assert max_vel_interp < max_vel_base, (
-            f"Interpolation sollte Phantom-Velocity reduzieren: "
+            f"Interpolation should reduce phantom velocity: "
             f"base={max_vel_base:.1f}, interp={max_vel_interp:.1f}"
         )
-        # Und unter 30 deg/s bleiben (kein falscher Saccade-Alarm)
+        # And stay below 30 deg/s (no false saccade alarm)
         assert max_vel_interp < 30.0, (
-            f"Nach Interpolation keine Phantom-Saccade: vel={max_vel_interp:.1f} deg/s"
+            f"No phantom saccade after interpolation: vel={max_vel_interp:.1f} deg/s"
         )
 
 
@@ -535,7 +535,7 @@ class TestTobiiEyeOffsetInterpolation:
 # ---------------------------------------------------------------------------
 
 class TestMergeFixationsSampleCountWeighting:
-    """Tests für die Tobii-exakte Sample-Count-Gewichtung beim Fixations-Merge."""
+    """Tests for the Tobii-exact sample-count weighting in the fixation merge."""
 
     def _make_fixation_df(
         self,
@@ -546,22 +546,22 @@ class TestMergeFixationsSampleCountWeighting:
         gap: int = 3,
     ) -> pd.DataFrame:
         """
-        Erstellt DataFrame mit zwei Fixationen (x-Koordinaten) und einer kleinen Lücke.
+        Create a DataFrame with two fixations (x coordinates) and a small gap.
         """
         n = fix1_len + gap + fix2_len
         x = np.concatenate([
             np.full(fix1_len, fix1_x),
-            np.full(gap, float("nan")),   # Lücke
+            np.full(gap, float("nan")),   # gap
             np.full(fix2_len, fix2_x),
         ])
         y = np.zeros(n)
-        times = np.arange(n, dtype=float)  # 1 ms Abstand
+        times = np.arange(n, dtype=float)  # 1 ms spacing
         sample_type = (
             ["Fixation"] * fix1_len +
             ["Unclassified"] * gap +
             ["Fixation"] * fix2_len
         )
-        velocity = np.zeros(n)  # Alle 0°/s → Gap wird gemergt
+        velocity = np.zeros(n)  # all 0°/s → gap is merged
 
         return pd.DataFrame({
             "time_ms": times,
@@ -573,7 +573,7 @@ class TestMergeFixationsSampleCountWeighting:
         })
 
     def test_uniform_weighting_uses_simple_mean(self):
-        """Uniform-Modus: beide Fixationszentren gleichgewichtig gemittelt."""
+        """Uniform mode: both fixation centers averaged with equal weight."""
         df = self._make_fixation_df(fix1_len=100, fix2_len=100, fix1_x=0.0, fix2_x=10.0)
         cfg = FixationPostConfig(
             merge_adjacent_fixations=True,
@@ -581,7 +581,7 @@ class TestMergeFixationsSampleCountWeighting:
             max_angle_deg=10.0,
             merge_weighting="uniform",
         )
-        # Beide Fixationen haben gleich viele Samples → uniform == sample_count
+        # Both fixations have equally many samples → uniform == sample_count
         result, stats = merge_adjacent_fixations(
             df, cfg,
             sample_col="ivt_sample_type",
@@ -593,7 +593,7 @@ class TestMergeFixationsSampleCountWeighting:
         assert stats["merged_pairs"] == 1
 
     def test_sample_count_weighted_mean_different_from_uniform(self):
-        """Sample-Count-Gewichtung liefert anderen Wert als Uniform wenn n1≠n2."""
+        """Sample-count weighting gives a different value than uniform when n1≠n2."""
         # Fix1: 100 Samples bei x=0, Fix2: 50 Samples bei x=6
         # uniform: mean(0, 6) = 3.0
         # sample_count: (0*100 + 6*50) / 150 = 2.0
@@ -606,7 +606,7 @@ class TestMergeFixationsSampleCountWeighting:
         assert expected_sample_count != expected_uniform  # 2.0 != 3.0
 
     def test_sample_count_with_equal_fixations_matches_uniform(self):
-        """Bei gleich großen Fixationen: sample_count == uniform."""
+        """For equally sized fixations: sample_count == uniform."""
         fix1_x = 0.0
         fix2_x = 10.0
         n1 = n2 = 50
@@ -615,7 +615,7 @@ class TestMergeFixationsSampleCountWeighting:
         assert expected_sc == pytest.approx(expected_uniform, abs=1e-9)
 
     def test_merge_happens_regardless_of_weighting(self):
-        """Merge findet statt unabhängig von weighting-Modus."""
+        """Merge happens regardless of the weighting mode."""
         df = self._make_fixation_df(fix1_len=50, fix2_len=30, gap=2)
         for weighting in ("uniform", "sample_count"):
             cfg = FixationPostConfig(
@@ -635,18 +635,18 @@ class TestMergeFixationsSampleCountWeighting:
             assert stats["merged_pairs"] == 1, f"No merge for weighting={weighting}"
 
     def test_default_weighting_is_uniform(self):
-        """Standard-Config hat weighting='uniform'."""
+        """Default config has weighting='uniform'."""
         cfg = FixationPostConfig()
         assert cfg.merge_weighting == "uniform"
 
     def test_tobii_weighting_config(self):
-        """sample_count ist in FixationPostConfig als Literal akzeptiert."""
+        """sample_count is accepted as a Literal in FixationPostConfig."""
         cfg = FixationPostConfig(merge_weighting="sample_count")
         assert cfg.merge_weighting == "sample_count"
 
 
 class TestMergeFixationsGapVelocityCap:
-    """Regressionstests fuer den konfigurierbaren Velocity-Cap beim Gap-Relabeling."""
+    """Regression tests for the configurable velocity cap during gap relabeling."""
 
     @staticmethod
     def _merge_gap_velocities(
@@ -691,7 +691,7 @@ class TestMergeFixationsGapVelocityCap:
         return result, stats, gap_slice
 
     def test_sample_at_configured_cap_is_eligible_for_relabeling(self):
-        """Der Cap ist inklusiv: Velocity == Cap darf zur Fixation werden."""
+        """The cap is inclusive: velocity == cap may become a fixation."""
         result, stats, gap_slice = self._merge_gap_velocities(
             [12.0], max_gap_velocity_deg_per_sec=12.0
         )
@@ -700,7 +700,7 @@ class TestMergeFixationsGapVelocityCap:
         assert stats["gap_samples_to_fixation"] == 1
 
     def test_sample_above_configured_cap_is_preserved(self):
-        """Velocity > Cap behaelt das urspruengliche Gap-Label."""
+        """Velocity > cap keeps the original gap label."""
         result, stats, gap_slice = self._merge_gap_velocities(
             [12.01], max_gap_velocity_deg_per_sec=12.0
         )
@@ -709,7 +709,7 @@ class TestMergeFixationsGapVelocityCap:
         assert stats["gap_samples_to_fixation"] == 0
 
     def test_default_cap_preserves_existing_35_deg_per_sec_behavior(self):
-        """Der neue Config-Default entspricht der bisherigen festen 35-Grad-Grenze."""
+        """The new config default matches the previous fixed 35-degree limit."""
         assert FixationPostConfig().max_gap_velocity_deg_per_sec == 35.0
 
         result, stats, gap_slice = self._merge_gap_velocities([35.0, 35.01])
@@ -721,7 +721,7 @@ class TestMergeFixationsGapVelocityCap:
         assert stats["gap_samples_to_fixation"] == 1
 
     def test_custom_cap_changes_only_intended_gap_fill_decision(self):
-        """Ein eigener Cap relabelt nur das zusaetzlich berechtigte Gap-Sample."""
+        """A custom cap relabels only the additionally eligible gap sample."""
         default_result, _, gap_slice = self._merge_gap_velocities([34.0, 36.0, 37.0])
         custom_result, _, _ = self._merge_gap_velocities(
             [34.0, 36.0, 37.0], max_gap_velocity_deg_per_sec=36.0
@@ -743,68 +743,68 @@ class TestMergeFixationsGapVelocityCap:
 
 
 # ---------------------------------------------------------------------------
-# 5. Integration: OlsenVelocityConfig mit Tobii-Flags
+# 5. Integration: OlsenVelocityConfig with Tobii flags
 # ---------------------------------------------------------------------------
 
 class TestTobiiConfigFields:
-    """Stellt sicher, dass die neuen Config-Felder vorhanden und korrekt typisiert sind."""
+    """Ensures the new config fields are present and correctly typed."""
 
     def test_tobii_gaze_dir_is_valid_method(self):
-        """'tobii_gaze_dir' ist ein gültiger velocity_method-Wert."""
+        """'tobii_gaze_dir' is a valid velocity_method value."""
         cfg = OlsenVelocityConfig(velocity_method="tobii_gaze_dir")
         assert cfg.velocity_method == "tobii_gaze_dir"
 
     def test_tobii_window_mode_default_false(self):
-        """tobii_window_mode ist standardmäßig False."""
+        """tobii_window_mode defaults to False."""
         cfg = OlsenVelocityConfig()
         assert cfg.tobii_window_mode is False
 
     def test_tobii_sample_interval_ms_default_none(self):
-        """tobii_sample_interval_ms ist standardmäßig None."""
+        """tobii_sample_interval_ms defaults to None."""
         cfg = OlsenVelocityConfig()
         assert cfg.tobii_sample_interval_ms is None
         assert cfg.window_policy == TobiiWindowPolicy(sample_interval_ms=None)
 
     def test_tobii_eye_offset_interpolation_default_false(self):
-        """tobii_eye_offset_interpolation ist standardmäßig False."""
+        """tobii_eye_offset_interpolation defaults to False."""
         cfg = OlsenVelocityConfig()
         assert cfg.tobii_eye_offset_interpolation is False
 
     def test_tobii_window_mode_without_interval_is_resolved_by_pipeline(self):
-        """Die Config erlaubt ein später aus Timestamps abgeleitetes Intervall."""
+        """The config allows an interval to be derived later from timestamps."""
         cfg = OlsenVelocityConfig(tobii_window_mode=True, tobii_sample_interval_ms=None)
         assert cfg.window_policy == TobiiWindowPolicy(sample_interval_ms=None)
 
     def test_make_window_selector_returns_tobii_selector(self):
-        """make_window_selector() gibt TobiiGazeVelocityWindowSelector zurück."""
+        """make_window_selector() returns TobiiGazeVelocityWindowSelector."""
         from ivt_filter.processing.velocity import make_window_selector
         cfg = OlsenVelocityConfig(tobii_window_mode=True, tobii_sample_interval_ms=8.33)
         sel = make_window_selector(cfg)
         assert isinstance(sel, TobiiGazeVelocityWindowSelector)
 
     def test_velocity_strategy_factory_tobii_gaze_dir(self):
-        """_get_velocity_calculation_strategy('tobii_gaze_dir') gibt TobiiGazeDirAngle zurück."""
+        """_get_velocity_calculation_strategy('tobii_gaze_dir') returns TobiiGazeDirAngle."""
         from ivt_filter.processing.velocity import _get_velocity_calculation_strategy
         strat = _get_velocity_calculation_strategy("tobii_gaze_dir")
         assert isinstance(strat, TobiiGazeDirAngle)
 
 
 # ---------------------------------------------------------------------------
-# 6. Integration: Vollständige Pipeline mit Tobii-Flags (synthetische Daten)
+# 6. Integration: full pipeline with Tobii flags (synthetic data)
 # ---------------------------------------------------------------------------
 
 class TestTobiiPipelineIntegration:
-    """Smoke-Tests für die vollständige Pipeline mit Tobii-kompatiblen Einstellungen."""
+    """Smoke tests for the full pipeline with Tobii-compatible settings."""
 
     def _make_gaze_dir_data(self, n: int = 100, hz: float = 120.0) -> pd.DataFrame:
-        """Erstellt DataFrame mit normierten Gaze-Direction-Spalten."""
+        """Creates a DataFrame with normalized gaze-direction columns."""
         dt_ms = 1000.0 / hz
-        # Fixation: Blickrichtung leicht variiert um (0, 0, 1)
+        # Fixation: gaze direction varies slightly around (0, 0, 1)
         np.random.seed(42)
         noise = np.random.normal(0, 0.001, (n, 3))
         base = np.array([0, 0, 1], dtype=float)
         dirs = base + noise
-        # Normieren
+        # Normalize
         norms = np.linalg.norm(dirs, axis=1, keepdims=True)
         dirs = dirs / norms
 
@@ -832,7 +832,7 @@ class TestTobiiPipelineIntegration:
         return df
 
     def test_tobii_gaze_dir_pipeline_runs(self):
-        """Pipeline mit tobii_gaze_dir + tobii_window_mode läuft ohne Fehler."""
+        """Pipeline with tobii_gaze_dir + tobii_window_mode runs without errors."""
         from ivt_filter.processing.velocity import compute_olsen_velocity
 
         df = self._make_gaze_dir_data(n=50, hz=120.0)
@@ -844,16 +844,16 @@ class TestTobiiPipelineIntegration:
         )
         result = compute_olsen_velocity(df, cfg)
         assert "velocity_deg_per_sec" in result.columns
-        # Velocities sollten vorhanden und nicht alle NaN sein
+        # Velocities should be present and not all NaN
         velocities = result["velocity_deg_per_sec"].dropna()
         assert len(velocities) > 0
 
     def test_tobii_eye_offset_interpolation_flag(self):
-        """tobii_eye_offset_interpolation=True läuft ohne Fehler."""
+        """tobii_eye_offset_interpolation=True runs without errors."""
         from ivt_filter.processing.velocity import compute_olsen_velocity
 
         df = self._make_gaze_dir_data(n=30, hz=120.0)
-        # Mache einige Samples mit fehlendem rechten Auge
+        # Make some samples have a missing right eye
         df.loc[10:15, "validity_right"] = 2
         df.loc[10:15, "gaze_right_x_mm"] = float("nan")
         df.loc[10:15, "gaze_right_y_mm"] = float("nan")
@@ -867,12 +867,12 @@ class TestTobiiPipelineIntegration:
         assert "velocity_deg_per_sec" in result.columns
 
     def test_tobii_gaze_dir_produces_lower_velocities_than_acos_for_small_angles(self):
-        """Für sehr kleine Winkel (Fixation) sollte TobiiGazeDirAngle nahezu
-        identisch zu Ray3DGazeDir sein (Unterschied < 0.01°/s)."""
+        """For very small angles (fixation), TobiiGazeDirAngle should be nearly
+        identical to Ray3DGazeDir (difference < 0.01 deg/s)."""
         strat_tobii = TobiiGazeDirAngle()
         strat_ray = Ray3DGazeDir()
 
-        # Kleiner Winkel: ~1°
+        # Small angle: ~1 deg
         v1 = _make_unit_vec(0, 0, 1)
         v2 = _make_unit_vec(math.sin(math.radians(1)), 0, math.cos(math.radians(1)))
         ctx = VelocityContext(

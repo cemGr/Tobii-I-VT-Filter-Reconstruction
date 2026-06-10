@@ -1,60 +1,60 @@
-# Parallelisierungs-Guide für I-VT-Filter
+# Parallelization Guide for the I-VT Filter
 
-## 🎯 Übersicht
+## 🎯 Overview
 
-Dieses Dokument zeigt konkrete Möglichkeiten zur Parallelisierung der Velocity-Berechnung im I-VT-Filter.
+This document outlines concrete ways to parallelize the velocity calculation in the I-VT filter.
 
-## 📊 Performance-Analyse
+## 📊 Performance Analysis
 
-### Aktuelle Implementierung (Sequenziell)
+### Current Implementation (Sequential)
 ```python
-# velocity.py, Zeilen 295-487
+# velocity.py, lines 295-487
 for i in range(n):
     if not bool(valid[i]):
         continue
-    # Fenster-Selektion
+    # Window selection
     first_idx, last_idx = selector.select(i, times, valid, half_window)
-    # ... weitere Berechnungen ...
-    # Velocity-Berechnung
+    # ... further calculations ...
+    # Velocity calculation
     angle_deg = velocity_strategy.calculate_visual_angle(x1, y1, x2, y2, eye_x, eye_y, eye_z)
     velocity = angle_deg / dt_s
 ```
 
-**Problem**: Sequenzielle Schleife über alle n Samples (typisch 10.000-100.000+)
+**Problem**: Sequential loop over all n samples (typically 10,000-100,000+)
 
-### Kandidaten für Parallelisierung
+### Candidates for Parallelization
 
-| Komponente | Speedup-Potenzial | Komplexität | Empfehlung |
+| Component | Speedup Potential | Complexity | Recommendation |
 |-----------|-------------------|-------------|------------|
-| **Velocity Calculation** | ⭐⭐⭐⭐⭐ | Niedrig | **Beste Option** |
-| Visual Angle (Olsen2D) | ⭐⭐⭐⭐ | Sehr niedrig | **NumPy Vektorisierung** |
-| Visual Angle (Ray3D) | ⭐⭐⭐⭐ | Niedrig | **NumPy + Numba** |
-| Window Selection | ⭐⭐⭐ | Mittel | Parallel möglich |
-| Smoothing | ⭐⭐⭐⭐ | Niedrig | NumPy Convolution |
-| Gap Filling | ⭐⭐ | Mittel | Begrenzt parallel |
+| **Velocity Calculation** | ⭐⭐⭐⭐⭐ | Low | **Best Option** |
+| Visual Angle (Olsen2D) | ⭐⭐⭐⭐ | Very low | **NumPy Vectorization** |
+| Visual Angle (Ray3D) | ⭐⭐⭐⭐ | Low | **NumPy + Numba** |
+| Window Selection | ⭐⭐⭐ | Medium | Parallelizable |
+| Smoothing | ⭐⭐⭐⭐ | Low | NumPy Convolution |
+| Gap Filling | ⭐⭐ | Medium | Limited parallelism |
 
 ---
 
-## 🚀 Option 1: NumPy Vektorisierung (EMPFOHLEN)
+## 🚀 Option 1: NumPy Vectorization (RECOMMENDED)
 
-### Vorteil
-- **5-15x Speedup** für große Datensätze
-- Keine zusätzlichen Dependencies
-- Nutzt SIMD-Operationen der CPU
-- Einfach zu implementieren
+### Advantage
+- **5-15x speedup** for large datasets
+- No additional dependencies
+- Uses the CPU's SIMD operations
+- Easy to implement
 
 ### Implementation
 
-#### 1.1 Olsen2D Vektorisiert
+#### 1.1 Olsen2D Vectorized
 
 ```python
 # ivt_filter/strategies/velocity_calculation.py
 import numpy as np
 
 class Olsen2DVectorized(VelocityCalculationStrategy):
-    """Vektorisierte Version der Olsen 2D Approximation.
+    """Vectorized version of the Olsen 2D approximation.
     
-    Bis zu 10x schneller als Loop-Version für große Arrays.
+    Up to 10x faster than the loop version for large arrays.
     """
     
     def calculate_visual_angle_batch(
@@ -65,30 +65,30 @@ class Olsen2DVectorized(VelocityCalculationStrategy):
         y2_mm: np.ndarray,
         eye_z_mm: np.ndarray,
     ) -> np.ndarray:
-        """Batch-Berechnung für Arrays.
+        """Batch calculation for arrays.
         
         Args:
-            x1_mm, y1_mm, x2_mm, y2_mm: Arrays der Gaze-Koordinaten
-            eye_z_mm: Array der Eye-Distanzen
+            x1_mm, y1_mm, x2_mm, y2_mm: Arrays of gaze coordinates
+            eye_z_mm: Array of eye distances
             
         Returns:
-            Array der visuellen Winkel in Grad
+            Array of visual angles in degrees
         """
-        # Differenzen berechnen (vektorisiert)
+        # Compute differences (vectorized)
         dx = x2_mm - x1_mm
         dy = y2_mm - y1_mm
         
-        # 2D Distanz auf Screen (vektorisiert)
+        # 2D distance on screen (vectorized)
         s_mm = np.hypot(dx, dy)
         
-        # Eye distance mit Fallback
+        # Eye distance with fallback
         d_mm = np.where(
             np.isfinite(eye_z_mm) & (eye_z_mm > 0),
             eye_z_mm,
             PhysicalConstants.DEFAULT_EYE_SCREEN_DISTANCE_MM
         )
         
-        # Visual angle berechnen
+        # Compute visual angle
         theta_rad = np.arctan2(s_mm, d_mm)
         theta_deg = np.degrees(theta_rad)
         
@@ -98,13 +98,13 @@ class Olsen2DVectorized(VelocityCalculationStrategy):
         return "Olsen 2D (Vectorized): θ = atan(s / d) - NumPy SIMD optimized"
 ```
 
-#### 1.2 Ray3D Vektorisiert
+#### 1.2 Ray3D Vectorized
 
 ```python
 class Ray3DVectorized(VelocityCalculationStrategy):
-    """Vektorisierte 3D Ray Angle Berechnung.
+    """Vectorized 3D ray angle calculation.
     
-    Bis zu 8x schneller als Loop-Version.
+    Up to 8x faster than the loop version.
     """
     
     def calculate_visual_angle_batch(
@@ -119,7 +119,7 @@ class Ray3DVectorized(VelocityCalculationStrategy):
     ) -> np.ndarray:
         """Batch 3D ray angle calculation."""
         
-        # Fallbacks für fehlende Eye-Koordinaten
+        # Fallbacks for missing eye coordinates
         ex = np.where(np.isfinite(eye_x_mm), eye_x_mm, 0.0)
         ey = np.where(np.isfinite(eye_y_mm), eye_y_mm, 0.0)
         ez = np.where(
@@ -128,13 +128,13 @@ class Ray3DVectorized(VelocityCalculationStrategy):
             600.0
         )
         
-        # Ray vectors von Eye zu Gaze-Punkten
-        # Ray 0: zu (x1, y1, 0)
+        # Ray vectors from eye to gaze points
+        # Ray 0: to (x1, y1, 0)
         d0x = x1_mm - ex
         d0y = y1_mm - ey
         d0z = 0.0 - ez
         
-        # Ray 1: zu (x2, y2, 0)
+        # Ray 1: to (x2, y2, 0)
         d1x = x2_mm - ex
         d1y = y2_mm - ey
         d1z = 0.0 - ez
@@ -142,11 +142,11 @@ class Ray3DVectorized(VelocityCalculationStrategy):
         # Dot product
         dot = d0x * d1x + d0y * d1y + d0z * d1z
         
-        # Norm (Längen)
+        # Norm (lengths)
         norm0 = np.sqrt(d0x**2 + d0y**2 + d0z**2)
         norm1 = np.sqrt(d1x**2 + d1y**2 + d1z**2)
         
-        # Winkel berechnen
+        # Compute angle
         cos_theta = dot / (norm0 * norm1)
         cos_theta = np.clip(cos_theta, -1.0, 1.0)
         
@@ -162,21 +162,21 @@ class Ray3DVectorized(VelocityCalculationStrategy):
         return "3D Ray (Vectorized): θ = acos(d0·d1 / |d0||d1|) - NumPy optimized"
 ```
 
-#### 1.3 Velocity Loop umstrukturieren
+#### 1.3 Restructure the Velocity Loop
 
 ```python
 # ivt_filter/velocity.py
 def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
-    """Optimierte Velocity-Berechnung mit Batch-Processing."""
+    """Optimized velocity calculation with batch processing."""
     
     # ... existing preprocessing ...
     
-    # === NEU: Batch-Processing vorbereiten ===
+    # === NEW: Prepare batch processing ===
     n = len(df)
     velocity_results = np.full(n, np.nan)
     window_widths = np.full(n, pd.NA)
     
-    # Arrays für Batch-Berechnung sammeln
+    # Collect arrays for batch calculation
     batch_indices = []
     batch_x1 = []
     batch_y1 = []
@@ -187,7 +187,7 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
     batch_eye_z = []
     batch_dt = []
     
-    # Fenster-Selektion (kann parallelisiert werden, aber oft schnell genug)
+    # Window selection (can be parallelized, but is often fast enough)
     for i in range(n):
         if not bool(valid[i]):
             continue
@@ -199,14 +199,14 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
         
         # ... existing window validation logic ...
         
-        # Koordinaten sammeln statt direkt berechnen
+        # Collect coordinates instead of computing directly
         x1, y1 = cx[first_idx], cy[first_idx]
         x2, y2 = cx[last_idx], cy[last_idx]
         
         if any(pd.isna(v) for v in (x1, y1, x2, y2)):
             continue
         
-        # Koordinaten-Rounding
+        # Coordinate rounding
         x1, y1 = coord_rounding.round_gaze(x1, y1)
         x2, y2 = coord_rounding.round_gaze(x2, y2)
         
@@ -217,7 +217,7 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
         if coord_rounding:
             eye_x, eye_y, eye_z = coord_rounding.round_eye(eye_x, eye_y, eye_z)
         
-        # In Batch sammeln
+        # Collect into batch
         batch_indices.append(i)
         batch_x1.append(x1)
         batch_y1.append(y1)
@@ -229,9 +229,9 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
         batch_dt.append(dt_ms)
         window_widths[i] = last_idx - first_idx + 1
     
-    # === Batch Velocity Calculation (Vektorisiert) ===
+    # === Batch Velocity Calculation (Vectorized) ===
     if len(batch_indices) > 0:
-        # Konvertiere zu NumPy Arrays
+        # Convert to NumPy arrays
         x1_arr = np.array(batch_x1)
         y1_arr = np.array(batch_y1)
         x2_arr = np.array(batch_x2)
@@ -241,7 +241,7 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
         eye_z_arr = np.array(batch_eye_z)
         dt_arr = np.array(batch_dt) / 1000.0  # ms -> s
         
-        # Batch visual angle berechnen (vektorisiert!)
+        # Compute batch visual angle (vectorized!)
         if hasattr(velocity_strategy, 'calculate_visual_angle_batch'):
             if cfg.velocity_method == "olsen2d":
                 angles_deg = velocity_strategy.calculate_visual_angle_batch(
@@ -253,15 +253,15 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
                     eye_x_arr, eye_y_arr, eye_z_arr
                 )
             
-            # Velocity berechnen (vektorisiert)
+            # Compute velocity (vectorized)
             velocities = np.where(dt_arr > 0, angles_deg / dt_arr, np.nan)
             velocities = np.round(velocities, 1)
             
-            # Ergebnisse zurückschreiben
+            # Write results back
             for idx, i in enumerate(batch_indices):
                 velocity_results[i] = velocities[idx]
         else:
-            # Fallback auf alte Methode
+            # Fall back to the old method
             for idx, i in enumerate(batch_indices):
                 angle = velocity_strategy.calculate_visual_angle(
                     x1_arr[idx], y1_arr[idx], x2_arr[idx], y2_arr[idx],
@@ -269,7 +269,7 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
                 )
                 velocity_results[i] = round(angle / dt_arr[idx], 1) if dt_arr[idx] > 0 else np.nan
     
-    # Ergebnisse in DataFrame schreiben
+    # Write results into the DataFrame
     df["velocity_deg_per_sec"] = velocity_results
     df["window_width_samples"] = window_widths
     
@@ -278,11 +278,11 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
     return df
 ```
 
-### Performance-Messung
+### Performance Measurement
 
 ```python
 # examples/benchmark_vectorization.py
-"""Benchmark: Vektorisierung vs. Loop"""
+"""Benchmark: Vectorization vs. Loop"""
 
 import time
 import numpy as np
@@ -292,7 +292,7 @@ from ivt_filter.strategies.velocity_calculation import Olsen2DApproximation
 # Olsen2DVectorized is the proposed class from section 1.1 above.
 
 def benchmark_velocity_calculation():
-    # Test-Daten generieren
+    # Generate test data
     n_samples = 50000
     x1 = np.random.uniform(0, 500, n_samples)
     y1 = np.random.uniform(0, 300, n_samples)
@@ -300,7 +300,7 @@ def benchmark_velocity_calculation():
     y2 = y1 + np.random.uniform(-10, 10, n_samples)
     eye_z = np.full(n_samples, 600.0)
     
-    # Loop-Version (Original)
+    # Loop version (original)
     olsen_loop = Olsen2DApproximation()
     start = time.time()
     results_loop = []
@@ -311,13 +311,13 @@ def benchmark_velocity_calculation():
         results_loop.append(angle)
     time_loop = time.time() - start
     
-    # Vektorisierte Version
+    # Vectorized version
     olsen_vec = Olsen2DVectorized()
     start = time.time()
     results_vec = olsen_vec.calculate_visual_angle_batch(x1, y1, x2, y2, eye_z)
     time_vec = time.time() - start
     
-    # Ergebnisse
+    # Results
     print(f"Loop Version:       {time_loop:.3f}s")
     print(f"Vectorized Version: {time_vec:.3f}s")
     print(f"Speedup:            {time_loop/time_vec:.1f}x")
@@ -327,7 +327,7 @@ if __name__ == "__main__":
     benchmark_velocity_calculation()
 ```
 
-**Erwarteter Output:**
+**Expected Output:**
 ```
 Loop Version:       2.450s
 Vectorized Version: 0.185s
@@ -337,12 +337,12 @@ Results match:      True
 
 ---
 
-## ⚡ Option 2: Numba JIT-Compilation
+## ⚡ Option 2: Numba JIT Compilation
 
-### Vorteil
-- **10-50x Speedup** für komplexe Loops
-- Nutzt Multi-Core CPUs
-- Minimal Code-Änderungen
+### Advantage
+- **10-50x speedup** for complex loops
+- Uses multi-core CPUs
+- Minimal code changes
 
 ### Installation
 ```bash
@@ -353,7 +353,7 @@ pip install numba
 
 ```python
 # ivt_filter/velocity_numba.py
-"""Numba-beschleunigte Velocity-Berechnung."""
+"""Numba-accelerated velocity calculation."""
 
 import numpy as np
 from numba import njit, prange
@@ -368,10 +368,10 @@ def calculate_olsen2d_parallel(
     eye_z: np.ndarray,
     dt_s: np.ndarray,
 ) -> np.ndarray:
-    """Parallel Olsen 2D velocity calculation mit Numba.
+    """Parallel Olsen 2D velocity calculation with Numba.
     
     Args:
-        x1, y1, x2, y2: Gaze-Koordinaten (mm)
+        x1, y1, x2, y2: Gaze coordinates (mm)
         eye_z: Eye distance (mm)
         dt_s: Time difference (seconds)
         
@@ -382,14 +382,14 @@ def calculate_olsen2d_parallel(
     velocities = np.empty(n, dtype=np.float64)
     default_z = 600.0
     
-    # prange nutzt alle CPU-Kerne
+    # prange uses all CPU cores
     for i in prange(n):
         # 2D Distance
         dx = x2[i] - x1[i]
         dy = y2[i] - y1[i]
         s_mm = math.sqrt(dx*dx + dy*dy)
         
-        # Eye distance mit Fallback
+        # Eye distance with fallback
         d_mm = eye_z[i] if (eye_z[i] > 0 and math.isfinite(eye_z[i])) else default_z
         
         # Visual angle
@@ -413,7 +413,7 @@ def calculate_ray3d_parallel(
     eye_z: np.ndarray,
     dt_s: np.ndarray,
 ) -> np.ndarray:
-    """Parallel Ray 3D velocity calculation mit Numba."""
+    """Parallel Ray 3D velocity calculation with Numba."""
     n = len(x1)
     velocities = np.empty(n, dtype=np.float64)
     
@@ -472,13 +472,13 @@ class OlsenVelocityConfig:
 def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
     # ... preprocessing ...
     
-    # Numba-beschleunigte Berechnung
+    # Numba-accelerated calculation
     if cfg.use_numba:
         try:
             from .velocity_numba import calculate_olsen2d_parallel, calculate_ray3d_parallel
             
-            # Batch-Daten vorbereiten
-            # ... (wie in Option 1) ...
+            # Prepare batch data
+            # ... (as in Option 1) ...
             
             # Numba parallel calculation
             if cfg.velocity_method == "olsen2d":
@@ -498,28 +498,28 @@ def compute_olsen_velocity(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.Dat
                 
         except ImportError:
             print("[Warning] Numba not available, falling back to NumPy")
-            # Fallback zu NumPy-Vektorisierung
+            # Fall back to NumPy vectorization
     
     # ... postprocessing ...
 ```
 
 ---
 
-## 🔥 Option 3: GPU-Beschleunigung (CuPy)
+## 🔥 Option 3: GPU Acceleration (CuPy)
 
-### Vorteil
-- **50-200x Speedup** für sehr große Datensätze (>100k samples)
-- Ideal für Batch-Processing vieler Aufnahmen
+### Advantage
+- **50-200x speedup** for very large datasets (>100k samples)
+- Ideal for batch processing many recordings
 
-### Voraussetzung
-- NVIDIA GPU mit CUDA
+### Prerequisite
+- NVIDIA GPU with CUDA
 - `pip install cupy-cuda11x`
 
 ### Implementation
 
 ```python
 # ivt_filter/velocity_gpu.py
-"""GPU-beschleunigte Velocity-Berechnung mit CuPy."""
+"""GPU-accelerated velocity calculation with CuPy."""
 
 try:
     import cupy as cp
@@ -536,11 +536,11 @@ def calculate_olsen2d_gpu(
     eye_z: np.ndarray,
     dt_s: np.ndarray,
 ) -> np.ndarray:
-    """GPU-beschleunigte Olsen 2D Berechnung."""
+    """GPU-accelerated Olsen 2D calculation."""
     if not CUPY_AVAILABLE:
         raise RuntimeError("CuPy not available")
     
-    # Transfer zu GPU
+    # Transfer to GPU
     x1_gpu = cp.asarray(x1)
     y1_gpu = cp.asarray(y1)
     x2_gpu = cp.asarray(x2)
@@ -548,7 +548,7 @@ def calculate_olsen2d_gpu(
     eye_z_gpu = cp.asarray(eye_z)
     dt_s_gpu = cp.asarray(dt_s)
     
-    # GPU-Berechnung (identisch zu NumPy Syntax!)
+    # GPU calculation (identical to NumPy syntax!)
     dx = x2_gpu - x1_gpu
     dy = y2_gpu - y1_gpu
     s_mm = cp.hypot(dx, dy)
@@ -565,7 +565,7 @@ def calculate_olsen2d_gpu(
     velocities_gpu = cp.where(dt_s_gpu > 0, theta_deg / dt_s_gpu, cp.nan)
     velocities_gpu = cp.round(velocities_gpu, 1)
     
-    # Transfer zurück zu CPU
+    # Transfer back to CPU
     velocities = cp.asnumpy(velocities_gpu)
     
     return velocities
@@ -573,86 +573,86 @@ def calculate_olsen2d_gpu(
 
 ---
 
-## 📈 Performance-Vergleich
+## 📈 Performance Comparison
 
 ### Benchmark Setup
-- **Dataset**: 100.000 Samples @ 120Hz
+- **Dataset**: 100,000 samples @ 120Hz
 - **Hardware**: Intel i7-10700K (8 cores), NVIDIA RTX 3070
 - **Python**: 3.10, NumPy 1.24, Numba 0.57, CuPy 12.0
 
-### Ergebnisse
+### Results
 
-| Methode | Zeit (s) | Speedup | Empfehlung |
+| Method | Time (s) | Speedup | Recommendation |
 |---------|----------|---------|------------|
 | **Original Loop** | 12.8 | 1.0x | Baseline |
-| **NumPy Vectorized** | 0.95 | 13.5x | ✅ **Empfohlen** |
-| **Numba JIT** | 0.42 | 30.5x | ⭐ Für CPU |
+| **NumPy Vectorized** | 0.95 | 13.5x | ✅ **Recommended** |
+| **Numba JIT** | 0.42 | 30.5x | ⭐ For CPU |
 | **Numba Parallel** | 0.18 | 71.1x | ⭐⭐ Multi-Core |
-| **CuPy GPU** | 0.08 | 160x | ⚡ Batch-Processing |
+| **CuPy GPU** | 0.08 | 160x | ⚡ Batch processing |
 
 ---
 
-## 🎯 Empfehlung
+## 🎯 Recommendation
 
-### Für die meisten Anwendungsfälle:
-**NumPy Vektorisierung (Option 1)**
-- ✅ Keine zusätzlichen Dependencies
-- ✅ 10-15x Speedup
-- ✅ Einfach zu maintainen
-- ✅ Funktioniert überall
+### For most use cases:
+**NumPy Vectorization (Option 1)**
+- ✅ No additional dependencies
+- ✅ 10-15x speedup
+- ✅ Easy to maintain
+- ✅ Works everywhere
 
-### Für rechenintensive Anwendungen:
+### For compute-intensive applications:
 **Numba JIT (Option 2)**
-- ✅ 30-70x Speedup mit Multi-Core
-- ✅ Minimal zusätzlicher Code
+- ✅ 30-70x speedup with multi-core
+- ✅ Minimal additional code
 - ⚠️ Requires `numba` package
 
-### Für Batch-Processing:
+### For batch processing:
 **GPU (Option 3)**
-- ✅ 100-200x Speedup
+- ✅ 100-200x speedup
 - ⚠️ Requires NVIDIA GPU
-- ⚠️ Overhead für kleine Datensätze
+- ⚠️ Overhead for small datasets
 
 ---
 
 ## 🛠️ Implementation Plan
 
-### Phase 1: NumPy Vektorisierung (1-2h)
-1. ✅ Batch-fähige `calculate_visual_angle_batch()` Methoden erstellen
-2. ✅ `compute_olsen_velocity()` umstrukturieren für Batch-Processing
-3. ✅ Unit Tests anpassen
-4. ✅ Performance-Benchmarks durchführen
+### Phase 1: NumPy Vectorization (1-2h)
+1. ✅ Create batch-capable `calculate_visual_angle_batch()` methods
+2. ✅ Restructure `compute_olsen_velocity()` for batch processing
+3. ✅ Adapt unit tests
+4. ✅ Run performance benchmarks
 
 ### Phase 2 (Optional): Numba (2-3h)
-1. `velocity_numba.py` Modul erstellen
-2. Config-Flag `use_numba` hinzufügen
-3. Fallback-Logik implementieren
-4. Benchmarks vergleichen
+1. Create the `velocity_numba.py` module
+2. Add the `use_numba` config flag
+3. Implement fallback logic
+4. Compare benchmarks
 
 ### Phase 3 (Optional): GPU (4-6h)
-1. `velocity_gpu.py` Modul erstellen
-2. GPU-Verfügbarkeits-Check
-3. Memory-Management für große Datensätze
-4. Benchmarks für verschiedene Größen
+1. Create the `velocity_gpu.py` module
+2. GPU availability check
+3. Memory management for large datasets
+4. Benchmarks for various sizes
 
 ---
 
 ## 📝 Notes
 
-### Was kann NICHT parallelisiert werden:
-- ❌ Window Selection (abhängig von validen Nachbarn)
-- ❌ Gap-basierte Unclassified-Regel (sequenzielle Logik)
-- ❌ Fixed-Window Edge Fallback (sucht nach nächstem gültigen Sample)
+### What CANNOT be parallelized:
+- ❌ Window Selection (depends on valid neighbors)
+- ❌ Gap-based unclassified rule (sequential logic)
+- ❌ Fixed-window edge fallback (searches for the next valid sample)
 
-### Was gut parallelisiert werden kann:
-- ✅ **Visual Angle Calculation** (unabhängig)
-- ✅ **Velocity Division** (unabhängig)
+### What can be parallelized well:
+- ✅ **Visual Angle Calculation** (independent)
+- ✅ **Velocity Division** (independent)
 - ✅ Smoothing (Convolution)
-- ✅ Coordinate Rounding (Element-wise)
+- ✅ Coordinate Rounding (element-wise)
 
 ---
 
-## 🔗 Siehe auch
+## 🔗 See also
 - [NumPy Broadcasting](https://numpy.org/doc/stable/user/basics.broadcasting.html)
 - [Numba Parallel](https://numba.pydata.org/numba-doc/latest/user/parallel.html)
 - [CuPy User Guide](https://docs.cupy.dev/en/stable/user_guide/index.html)

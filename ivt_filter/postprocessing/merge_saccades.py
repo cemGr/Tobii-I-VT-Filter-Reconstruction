@@ -20,16 +20,16 @@ def merge_short_saccade_blocks(
     cfg: Optional[SaccadeMergeConfig] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
-    Kurze Saccaden-Bloecke, die komplett innerhalb von GT-Fixationen liegen,
-    zu Fixation umlabeln (optionale GT-gestützte Glättung).
+    Relabel short saccade blocks that lie entirely within GT fixations
+    to Fixation (optional GT-assisted smoothing).
 
-    - Operiert entweder auf 'ivt_sample_type' oder auf 'ivt_event_type',
-      abhängig von cfg.use_sample_type_column.
-    - Erzeugt eine zusätzliche Spalte <work_col>_smoothed.
+    - Operates on either 'ivt_sample_type' or 'ivt_event_type',
+      depending on cfg.use_sample_type_column.
+    - Creates an additional column <work_col>_smoothed.
 
-    Rueckgabe:
-      - df (mit *zusätzlichen* Spalten, Original bleibt erhalten)
-      - stats-Dict mit ein paar Kennzahlen
+    Returns:
+      - df (with *additional* columns; the original is preserved)
+      - stats dict with a few summary metrics
     """
     if cfg is None:
         cfg = SaccadeMergeConfig()
@@ -37,7 +37,7 @@ def merge_short_saccade_blocks(
     if "time_ms" not in df.columns:
         raise ValueError("DataFrame must contain 'time_ms' column.")
 
-    # GT-Spalte wird nicht mehr benötigt - Post-Smoothing basiert nur auf IVT-Kontext
+    # The GT column is no longer needed - post-smoothing relies only on IVT context
 
     event_col = "ivt_event_type"
     if event_col not in df.columns:
@@ -49,17 +49,17 @@ def merge_short_saccade_blocks(
 
     df = df.copy().reset_index(drop=True)
 
-    # Arbeits-Spalte: entweder Sample-Level oder Event-Level
+    # Work column: either sample-level or event-level
     work_col = sample_col if sample_col is not None else event_col
 
     times = df["time_ms"].to_numpy()
     sample_interval_ms = estimate_sample_interval_ms(times)
-    # GT no longer needed - Post-Smoothing basiert nur auf IVT-Kontext und Dauer
+    # GT no longer needed - post-smoothing relies only on IVT context and duration
     ivt = df[work_col].astype(str).to_numpy()
 
     n = len(df)
 
-    # Find saccade blocks (zusammenhängende "Saccade"-Segmente)
+    # Find saccade blocks (contiguous "Saccade" segments)
     blocks: List[Tuple[int, int]] = [
         (event.start, event.end)
         for event in iter_contiguous_events(ivt)
@@ -78,11 +78,11 @@ def merge_short_saccade_blocks(
         if duration_ms >= cfg.max_saccade_block_duration_ms:
             continue
 
-        # GT check skipped - merge basierend nur auf Dauer und IVT-Kontext
-        # (Original: prüfte ob GT innerhalb des Blocks komplett Fixation ist)
+        # GT check skipped - merge is based only on duration and IVT context
+        # (Original: checked whether GT within the block was entirely Fixation)
 
         if cfg.require_fixation_context:
-            # Prüfe IVT-Kontext (nicht GT): linker und rechter Nachbar müssen IVT-Fixation sein
+            # Check IVT context (not GT): left and right neighbors must be IVT Fixation
             if b_start > 0 and ivt[b_start - 1] != "Fixation":
                 continue
             if b_end < n - 1 and ivt[b_end + 1] != "Fixation":
@@ -96,9 +96,9 @@ def merge_short_saccade_blocks(
 
     df[work_col + "_smoothed"] = new_ivt
 
-    # Events neu rekonstruieren
+    # Rebuild events
     if sample_col is not None and work_col == sample_col:
-        # Sample-basierte Glättung -> Events aus Sample-Spalte neu bauen
+        # Sample-based smoothing -> rebuild events from the sample column
         df = _rebuild_ivt_events_from_sample_types(
             df,
             sample_col=sample_col + "_smoothed",
@@ -106,7 +106,7 @@ def merge_short_saccade_blocks(
             event_index_col="ivt_event_index_smoothed",
         )
     else:
-        # Event-basierte Glättung -> direkt auf Event-Spalte
+        # Event-based smoothing -> directly on the event column
         df["ivt_event_type_smoothed"] = df[work_col + "_smoothed"]
         df = _rebuild_ivt_events_from_sample_types(
             df,

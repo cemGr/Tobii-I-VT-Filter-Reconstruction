@@ -1,9 +1,9 @@
 # ivt_filter/strategies/window_rounding.py
 """
-Strategien für Fenster-Rounding/Sizing nach Selection.
+Strategies for window rounding/sizing after selection.
 
-Bestimmen, wie die selected_size in eine half_size für FixedSampleSymmetricWindowSelector
-umgerechnet wird.
+Determine how the selected_size is converted into a half_size for
+FixedSampleSymmetricWindowSelector.
 """
 from __future__ import annotations
 
@@ -12,36 +12,36 @@ from abc import ABC, abstractmethod
 
 class WindowRoundingStrategy(ABC):
     """
-    Bestimmt, wie eine Sample-Fensterbreite zu einer half_size konvertiert wird.
+    Determines how a sample window width is converted to a half_size.
     """
 
     @abstractmethod
     def calculate_half_size(self, window_size: int) -> int:
         """
-        Konvertiert window_size zu half_size.
-        
+        Convert window_size to half_size.
+
         Args:
-            window_size: Die berechnete oder eingegebene Fensterbreite in Samples
-            
+            window_size: The computed or provided window width in samples
+
         Returns:
-            half_size: Die verwendete Größe für FixedSampleSymmetricWindowSelector
+            half_size: The size used for FixedSampleSymmetricWindowSelector
         """
         pass
 
     @abstractmethod
     def get_description(self) -> str:
-        """Beschreibung der Rounding-Strategie."""
+        """Description of the rounding strategy."""
         pass
 
 
 class StandardWindowRounding(WindowRoundingStrategy):
     """
-    Standard-Rounding: Stelle sicher, dass window_size ungerade ist,
-    dann berechne half_size = (window_size - 1) // 2.
-    
-    Beispiele:
-      - window_size=7 (ungerade) → half_size=3 → effektive Größe=7
-      - window_size=8 (gerade) → wird zu 9 → half_size=4 → effektive Größe=9
+    Standard rounding: ensure that window_size is odd,
+    then compute half_size = (window_size - 1) // 2.
+
+    Examples:
+      - window_size=7 (odd) → half_size=3 → effective size=7
+      - window_size=8 (even) → becomes 9 → half_size=4 → effective size=9
     """
 
     def calculate_half_size(self, window_size: int) -> int:
@@ -56,15 +56,15 @@ class StandardWindowRounding(WindowRoundingStrategy):
 
 class SymmetricRoundWindowStrategy(WindowRoundingStrategy):
     """
-    Symmetrische Rundung: Berechne per_side = round(window_size / 2),
-    dann effektive Größe = 2*per_side + 1.
-    
-    Kann die Fensterbreite erhöhen:
-      - window_size=7 → per_side=round(3.5)=4 → effektive Größe=9
-      - window_size=9 → per_side=round(4.5)=4 → effektive Größe=9
-      - window_size=8 → per_side=round(4.0)=4 → effektive Größe=9
-    
-    Die Effektivgröße kann also WACHSEN gegenüber der Eingabe.
+    Symmetric rounding: compute per_side = round(window_size / 2),
+    then effective size = 2*per_side + 1.
+
+    Can increase the window width:
+      - window_size=7 → per_side=round(3.5)=4 → effective size=9
+      - window_size=9 → per_side=round(4.5)=4 → effective size=9
+      - window_size=8 → per_side=round(4.0)=4 → effective size=9
+
+    The effective size can therefore GROW relative to the input.
     """
 
     def calculate_half_size(self, window_size: int) -> int:

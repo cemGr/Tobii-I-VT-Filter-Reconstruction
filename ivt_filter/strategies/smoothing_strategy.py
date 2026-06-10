@@ -1,6 +1,6 @@
 # ivt_filter/smoothing_strategy.py
 """
-Strategien für räumliches Smoothing von Gaze-Daten.
+Strategies for spatial smoothing of gaze data.
 """
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import numpy as np
 
 
 class SmoothingStrategy(ABC):
-    """Abstrakte Basis für Smoothing-Strategien."""
+    """Abstract base for smoothing strategies."""
 
     def __init__(self, window_samples: int = 5):
         self.window_samples = max(1, int(window_samples))
@@ -24,25 +24,25 @@ class SmoothingStrategy(ABC):
         valid_mask: pd.Series,
     ) -> pd.Series:
         """
-        Smoothing auf eine Serie anwenden.
-        
+        Apply smoothing to a series.
+
         Args:
-            series: Die zu glättenden Daten
-            valid_mask: Boolean-Maske, wo Daten gültig sind
-            
+            series: The data to be smoothed
+            valid_mask: Boolean mask indicating where data is valid
+
         Returns:
-            Geglättete Serie
+            Smoothed series
         """
         pass
 
     @abstractmethod
     def get_description(self) -> str:
-        """Beschreibung der Smoothing-Strategie."""
+        """Description of the smoothing strategy."""
         pass
 
 
 class NoSmoothing(SmoothingStrategy):
-    """Keine Glättung: gebe Serie wie sie ist zurück."""
+    """No smoothing: return the series as-is."""
 
     def smooth(self, series: pd.Series, valid_mask: pd.Series) -> pd.Series:
         return series.copy()
@@ -52,7 +52,7 @@ class NoSmoothing(SmoothingStrategy):
 
 
 class MedianSmoothing(SmoothingStrategy):
-    """Median-Filter: rolling median über ungültige Punkte hinweg."""
+    """Median filter: rolling median across invalid points."""
 
     def smooth(self, series: pd.Series, valid_mask: pd.Series) -> pd.Series:
         # Only consider valid values
@@ -69,7 +69,7 @@ class MedianSmoothing(SmoothingStrategy):
 
 
 class MovingAverageSmoothing(SmoothingStrategy):
-    """Moving Average: rolling mean über ungültige Punkte hinweg."""
+    """Moving average: rolling mean across invalid points."""
 
     def smooth(self, series: pd.Series, valid_mask: pd.Series) -> pd.Series:
         # Only consider valid values
@@ -87,16 +87,16 @@ class MovingAverageSmoothing(SmoothingStrategy):
 
 class MedianSmoothingStrict(SmoothingStrategy):
     """
-    Strict Median-Filter: Überspringt Smoothing wenn invalide Samples im Fenster.
-    
-    Im Gegensatz zu MedianSmoothing, das invalide Samples ignoriert und den Median
-    aus den verbleibenden gültigen Werten berechnet, wird hier das Smoothing komplett
-    übersprungen wenn nicht ALLE Samples im Fenster gültig sind.
-    
-    Beispiel (3er-Fenster):
-        [Valid, Invalid, Valid] -> MedianSmoothing würde median(val1, val3) berechnen
-                                 -> MedianSmoothingStrict gibt NaN zurück
-        [Valid, Valid, Valid]   -> Beide berechnen median(val1, val2, val3)
+    Strict median filter: skips smoothing if there are invalid samples in the window.
+
+    In contrast to MedianSmoothing, which ignores invalid samples and computes the
+    median from the remaining valid values, here smoothing is skipped entirely
+    if not ALL samples in the window are valid.
+
+    Example (3-sample window):
+        [Valid, Invalid, Valid] -> MedianSmoothing would compute median(val1, val3)
+                                 -> MedianSmoothingStrict returns NaN
+        [Valid, Valid, Valid]   -> Both compute median(val1, val2, val3)
     """
 
     def smooth(self, series: pd.Series, valid_mask: pd.Series) -> pd.Series:
@@ -105,20 +105,20 @@ class MedianSmoothingStrict(SmoothingStrategy):
         half_window = self.window_samples // 2
         
         for i in range(n):
-            # Bestimme Fenster-Grenzen (zentriert)
+            # Determine window bounds (centered)
             start = max(0, i - half_window)
             end = min(n, i + half_window + 1)
-            
-            # Check if ALL samples are valid sind
+
+            # Check if ALL samples are valid
             window_valid = valid_mask.iloc[start:end]
-            
+
             if window_valid.all():
-                # All valid -> berechne Median
+                # All valid -> compute median
                 window_values = series.iloc[start:end]
                 result.iloc[i] = window_values.median()
             else:
-                # At least one invalid sample -> überspringe Smoothing
-                # Keep original value wenn Sample selbst gültig ist
+                # At least one invalid sample -> skip smoothing
+                # Keep original value if the sample itself is valid
                 if valid_mask.iloc[i]:
                     result.iloc[i] = series.iloc[i]
                 else:
@@ -132,9 +132,9 @@ class MedianSmoothingStrict(SmoothingStrategy):
 
 class MovingAverageSmoothingStrict(SmoothingStrategy):
     """
-    Strict Moving Average: Überspringt Smoothing wenn invalide Samples im Fenster.
-    
-    Verhält sich wie MedianSmoothingStrict, verwendet aber den Mittelwert statt Median.
+    Strict moving average: skips smoothing if there are invalid samples in the window.
+
+    Behaves like MedianSmoothingStrict, but uses the mean instead of the median.
     """
 
     def smooth(self, series: pd.Series, valid_mask: pd.Series) -> pd.Series:
@@ -143,19 +143,19 @@ class MovingAverageSmoothingStrict(SmoothingStrategy):
         half_window = self.window_samples // 2
         
         for i in range(n):
-            # Bestimme Fenster-Grenzen (zentriert)
+            # Determine window bounds (centered)
             start = max(0, i - half_window)
             end = min(n, i + half_window + 1)
-            
-            # Check if ALL samples are valid sind
+
+            # Check if ALL samples are valid
             window_valid = valid_mask.iloc[start:end]
-            
+
             if window_valid.all():
-                # All valid -> berechne Mittelwert
+                # All valid -> compute mean
                 window_values = series.iloc[start:end]
                 result.iloc[i] = window_values.mean()
             else:
-                # At least one invalid sample -> überspringe Smoothing
+                # At least one invalid sample -> skip smoothing
                 if valid_mask.iloc[i]:
                     result.iloc[i] = series.iloc[i]
                 else:
@@ -169,29 +169,29 @@ class MovingAverageSmoothingStrict(SmoothingStrategy):
 
 class MedianSmoothingAdaptive(SmoothingStrategy):
     """
-    Adaptive Median-Filter: Sammelt nur gültige Samples aus dem Fenster.
-    
-    Diese Variante sammelt alle gültigen Samples innerhalb des Standard-Fensters
-    und kann optional die Suche erweitern, wenn nicht genug gültige Samples gefunden wurden.
-    
-    Unterschiede zu anderen Varianten:
-    - MedianSmoothing: Verwendet pandas rolling, ignoriert NaN automatisch
-    - MedianSmoothingStrict: Überspringt Smoothing wenn IRGENDEIN invalid Sample im Fenster
-    - MedianSmoothingAdaptive: Sammelt NUR gültige Samples, kann Fenster erweitern
-    
-    Beispiel (3er-Fenster, min_samples=2, expansion_radius=1):
+    Adaptive median filter: collects only valid samples from the window.
+
+    This variant collects all valid samples within the standard window
+    and can optionally expand the search if not enough valid samples were found.
+
+    Differences from other variants:
+    - MedianSmoothing: Uses pandas rolling, ignores NaN automatically
+    - MedianSmoothingStrict: Skips smoothing if ANY invalid sample is in the window
+    - MedianSmoothingAdaptive: Collects ONLY valid samples, can expand the window
+
+    Example (3-sample window, min_samples=2, expansion_radius=1):
         [Invalid, Invalid, Valid=10, Valid=20, Valid=30]
-        
+
         Index 2 (Valid=10):
-          - Standard-Fenster: [1, 2, 3] -> gültige: [10, 20]
-          - min_samples=2 erfüllt -> median([10, 20]) = 15.0
-        
+          - Standard window: [1, 2, 3] -> valid: [10, 20]
+          - min_samples=2 satisfied -> median([10, 20]) = 15.0
+
         Index 1 (Invalid):
-          - Standard-Fenster: [0, 1, 2] -> gültige: [10]
-          - min_samples=2 nicht erfüllt -> erweitere um expansion_radius=1
-          - Erweitertes Fenster: [-1, 0, 1, 2, 3] -> gültige: [10, 20]
-          - min_samples=2 erfüllt -> median([10, 20]) = 15.0
-          - ABER: Sample selbst invalid -> result = NaN
+          - Standard window: [0, 1, 2] -> valid: [10]
+          - min_samples=2 not satisfied -> expand by expansion_radius=1
+          - Expanded window: [-1, 0, 1, 2, 3] -> valid: [10, 20]
+          - min_samples=2 satisfied -> median([10, 20]) = 15.0
+          - BUT: sample itself invalid -> result = NaN
     """
 
     def __init__(self, window_samples: int = 5, min_samples: int = 1, expansion_radius: int = 0):
@@ -205,37 +205,37 @@ class MedianSmoothingAdaptive(SmoothingStrategy):
         half_window = self.window_samples // 2
         
         for i in range(n):
-            # Wenn Sample selbst invalid ist, bleibt es NaN
+            # If the sample itself is invalid, it stays NaN
             if not valid_mask.iloc[i]:
                 result.iloc[i] = np.nan
                 continue
-            
-            # Collect valid samples aus Standard-Fenster
+
+            # Collect valid samples from the standard window
             start = max(0, i - half_window)
             end = min(n, i + half_window + 1)
-            
+
             valid_samples = []
             for j in range(start, end):
                 if valid_mask.iloc[j]:
                     valid_samples.append(series.iloc[j])
-            
-            # If not enough valid samples -> erweitere Suche
+
+            # If not enough valid samples -> expand the search
             if len(valid_samples) < self.min_samples and self.expansion_radius > 0:
-                # Erweitere das Fenster symmetrisch um expansion_radius
+                # Expand the window symmetrically by expansion_radius
                 expanded_start = max(0, start - self.expansion_radius)
                 expanded_end = min(n, end + self.expansion_radius)
-                
-                # Sammle aus erweitertem Fenster (ohne Duplikate)
+
+                # Collect from the expanded window (no duplicates)
                 valid_samples = []
                 for j in range(expanded_start, expanded_end):
                     if valid_mask.iloc[j]:
                         valid_samples.append(series.iloc[j])
-            
-            # Calculate median wenn genug gültige Samples
+
+            # Compute median if there are enough valid samples
             if len(valid_samples) >= self.min_samples:
                 result.iloc[i] = np.median(valid_samples)
             else:
-                # Not enough valid samples -> behalte Original
+                # Not enough valid samples -> keep the original
                 result.iloc[i] = series.iloc[i]
         
         return result
@@ -247,9 +247,9 @@ class MedianSmoothingAdaptive(SmoothingStrategy):
 
 class MovingAverageSmoothingAdaptive(SmoothingStrategy):
     """
-    Adaptive Moving Average: Sammelt nur gültige Samples aus dem Fenster.
-    
-    Verhält sich wie MedianSmoothingAdaptive, verwendet aber den Mittelwert statt Median.
+    Adaptive moving average: collects only valid samples from the window.
+
+    Behaves like MedianSmoothingAdaptive, but uses the mean instead of the median.
     """
 
     def __init__(self, window_samples: int = 5, min_samples: int = 1, expansion_radius: int = 0):
@@ -263,37 +263,37 @@ class MovingAverageSmoothingAdaptive(SmoothingStrategy):
         half_window = self.window_samples // 2
         
         for i in range(n):
-            # Wenn Sample selbst invalid ist, bleibt es NaN
+            # If the sample itself is invalid, it stays NaN
             if not valid_mask.iloc[i]:
                 result.iloc[i] = np.nan
                 continue
-            
-            # Collect valid samples aus Standard-Fenster
+
+            # Collect valid samples from the standard window
             start = max(0, i - half_window)
             end = min(n, i + half_window + 1)
-            
+
             valid_samples = []
             for j in range(start, end):
                 if valid_mask.iloc[j]:
                     valid_samples.append(series.iloc[j])
-            
-            # If not enough valid samples -> erweitere Suche
+
+            # If not enough valid samples -> expand the search
             if len(valid_samples) < self.min_samples and self.expansion_radius > 0:
-                # Erweitere das Fenster symmetrisch um expansion_radius
+                # Expand the window symmetrically by expansion_radius
                 expanded_start = max(0, start - self.expansion_radius)
                 expanded_end = min(n, end + self.expansion_radius)
-                
-                # Sammle aus erweitertem Fenster (ohne Duplikate)
+
+                # Collect from the expanded window (no duplicates)
                 valid_samples = []
                 for j in range(expanded_start, expanded_end):
                     if valid_mask.iloc[j]:
                         valid_samples.append(series.iloc[j])
-            
-            # Calculate mean wenn genug gültige Samples
+
+            # Compute mean if there are enough valid samples
             if len(valid_samples) >= self.min_samples:
                 result.iloc[i] = np.mean(valid_samples)
             else:
-                # Not enough valid samples -> behalte Original
+                # Not enough valid samples -> keep the original
                 result.iloc[i] = series.iloc[i]
         
         return result

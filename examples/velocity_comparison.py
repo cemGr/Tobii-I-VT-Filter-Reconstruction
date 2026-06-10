@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 """
-Beispielskript: Vergleich der Velocity-Berechnungsmethoden
+Example script: comparison of velocity calculation methods
 
-Demonstriert den Unterschied zwischen Olsen 2D und Ray 3D Methoden
-mit verschiedenen Koordinaten-Rounding-Strategien.
+Demonstrates the difference between the Olsen 2D and Ray 3D methods
+with different coordinate-rounding strategies.
 """
 from pathlib import Path
 import pandas as pd
 import sys
 
-# Füge Parent-Directory zum Path hinzu für lokale Imports
+# Add the parent directory to the path for local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ivt_filter.config import OlsenVelocityConfig
@@ -19,23 +19,23 @@ from ivt_filter.io import read_tsv
 
 def compare_velocity_methods(input_file: str):
     """
-    Vergleicht Olsen 2D vs Ray 3D Velocity-Berechnung.
-    
+    Compares Olsen 2D vs Ray 3D velocity calculation.
+
     Args:
-        input_file: Pfad zur preprocessed TSV-Datei
+        input_file: path to the preprocessed TSV file
     """
     print("=" * 80)
     print("Velocity Method Comparison")
     print("=" * 80)
     print()
     
-    # Daten laden
+    # Load data
     print(f"Loading data from: {input_file}")
     df = read_tsv(input_file)
     print(f"Loaded {len(df)} samples")
     print()
     
-    # Konfigurationen erstellen
+    # Create configurations
     configs = [
         ("Olsen 2D (no rounding)", OlsenVelocityConfig(
             velocity_method="olsen2d",
@@ -57,7 +57,7 @@ def compare_velocity_methods(input_file: str):
     
     results = {}
     
-    # Berechne Velocities für jede Konfiguration
+    # Compute velocities for each configuration
     for name, config in configs:
         print(f"Computing velocities: {name}")
         df_result = compute_olsen_velocity(df.copy(), config)
@@ -74,7 +74,7 @@ def compare_velocity_methods(input_file: str):
         print(f"  Computed {len(velocities)} velocity values")
         print()
     
-    # Statistiken ausgeben
+    # Print statistics
     print("=" * 80)
     print("Results Summary")
     print("=" * 80)
@@ -90,7 +90,7 @@ def compare_velocity_methods(input_file: str):
         print(f"  Std:    {stats['std']:.2f} deg/s")
         print()
     
-    # Vergleiche
+    # Comparisons
     print("=" * 80)
     print("Method Comparisons")
     print("=" * 80)

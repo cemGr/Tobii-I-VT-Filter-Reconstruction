@@ -17,14 +17,14 @@ from ivt_filter.io.pipeline import IVTPipeline
 
 def window_length_sweep():
     """
-    Test verschiedene Window-Größen (Sample-Fenster).
-    
-    Typische Werte:
-    - 1 ms: Sehr kleines Fenster (kaum Glättung)
-    - 10 ms: Kleines Fenster
-    - 20 ms: Standard (Olsen Paper)
-    - 40 ms: Größeres Fenster
-    - 60 ms: Sehr groß
+    Test different window sizes (sample windows).
+
+    Typical values:
+    - 1 ms: very small window (almost no smoothing)
+    - 10 ms: small window
+    - 20 ms: standard (Olsen paper)
+    - 40 ms: larger window
+    - 60 ms: very large
     """
     print("\n" + "="*80)
     print("WINDOW LENGTH SWEEP - Testing Different Sample Windows")
@@ -35,7 +35,7 @@ def window_length_sweep():
         print(f"⚠️  Input file '{input_file}' not found.")
         return
     
-    # Test different window sizes (in Millisekunden)
+    # Test different window sizes (in milliseconds)
     window_sizes = [1.0, 10.0, 20.0, 40.0, 60.0]
     
     # Fixed threshold for fair comparison
@@ -46,19 +46,19 @@ def window_length_sweep():
         print(f"Testing window: {window_ms} ms")
         print(f"{'─'*80}")
         
-        # Velocity Configuration mit verschiedenen Fenstergrößen
+        # Velocity configuration with different window sizes
         velocity_config = OlsenVelocityConfig(
             window_length_ms=window_ms,
             velocity_method="olsen2d",
             eye_mode="average",
-            smoothing_mode="none",  # No smoothing für fairen Vergleich
+            smoothing_mode="none",  # No smoothing for a fair comparison
         )
         
         classifier_config = IVTClassifierConfig(
             velocity_threshold_deg_per_sec=fixed_threshold,
         )
         
-        # Experiment Config
+        # Experiment config
         exp_config = ExperimentConfig(
             name=f"window_sweep_{int(window_ms)}ms",
             description=f"Window length {window_ms} ms, threshold {fixed_threshold} deg/s",
@@ -72,7 +72,7 @@ def window_length_sweep():
             }
         )
         
-        # Pipeline mit Observers
+        # Pipeline with observers
         pipeline = IVTPipeline(velocity_config, classifier_config)
         pipeline.register_observer(ConsoleReporter(verbose=False))
         pipeline.register_observer(MetricsLogger("experiments/window_sweep_metrics.csv"))
@@ -91,9 +91,9 @@ def window_length_sweep():
 
 def window_with_smoothing_sweep():
     """
-    Test verschiedene Window-Größen MIT Smoothing.
-    
-    Kombiniert Window-Größe mit verschiedenen Smoothing-Methoden.
+    Test different window sizes WITH smoothing.
+
+    Combines window size with different smoothing methods.
     """
     print("\n" + "="*80)
     print("WINDOW + SMOOTHING SWEEP")
@@ -104,10 +104,10 @@ def window_with_smoothing_sweep():
         print(f"⚠️  Input file '{input_file}' not found.")
         return
     
-    # Window-Größen
+    # Window sizes
     window_sizes = [10.0, 20.0, 40.0]
-    
-    # Smoothing-Methoden
+
+    # Smoothing methods
     smoothing_methods = ["none", "median", "moving_average"]
     
     fixed_threshold = 30.0
@@ -160,7 +160,7 @@ def window_with_smoothing_sweep():
 
 def window_method_comparison():
     """
-    Vergleicht Olsen2D vs. Ray3D bei verschiedenen Window-Größen.
+    Compares Olsen2D vs. Ray3D at different window sizes.
     """
     print("\n" + "="*80)
     print("WINDOW SIZE: Olsen2D vs Ray3D Comparison")
@@ -221,7 +221,7 @@ def window_method_comparison():
 
 def analyze_window_results():
     """
-    Analysiert die Ergebnisse des Window Sweeps.
+    Analyzes the results of the window sweep.
     """
     print("\n" + "="*80)
     print("ANALYZING WINDOW SWEEP RESULTS")
@@ -229,7 +229,7 @@ def analyze_window_results():
     
     manager = ExperimentManager("experiments")
     
-    # Window Sweep Experimente finden
+    # Find window sweep experiments
     window_experiments = manager.list_experiments(tags=["window_sweep"])
     
     if not window_experiments:
@@ -238,11 +238,11 @@ def analyze_window_results():
     
     print(f"\nFound {len(window_experiments)} window sweep experiments")
     
-    # Experimente vergleichen
+    # Compare experiments
     exp_names = [e["name"] for e in window_experiments]
     comparison = manager.compare_experiments(exp_names)
-    
-    # Sort by Window-Größe
+
+    # Sort by window size
     comparison = comparison.sort_values("window_ms")
     
     print("\n" + "─"*80)
@@ -257,7 +257,7 @@ def analyze_window_results():
         "cohen_kappa"
     ]].to_string(index=False))
     
-    # Beste Konfiguration finden
+    # Find the best configuration
     try:
         best_name, best_value, best_config = manager.get_best_configuration(
             metric="percentage_agreement",
@@ -278,10 +278,10 @@ def analyze_window_results():
 
 def sampling_rate_adaptive_window():
     """
-    Test: Window-Größe automatisch an Sampling-Rate anpassen.
-    
-    Idee: Bei höherer Sampling-Rate können kleinere Fenster verwendet werden.
-    120 Hz → 8.33 ms Sample-Abstand → Window sollte mindestens 2-3 Samples sein
+    Test: automatically adapt the window size to the sampling rate.
+
+    Idea: at a higher sampling rate, smaller windows can be used.
+    120 Hz -> 8.33 ms sample spacing -> window should be at least 2-3 samples
     """
     print("\n" + "="*80)
     print("SAMPLING RATE ADAPTIVE WINDOW SIZING")
@@ -358,17 +358,17 @@ def main():
     print("Testing different velocity calculation windows")
     print("="*80)
     
-    # 1. Basis Window Sweep
+    # 1. Basic window sweep
     window_length_sweep()
-    
-    # 2. Analyse der Ergebnisse
+
+    # 2. Analyze the results
     analyze_window_results()
-    
-    # Optional: Weitere Tests
-    print("\n\nWeitere Tests verfügbar:")
-    print("- window_with_smoothing_sweep(): Window + Smoothing Kombinationen")
-    print("- window_method_comparison(): Olsen2D vs Ray3D bei versch. Windows")
-    print("- sampling_rate_adaptive_window(): Sample-basierte Window-Größen")
+
+    # Optional: further tests
+    print("\n\nFurther tests available:")
+    print("- window_with_smoothing_sweep(): window + smoothing combinations")
+    print("- window_method_comparison(): Olsen2D vs Ray3D across different windows")
+    print("- sampling_rate_adaptive_window(): sample-based window sizes")
     
     # Uncomment to run additional tests:
     # window_with_smoothing_sweep()
@@ -378,7 +378,7 @@ def main():
     print("\n" + "="*80)
     print("✅ Window sweep completed!")
     print("="*80)
-    print("\nErgebnisse:")
+    print("\nResults:")
     print("  - experiments/window_sweep_metrics.csv")
     print("  - experiments/{experiment_name}/")
     print()

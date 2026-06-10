@@ -98,7 +98,7 @@ def make_window_selector(cfg: OlsenVelocityConfig) -> WindowSelector:
 
 
 def _get_coordinate_rounding_strategy(mode: str) -> CoordinateRoundingStrategy:
-    """Factory für Koordinaten-Rounding-Strategien."""
+    """Factory for coordinate rounding strategies."""
     if mode == "none":
         return NoRounding()
     elif mode == "nearest":

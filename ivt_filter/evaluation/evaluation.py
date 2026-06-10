@@ -17,8 +17,8 @@ def compute_ivt_metrics(
     stimulus_col: str = "presented_stimulus_name",
 ) -> Dict[str, Any]:
     """
-    Metriken zwischen Ground Truth und IVT Vorhersage berechnen,
-    ohne etwas zu drucken.
+    Compute metrics between ground truth and the IVT prediction,
+    without printing anything.
     """
 
     if exclude_calibration and stimulus_col in df.columns:
@@ -44,13 +44,13 @@ def compute_ivt_metrics(
     if pred_col not in df.columns:
         raise ValueError(f"Prediction column '{pred_col}' not found. Run apply_ivt_classifier first.")
 
-    # Alle Samples verwenden (nicht nur GT Fixation/Saccade)
+    # Use all samples (not only GT Fixation/Saccade)
     gt = df[gt_col].astype(str)
     pred = df[pred_col].astype(str)
 
     total_all = len(gt)
     
-    # For traditional metrics: nur GT Fixation/Saccade berücksichtigen
+    # For traditional metrics: consider only GT Fixation/Saccade
     mask_traditional = gt.isin(["Fixation", "Saccade"])
     gt_trad = gt.loc[mask_traditional]
     pred_trad = pred.loc[mask_traditional]
@@ -59,16 +59,16 @@ def compute_ivt_metrics(
     if total_traditional == 0:
         raise ValueError("No samples with ground truth Fixation/Saccade found.")
 
-    # Base agreement für traditionelle Metriken (nur GT Fix/Sac)
+    # Base agreement for traditional metrics (GT Fix/Sac only)
     agree_mask = gt_trad == pred_trad
     agree = int(agree_mask.sum())
     agreement = agree / total_traditional
-    
-    # TOTAL AGREEMENT: alle Samples und alle Klassifikationstypen
+
+    # TOTAL AGREEMENT: all samples and all classification types
     agree_all = int((gt == pred).sum())
     agreement_all = agree_all / total_all if total_all > 0 else float("nan")
 
-    # True Positives / False Negatives für Fixation/Saccade
+    # True Positives / False Negatives for Fixation/Saccade
     tp_fix = int(((gt_trad == "Fixation") & (pred_trad == "Fixation")).sum())
     fn_fix = int(((gt_trad == "Fixation") & (pred_trad == "Saccade")).sum())
     tp_sac = int(((gt_trad == "Saccade") & (pred_trad == "Saccade")).sum())
@@ -80,7 +80,7 @@ def compute_ivt_metrics(
     recall_fix = tp_fix / n_fix if n_fix > 0 else float("nan")
     recall_sac = tp_sac / n_sac if n_sac > 0 else float("nan")
 
-    # Full confusion matrix über alle Labels und alle Samples
+    # Full confusion matrix over all labels and all samples
     labels: List[str] = sorted(set(gt) | set(pred))
     label_to_idx = {lab: i for i, lab in enumerate(labels)}
     k = len(labels)
@@ -91,7 +91,7 @@ def compute_ivt_metrics(
         j = label_to_idx[p_val]
         conf[i][j] += 1
 
-    # Cohen's kappa (über alle Samples)
+    # Cohen's kappa (over all samples)
     po = sum(conf[i][i] for i in range(k)) / total_all
     row_marg = [sum(conf[i][j] for j in range(k)) for i in range(k)]
     col_marg = [sum(conf[i][j] for i in range(k)) for j in range(k)]
@@ -102,7 +102,7 @@ def compute_ivt_metrics(
     else:
         kappa = float("nan")
 
-    # Statistiken für Unclassified und EyesNotFound getrennt
+    # Separate statistics for Unclassified and EyesNotFound
     pred_is_uncl = pred == "Unclassified"
     pred_is_eynf = pred == "EyesNotFound"
     gt_is_uncl = gt == "Unclassified"
@@ -118,11 +118,11 @@ def compute_ivt_metrics(
     accuracy_uncl = correct_uncl / n_gt_uncl if n_gt_uncl > 0 else float("nan")
     accuracy_eynf = correct_eynf / n_gt_eynf if n_gt_eynf > 0 else float("nan")
 
-    # Recall für Unclassified und EyesNotFound (wie viele GT wurden korrekt erkannt)
+    # Recall for Unclassified and EyesNotFound (how many GT were correctly detected)
     recall_uncl = correct_uncl / n_gt_uncl if n_gt_uncl > 0 else float("nan")
     recall_eynf = correct_eynf / n_gt_eynf if n_gt_eynf > 0 else float("nan")
 
-    # Traditionelle Counts für GT Fix/Sac → Pred Uncl/EyeNF
+    # Traditional counts for GT Fix/Sac → Pred Uncl/EyeNF
     n_fix_to_uncl = int(((gt_trad == "Fixation") & pred_is_uncl.loc[mask_traditional]).sum())
     n_sac_to_uncl = int(((gt_trad == "Saccade") & pred_is_uncl.loc[mask_traditional]).sum())
     n_fix_to_eynf = int(((gt_trad == "Fixation") & pred_is_eynf.loc[mask_traditional]).sum())
@@ -172,18 +172,18 @@ def compute_event_agreement(
     gt_event_type_col: str = "gt_event_type",
 ) -> Dict[str, Any]:
     """
-    Event-basiertes Agreement berechnen.
-    
-    Vergleicht Events (nicht Samples): Stimmen GT und Prediction für den gleichen Event überein?
-    Unterstützt ALLE Klassifikationen: Fixation, Saccade, Unclassified, EyesNotFound
+    Compute event-based agreement.
+
+    Compares events (not samples): do GT and prediction agree for the same event?
+    Supports ALL classifications: Fixation, Saccade, Unclassified, EyesNotFound
     """
-    
-    # Events extrahieren - verwende event_type wenn vorhanden, sonst nutze ivt_event_type
+
+    # Extract events - use event_type if present, otherwise use ivt_event_type
     if "event_type" in df.columns:
-        # Event-basiert Daten (von events expandiert)
+        # Event-based data (expanded from events)
         events = df.drop_duplicates(subset=["event_start_idx"], keep="first").copy()
     else:
-        # Sample-based data - Events müssen rekonstruiert werden
+        # Sample-based data - events must be reconstructed
         events = []
         current_event = None
         
@@ -227,13 +227,13 @@ def compute_event_agreement(
     pred_types = events[event_type_col].astype(str) if event_type_col in events.columns else events["pred_type"].astype(str)
     gt_types = events[gt_event_type_col].astype(str) if gt_event_type_col in events.columns else events["gt_type"].astype(str)
     
-    # Gesamtes Agreement
+    # Overall agreement
     agree_mask = pred_types == gt_types
     total_agreement = int(agree_mask.sum())
     total_events = len(events)
     event_agreement_pct = (total_agreement / total_events * 100.0) if total_events > 0 else float("nan")
-    
-    # Agreement pro Klassifikationstyp
+
+    # Agreement per classification type
     agreement_by_type = {}
     all_types = set(gt_types.unique()) | set(pred_types.unique())
     
@@ -266,7 +266,7 @@ def evaluate_ivt_vs_ground_truth(
     stimulus_col: str = "presented_stimulus_name",
 ) -> Dict[str, Any]:
     """
-    Wrapper: berechnet Metriken und druckt einen kurzen Report auf stdout.
+    Wrapper: computes metrics and prints a short report to stdout.
     """
     metrics = compute_ivt_metrics(
         df,
@@ -327,7 +327,7 @@ def evaluate_ivt_vs_ground_truth(
     print("Confusion Matrix (rows = GT, columns = Pred):")
     labels = metrics['labels']
     conf = metrics['confusion_matrix']
-    # Calculate column width for best alignment
+    # Compute column width for best alignment
     col_width = max(14, max(len(f"Pred: {lab}") for lab in labels) + 2)
     # Header
     header_cells = ["".ljust(col_width)] + [f"Pred: {lab}".center(col_width) for lab in labels]

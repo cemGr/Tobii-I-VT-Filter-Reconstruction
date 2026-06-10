@@ -65,12 +65,12 @@ def _calculate_dt_ms(
     use_fixed_dt: bool = False,
 ) -> float:
     """
-    Berechne Zeitdifferenz dt_ms basierend auf Fenster-Selector-Typ.
+    Compute the time difference dt_ms based on the window selector type.
 
-    - AsymmetricNeighbor: nutze fixed dt aus Sampling-Rate
-    - FixedSampleSymmetric: nutze nominalen dt (ohne Timestamp-Jitter)
-    - ShiftedValid: nutze tatsächliche Zeitstempel-Differenzen
-    - Andere: normale dt-Berechnung aus time_ms
+    - AsymmetricNeighbor: use fixed dt from the sampling rate
+    - FixedSampleSymmetric: use the nominal dt (without timestamp jitter)
+    - ShiftedValid: use the actual timestamp differences
+    - Others: normal dt calculation from time_ms
     """
     if use_fixed_dt and isinstance(selector, AsymmetricNeighborWindowSelector):
         if hz_measured is not None and hz_measured > 0:
@@ -89,7 +89,7 @@ def _calculate_dt_ms(
     if isinstance(selector, ShiftedValidWindowSelector):
         return float(times[last_idx]) - float(times[first_idx])
 
-    # Default: normale dt-Berechnung
+    # Default: normal dt calculation
     return float(times[last_idx]) - float(times[first_idx])
 
 
@@ -110,9 +110,9 @@ def _get_direction_vectors(
     combined_dir_z: np.ndarray,
 ) -> tuple:
     """
-    Extrahiere Richtungsvektoren für beide Endpunkte.
+    Extract direction vectors for both endpoints.
 
-    Rückgabe: (dir_first_tuple, dir_last_tuple)
+    Returns: (dir_first_tuple, dir_last_tuple)
     """
     if eye_consistent_override and used_eye == "left":
         dir_first = (ldx[first_idx], ldy[first_idx], ldz[first_idx])
@@ -156,12 +156,12 @@ def _apply_eye_consistent_override(
     ry: np.ndarray,
 ) -> tuple:
     """
-    Wende Eye-Consistent-Override für Ray3DGazeDir an (3-sample window).
+    Apply the eye-consistent override for Ray3DGazeDir (3-sample window).
 
-    Wählt ein Auge, das an beiden Endpunkten gültig ist, oder überspringt Velocity.
+    Chooses an eye that is valid at both endpoints, or skips the velocity.
 
-    Rückgabe: (x1, y1, x2, y2, used_eye, override_applied, should_skip)
-    - should_skip: True wenn keine konsistente Augen-Wahl möglich
+    Returns: (x1, y1, x2, y2, used_eye, override_applied, should_skip)
+    - should_skip: True when no consistent eye choice is possible
     """
     if not (
         isinstance(velocity_strategy, Ray3DGazeDir)
@@ -182,7 +182,7 @@ def _apply_eye_consistent_override(
         x2, y2 = rx[last_idx], ry[last_idx]
         return x1, y1, x2, y2, "right", True, False
     else:
-        # Kein einzelnes Auge an beiden Endpunkten gültig
+        # No single eye valid at both endpoints
         return None, None, None, None, eye_mode, False, True
 
 
@@ -347,25 +347,25 @@ def _compute_olsen_velocity_impl(
     cfg: OlsenVelocityConfig,
 ) -> pd.DataFrame:
     """
-    Olsen-Style Geschwindigkeit berechnen (mm basierte Gaze Daten).
+    Compute Olsen-style velocity (mm-based gaze data).
     """
     # Input normalization and preprocessing are coordinated by the public facade.
     # Keep the implementation focused on sample computation.
     df = df.copy()
     df["velocity_deg_per_sec"] = float("nan")
     df["dt_ms"] = float("nan")  # Time difference used for velocity calculation
-    df["window_width_samples"] = pd.NA  # New column for Fensterbreite
+    df["window_width_samples"] = pd.NA  # New column for the window width
     df["window_any_invalid"] = False  # Track if any eye invalid in the used window
     df["velocity_first_idx"] = pd.NA
     df["velocity_last_idx"] = pd.NA
     df["velocity_eye_used"] = pd.NA
     df["velocity_window_selector"] = pd.NA
     df["velocity_fallback_applied"] = pd.NA
-    # Debug/Transparenz: Umgebung-Validitäts-Flags
+    # Debug/transparency: surrounding-validity flags
     df["env_has_invalid_above"] = pd.NA
     df["env_has_invalid_below"] = pd.NA
     df["env_rule_triggered"] = pd.NA
-    # Debug für Abstand-Regel (Invalid-Gap)
+    # Debug for the distance rule (invalid gap)
     df["gap_rule_triggered"] = pd.NA
     df["gap_left_invalid_idx"] = pd.NA
     df["gap_right_invalid_idx"] = pd.NA
@@ -379,7 +379,7 @@ def _compute_olsen_velocity_impl(
     eye_mode = getattr(cfg, "eye_mode", "average")
     left_valid = df["left_eye_valid"].to_numpy()
     right_valid = df["right_eye_valid"].to_numpy()
-    # combined_valid je nach Modus setzen
+    # Set combined_valid depending on the mode
     if eye_mode == "left":
         valid = left_valid
     elif eye_mode == "right":
@@ -392,15 +392,16 @@ def _compute_olsen_velocity_impl(
     ry = df["gaze_right_y_mm"].to_numpy()
     arrays = VelocityInputArrays.from_dataframe(df, valid=valid)
 
-    # Optional: Blickrichtungs-Vektoren (DACS norm)
-    ldx = df.get("gaze_dir_left_x", pd.Series([np.nan] * len(df))).to_numpy()
-    ldy = df.get("gaze_dir_left_y", pd.Series([np.nan] * len(df))).to_numpy()
-    ldz = df.get("gaze_dir_left_z", pd.Series([np.nan] * len(df))).to_numpy()
-    rdx = df.get("gaze_dir_right_x", pd.Series([np.nan] * len(df))).to_numpy()
-    rdy = df.get("gaze_dir_right_y", pd.Series([np.nan] * len(df))).to_numpy()
-    rdz = df.get("gaze_dir_right_z", pd.Series([np.nan] * len(df))).to_numpy()
+    # Optional: gaze direction vectors (DACS norm) — prefer smoothed columns when available
+    _nan = pd.Series([np.nan] * len(df))
+    ldx = df.get("smoothed_gaze_dir_left_x",  df.get("gaze_dir_left_x",  _nan)).to_numpy()
+    ldy = df.get("smoothed_gaze_dir_left_y",  df.get("gaze_dir_left_y",  _nan)).to_numpy()
+    ldz = df.get("smoothed_gaze_dir_left_z",  df.get("gaze_dir_left_z",  _nan)).to_numpy()
+    rdx = df.get("smoothed_gaze_dir_right_x", df.get("gaze_dir_right_x", _nan)).to_numpy()
+    rdy = df.get("smoothed_gaze_dir_right_y", df.get("gaze_dir_right_y", _nan)).to_numpy()
+    rdz = df.get("smoothed_gaze_dir_right_z", df.get("gaze_dir_right_z", _nan)).to_numpy()
 
-    # Kombiniere Richtungen für Eye-Mode "average": Mittelwert der validen Richtungen, sonst fallback
+    # Combine directions for eye_mode "average": mean of the valid directions, otherwise fallback
     combined_dir_x = np.full(len(df), np.nan)
     combined_dir_y = np.full(len(df), np.nan)
     combined_dir_z = np.full(len(df), np.nan)
@@ -432,23 +433,23 @@ def _compute_olsen_velocity_impl(
     selector = WindowSelectorFactory.create(cfg)
     logger.debug("Window selector: %s", type(selector).__name__)
 
-    # Koordinaten-Rounding-Strategie
+    # Coordinate rounding strategy
     coord_rounding = _get_coordinate_rounding_strategy(cfg.coordinate_rounding)
     if cfg.coordinate_rounding != "none":
         logger.info("Coordinate rounding enabled: %s", coord_rounding.get_description())
 
-    # Velocity-Calculation-Strategie
+    # Velocity calculation strategy
     velocity_strategy = VelocityStrategyFactory.create(cfg.velocity_method)
     if cfg.velocity_method != "olsen2d":
         logger.info("Velocity calculation method: %s", cfg.velocity_method)
 
-    # Fensterbreite in Samples berechnen für Transparenz
+    # Compute window width in samples for transparency
     if isinstance(selector, FixedSampleSymmetricWindowSelector):
-        # Bei FixedSample: Fensterbreite ist bekannt
+        # For FixedSample: the window width is known
         fixed_samples = getattr(cfg.window_policy, "samples", None)
         logger.info("Fixed sample window: %s samples", fixed_samples)
     elif isinstance(selector, AsymmetricNeighborWindowSelector):
-        # Bei Asymmetrischem Nachbar-Fenster: 2 Samples
+        # For the asymmetric neighbor window: 2 samples
         logger.info("Asymmetric neighbor window: 2 samples (backward/forward)")
         if cfg.use_fixed_dt and hz_measured is not None:
             logger.info(
@@ -457,7 +458,7 @@ def _compute_olsen_velocity_impl(
                 hz_measured,
             )
     else:
-        # Bei Zeit-basierten Fenstern: Schätzung basierend auf dt_med
+        # For time-based windows: estimate based on dt_med
         if dt_med is not None and dt_med > 0:
             estimated_samples = int(round(cfg.window_length_ms / dt_med)) + 1
             logger.info(
@@ -472,37 +473,37 @@ def _compute_olsen_velocity_impl(
                 cfg.window_length_ms,
             )
 
-    # Fallback: wenn der Selector sample-symmetrisch ist und kein gueltiges Fenster findet,
-    # kann auf ein Zeitfenster zurueckgefallen werden.
+    # Fallback: if the selector is sample-symmetric and finds no valid window,
+    # it can fall back to a time window.
     fallback_selector: Optional[WindowSelector] = None
     if isinstance(
         selector, (SampleSymmetricWindowSelector, FixedSampleSymmetricWindowSelector)
     ):
         fallback_selector = TimeSymmetricWindowSelector()
 
-    # Abstand-basierte Unclassified-Regel vorbereiten
-    # max_gap_samples = ursprüngliche Fensterbreite - 1 (OHNE Asymmetrie-Aufrundung)
-    # Beispiel: window=7 -> gap=6, auch wenn Velocity-Fenster auf 8 aufgerundet wird
-    # Bei AsymmetricNeighborWindowSelector: 2 Samples -> gap=1 (radius=1)
+    # Prepare the distance-based unclassified rule
+    # max_gap_samples = original window width - 1 (WITHOUT asymmetry rounding)
+    # Example: window=7 -> gap=6, even if the velocity window is rounded up to 8
+    # For AsymmetricNeighborWindowSelector: 2 samples -> gap=1 (radius=1)
     gap_max: Optional[int] = None
     if isinstance(selector, AsymmetricNeighborWindowSelector):
-        # 2-Sample Fenster: radius = 1
+        # 2-sample window: radius = 1
         gap_max = 1
     elif (
         isinstance(selector, FixedSampleSymmetricWindowSelector)
         and isinstance(getattr(cfg.window_policy, "samples", None), int)
     ):
-        # Ursprüngliche Fenstergröße ohne Asymmetrie-Anpassung
+        # Original window size without asymmetry adjustment
         original_window_size = int(getattr(cfg.window_policy, "samples"))
         gap_max = max(0, original_window_size - 1)
     elif dt_med is not None and dt_med > 0:
-        # Ursprüngliche Zeit-basierte Schätzung ohne Asymmetrie-Anpassung
+        # Original time-based estimate without asymmetry adjustment
         original_est = int(round(cfg.window_length_ms / dt_med)) + 1
         gap_max = max(0, original_est - 1)
     if gap_max is not None:
         logger.info("Gap-based Unclassified enabled: max_gap_samples=%s", gap_max)
 
-    # Precompute nächster ungültiger Index links/rechts für jedes Sample
+    # Precompute the nearest invalid index to the left/right for each sample
     prev_invalid_idx = np.full(n, -1, dtype=int)
     next_invalid_idx = np.full(n, -1, dtype=int)
     last_inv = -1
@@ -519,17 +520,17 @@ def _compute_olsen_velocity_impl(
     neighbor_imputer = AverageNeighborImputer.from_arrays(arrays)
 
     for i in range(n):
-        # Explizit prüfen: nur wenn das Sample selbst gültig ist, berechne Velocity
+        # Explicit check: only compute velocity if the sample itself is valid
         if not bool(valid[i]):
             continue
 
-        # 1. Versuch: aktueller Selector (z.B. SampleSymmetric oder FixedSample)
+        # 1st attempt: current selector (e.g. SampleSymmetric or FixedSample)
         selected_selector = selector
         first_idx, last_idx = selector.select(i, times, valid, half_window)
         fallback_applied = bool(getattr(selector, "last_fallback_applied", False))
 
-        # 2. Fallback: wenn kein sinnvolles Fenster gefunden wurde,
-        #    versuche noch das klassische Zeitfenster
+        # 2nd fallback: if no sensible window was found,
+        #    try the classic time window
         if (
             first_idx is None or last_idx is None or first_idx == last_idx
         ) and fallback_selector is not None:
@@ -545,12 +546,12 @@ def _compute_olsen_velocity_impl(
                 selected_selector = fallback_selector
                 fallback_applied = True
 
-        # Wenn immer noch kein Fenster: Velocity bleibt NaN -> Sample bleibt Unclassified
+        # If still no window: velocity stays NaN -> sample stays unclassified
         if first_idx is None or last_idx is None or first_idx == last_idx:
             continue
 
-        # Neue Regel (Abstand): Liegt das Sample zwischen zwei invaliden Samples,
-        # deren Abstand (exklusive) <= gap_max ist? Dann Unclassified.
+        # New rule (distance): is the sample between two invalid samples
+        # whose distance (exclusive) is <= gap_max? Then unclassified.
         if gap_max is not None and gap_max >= 0:
             L = int(prev_invalid_idx[i])
             R = int(next_invalid_idx[i])
@@ -562,45 +563,45 @@ def _compute_olsen_velocity_impl(
             df.at[i, "gap_rule_triggered"] = bool(triggered)
             df.at[i, "gap_left_invalid_idx"] = None if L == -1 else int(L)
             df.at[i, "gap_right_invalid_idx"] = None if R == -1 else int(R)
-            # Für Rückwärtskompatibilität die alten env-Flags auf False setzen
+            # For backward compatibility, set the old env flags to False
             df.at[i, "env_has_invalid_above"] = False
             df.at[i, "env_has_invalid_below"] = False
             df.at[i, "env_rule_triggered"] = False
             if triggered:
                 continue
 
-        # Fallback: nächstes gültiges Sample verwenden, falls first/last ungültig
+        # Fallback: use the nearest valid sample if first/last is invalid
         if cfg.use_fallback_valid_samples:
             if not valid[first_idx]:
-                # Finde nächstes gültiges Sample nach first_idx
+                # Find the nearest valid sample after first_idx
                 for j in range(first_idx + 1, last_idx + 1):
                     if valid[j]:
                         first_idx = j
                         fallback_applied = True
                         break
                 else:
-                    continue  # Kein gültiges Sample gefunden
+                    continue  # No valid sample found
 
             if not valid[last_idx]:
-                # Finde nächstes gültiges Sample vor last_idx
+                # Find the nearest valid sample before last_idx
                 for j in range(last_idx - 1, first_idx - 1, -1):
                     if valid[j]:
                         last_idx = j
                         fallback_applied = True
                         break
                 else:
-                    continue  # Kein gültiges Sample gefunden
+                    continue  # No valid sample found
 
         used_eye = eye_mode
         eye_consistent_override = False
 
-        # Diagnose: Validität im aktuell gewählten Fenster
+        # Diagnostics: validity in the currently chosen window
         window_lv = left_valid[first_idx : last_idx + 1]
         window_rv = right_valid[first_idx : last_idx + 1]
         window_any_invalid = (~window_lv | ~window_rv).any()
         df.at[i, "window_any_invalid"] = bool(window_any_invalid)
 
-        # Berechne Zeitdifferenz (nutzt Window-Selector-Typ)
+        # Compute the time difference (uses the window selector type)
         dt_ms = _calculate_dt_ms(
             first_idx, last_idx, times, selected_selector, hz_measured, cfg.use_fixed_dt
         )
@@ -645,7 +646,7 @@ def _compute_olsen_velocity_impl(
             x1, y1 = cx[first_idx], cy[first_idx]
             x2, y2 = cx[last_idx], cy[last_idx]
 
-        # Speichere finalen dt und wende min_dt-Prüfung an (außer beim späteren Single-Eye-Fallback)
+        # Store the final dt and apply the min_dt check (except for the later single-eye fallback)
         skip_dt_check = (
             cfg.eye_mode == "average"
             and cfg.average_fallback_single_eye
@@ -655,7 +656,7 @@ def _compute_olsen_velocity_impl(
             if dt_ms < cfg.min_dt_ms:
                 continue
 
-        # Strategien nur im average Modus (ohne Override)
+        # Strategies only in average mode (without override)
         use_single_eye = False
         use_neighbor = False
         use_fallback_single = False
@@ -865,11 +866,11 @@ def _compute_olsen_velocity_impl(
         df.at[i, "velocity_window_selector"] = type(selected_selector).__name__
         df.at[i, "velocity_fallback_applied"] = fallback_applied
 
-        # Speichere die tatsächliche Fensterbreite (in Samples)
+        # Store the actual window width (in samples)
         final_window_size = actual_last_idx - actual_first_idx + 1
         df.at[i, "window_width_samples"] = final_window_size
 
-    # Transparenz: Fenster-Statistik ausgeben
+    # Transparency: output window statistics
     computed = (~df["velocity_deg_per_sec"].isna()).sum()
     if computed > 0:
         logger.info("Computed velocity for %s/%s samples", computed, n)

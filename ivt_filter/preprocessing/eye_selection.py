@@ -33,9 +33,9 @@ def _combine_gaze_and_eye(
     bool,
 ]:
     """
-    Linkes und rechtes Auge zu einem Gaze-Punkt + Eye-Position kombinieren.
+    Combine the left and right eye into a single gaze point + eye position.
 
-    Rueckgabe:
+    Returns:
       (combined_x_mm, combined_y_mm,
        combined_x_px, combined_y_px,
        eye_x_mm, eye_y_mm, eye_z_mm,
@@ -51,7 +51,7 @@ def _combine_gaze_and_eye(
     rx_mm = row.get("gaze_right_x_mm")
     ry_mm = row.get("gaze_right_y_mm")
 
-    # px gaze (optional, fuer Debug/Plots)
+    # px gaze (optional, for debug/plots)
     lx_px = row.get("gaze_left_x_px")
     ly_px = row.get("gaze_left_y_px")
     rx_px = row.get("gaze_right_x_px")
@@ -106,24 +106,28 @@ def _combine_gaze_and_eye(
 
     mode = cfg.eye_mode
 
-    # Nur linkes Auge
+    # Left eye only
     if mode == "left":
         if left_valid:
             return use_left()
         return None, None, None, None, None, None, None, False, bool(left_valid), bool(right_valid)
 
-    # Nur rechtes Auge
+    # Right eye only
     if mode == "right":
         if right_valid:
             return use_right()
         return None, None, None, None, None, None, None, False, bool(left_valid), bool(right_valid)
 
-    # Durchschnitt beider Augen (Standard)
+    # Strict average: no single-eye fallback
+    if mode == "strict_average" and not (left_valid and right_valid):
+        return None, None, None, None, None, None, None, False, bool(left_valid), bool(right_valid)
+
+    # Average of both eyes (default)
     if left_valid and right_valid:
         gaze_x_mm = (float(lx_mm) + float(rx_mm)) / 2.0
         gaze_y_mm = (float(ly_mm) + float(ry_mm)) / 2.0
 
-        # px-Werte optional kombinieren
+        # Optionally combine the px values
         if pd.notna(lx_px) and pd.notna(rx_px):
             gaze_x_px = (float(lx_px) + float(rx_px)) / 2.0
         elif pd.notna(lx_px):
@@ -142,7 +146,7 @@ def _combine_gaze_and_eye(
         else:
             gaze_y_px = None
 
-        # Eye position kombinieren (X, Y, Z)
+        # Combine the eye position (X, Y, Z)
         if pd.notna(lex) and pd.notna(rex):
             eye_x = (float(lex) + float(rex)) / 2.0
         elif pd.notna(lex):
@@ -183,19 +187,19 @@ def _combine_gaze_and_eye(
             bool(right_valid),
         )
 
-    # Fallback: nur ein gueltiges Auge
+    # Fallback: only one valid eye
     if left_valid:
         return use_left()
     if right_valid:
         return use_right()
 
-    # kein gueltiger Gaze
+    # No valid gaze
     return None, None, None, None, None, None, None, False, bool(left_valid), bool(right_valid)
 
 
 def prepare_combined_columns(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
     """
-    Fuegt kombinierte Gaze/Eye-Spalten hinzu:
+    Adds combined gaze/eye columns:
 
       - combined_x_mm, combined_y_mm
       - combined_x_px, combined_y_px
@@ -257,40 +261,40 @@ def apply_tobii_eye_offset_interpolation(
     df: pd.DataFrame,
     cfg: OlsenVelocityConfig,
 ) -> pd.DataFrame:
-    """Tobii-exakte Auge-Offset-Interpolation für fehlende Augen-Daten.
+    """Tobii-exact eye offset interpolation for missing eye data.
 
-    Rekonstruiert aus ``RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter``
-    aus der dekompilierten Tobii C#-Implementierung.
+    Reconstructed from ``RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter``
+    in the decompiled Tobii C# implementation.
 
-    Wenn ein Auge fehlt (ungültig), wird der zuletzt bekannte räumliche Versatz
-    zwischen linkem und rechtem Auge (Gaze-Punkt-Offset und Eye-Origin-Offset)
-    verwendet, um das fehlende Auge zu schätzen. Das ist präziser als einfacher
-    Fallback auf ein einzelnes Auge, da Parallaxe-Effekte kompensiert werden.
+    When an eye is missing (invalid), the last known spatial offset
+    between the left and right eye (gaze-point offset and eye-origin offset)
+    is used to estimate the missing eye. This is more precise than a simple
+    fallback to a single eye, since parallax effects are compensated.
 
-    Funktionsweise:
-    - ``BothEyesFound``:  Offsets werden aktualisiert, echte Daten verwendet.
-    - ``OnlyRightEyeFound``: left_gaze = right_gaze − last_gaze_offset
-                             left_eye  = right_eye  − last_eye_offset
+    How it works:
+    - ``BothEyesFound``:  offsets are updated, real data is used.
+    - ``OnlyRightEyeFound``: left_gaze = right_gaze - last_gaze_offset
+                             left_eye  = right_eye  - last_eye_offset
     - ``OnlyLeftEyeFound``:  right_gaze = left_gaze + last_gaze_offset
                              right_eye  = left_eye  + last_eye_offset
-    - ``NoEyesFound``: Keine Schätzung möglich (Daten bleiben NaN).
+    - ``NoEyesFound``: no estimation possible (data stays NaN).
 
-    Modifiziert die Spalten ``gaze_left_x_mm``, ``gaze_left_y_mm``,
-    ``gaze_right_x_mm``, ``gaze_right_y_mm`` sowie die Eye-Origin-Spalten
+    Modifies the columns ``gaze_left_x_mm``, ``gaze_left_y_mm``,
+    ``gaze_right_x_mm``, ``gaze_right_y_mm`` as well as the eye-origin columns
     ``eye_left_x_mm``, ``eye_left_y_mm``, ``eye_left_z_mm`` etc. in-place
-    (auf einer Kopie).
+    (on a copy).
 
     Args:
-        df: DataFrame mit Tobii-Rohdaten (muss gaze_left_*, gaze_right_*,
-            validity_left, validity_right enthalten).
-        cfg: Velocity-Konfiguration (für ``max_validity``).
+        df: DataFrame with raw Tobii data (must contain gaze_left_*, gaze_right_*,
+            validity_left, validity_right).
+        cfg: velocity configuration (for ``max_validity``).
 
     Returns:
-        Kopie des DataFrames mit interpolierten Gaze-/Eye-Spalten.
+        Copy of the DataFrame with interpolated gaze/eye columns.
     """
     df = df.copy()
 
-    # Erforderliche Gaze-Spalten
+    # Required gaze columns
     gaze_cols_left = ["gaze_left_x_mm", "gaze_left_y_mm"]
     gaze_cols_right = ["gaze_right_x_mm", "gaze_right_y_mm"]
     eye_cols_left = ["eye_left_x_mm", "eye_left_y_mm", "eye_left_z_mm"]
@@ -302,24 +306,24 @@ def apply_tobii_eye_offset_interpolation(
     has_eye_right = all(c in df.columns for c in eye_cols_right)
 
     if not (has_gaze_left and has_gaze_right):
-        # Ohne beide Gaze-Spalten ist keine Interpolation möglich
+        # Without both gaze columns no interpolation is possible
         return df
 
-    # Gespeicherte Offsets (right − left); initialisiert mit None
-    last_gaze_offset: Optional[np.ndarray] = None   # shape (2,): [Δx, Δy]
-    last_eye_offset: Optional[np.ndarray] = None    # shape (3,): [Δx, Δy, Δz]
+    # Stored offsets (right - left); initialized with None
+    last_gaze_offset: Optional[np.ndarray] = None   # shape (2,): [dx, dy]
+    last_eye_offset: Optional[np.ndarray] = None    # shape (3,): [dx, dy, dz]
 
-    # Numpy-Arrays für schnellen Zugriff
+    # Numpy arrays for fast access
     vl_arr = df["validity_left"].to_numpy() if "validity_left" in df.columns else np.zeros(len(df))
     vr_arr = df["validity_right"].to_numpy() if "validity_right" in df.columns else np.zeros(len(df))
 
-    # Validity-Arrays als object-dtype für Rückschreiben (erlaubt gemischte Typen)
+    # Validity arrays as object dtype for writing back (allows mixed types)
     vl_out = vl_arr.copy().astype(object)
     vr_out = vr_arr.copy().astype(object)
 
-    # "Valid"-Marker: "Valid" (String) wenn Spalte String-Werte enthält, sonst 0
+    # "Valid" marker: "Valid" (string) if the column contains string values, otherwise 0
     def _valid_marker(arr: np.ndarray) -> object:
-        """Gibt den passenden 'valid'-Wert zurück (String oder int)."""
+        """Return the matching 'valid' value (string or int)."""
         for v in arr:
             if isinstance(v, str):
                 return "Valid"
@@ -328,7 +332,7 @@ def apply_tobii_eye_offset_interpolation(
     valid_marker_l = _valid_marker(vl_arr)
     valid_marker_r = _valid_marker(vr_arr)
 
-    # Explizite Kopien (writable=True) – to_numpy() kann read-only zurückgeben
+    # Explicit copies (writable=True) – to_numpy() can return read-only arrays
     lx = df["gaze_left_x_mm"].to_numpy(dtype=float).copy()
     ly = df["gaze_left_y_mm"].to_numpy(dtype=float).copy()
     rx = df["gaze_right_x_mm"].to_numpy(dtype=float).copy()
@@ -350,7 +354,7 @@ def apply_tobii_eye_offset_interpolation(
                        and np.isfinite(rx[i]) and np.isfinite(ry[i]))
 
         if left_valid and right_valid:
-            # Beide Augen valide → Offsets aktualisieren
+            # Both eyes valid -> update offsets
             last_gaze_offset = np.array([rx[i] - lx[i], ry[i] - ly[i]])
             if (has_eye_left and has_eye_right
                     and np.isfinite(lex[i]) and np.isfinite(rex_[i])):  # type: ignore[index]
@@ -361,8 +365,8 @@ def apply_tobii_eye_offset_interpolation(
                 ])
 
         elif right_valid and not left_valid and last_gaze_offset is not None:
-            # Nur rechtes Auge → schätze linkes Auge via gespeichertem Offset
-            # left_gaze = right_gaze − offset  (offset = right − left)
+            # Only right eye -> estimate left eye via the stored offset
+            # left_gaze = right_gaze - offset  (offset = right - left)
             lx[i] = rx[i] - last_gaze_offset[0]
             ly[i] = ry[i] - last_gaze_offset[1]
             if (has_eye_left and has_eye_right and last_eye_offset is not None
@@ -370,12 +374,12 @@ def apply_tobii_eye_offset_interpolation(
                 lex[i] = rex_[i] - last_eye_offset[0]   # type: ignore[index]
                 ley[i] = rey_[i] - last_eye_offset[1]   # type: ignore[index]
                 lez[i] = rez_[i] - last_eye_offset[2]   # type: ignore[index]
-            # Validity auf gültigen Marker setzen, damit prepare_combined_columns
-            # das interpolierte Auge als gleichwertig behandelt
+            # Set validity to the valid marker so that prepare_combined_columns
+            # treats the interpolated eye as equivalent
             vl_out[i] = valid_marker_l
 
         elif left_valid and not right_valid and last_gaze_offset is not None:
-            # Nur linkes Auge → schätze rechtes Auge via gespeichertem Offset
+            # Only left eye -> estimate right eye via the stored offset
             # right_gaze = left_gaze + offset
             rx[i] = lx[i] + last_gaze_offset[0]
             ry[i] = ly[i] + last_gaze_offset[1]
@@ -384,11 +388,11 @@ def apply_tobii_eye_offset_interpolation(
                 rex_[i] = lex[i] + last_eye_offset[0]   # type: ignore[index]
                 rey_[i] = ley[i] + last_eye_offset[1]   # type: ignore[index]
                 rez_[i] = lez[i] + last_eye_offset[2]   # type: ignore[index]
-            # Validity auf gültigen Marker setzen
+            # Set validity to the valid marker
             vr_out[i] = valid_marker_r
-        # else: beide ungültig → keine Schätzung, Daten bleiben NaN
+        # else: both invalid -> no estimation, data stays NaN
 
-    # Zurückschreiben
+    # Write back
     df["gaze_left_x_mm"] = lx
     df["gaze_left_y_mm"] = ly
     df["gaze_right_x_mm"] = rx
@@ -401,7 +405,7 @@ def apply_tobii_eye_offset_interpolation(
         df["eye_right_x_mm"] = rex_
         df["eye_right_y_mm"] = rey_
         df["eye_right_z_mm"] = rez_
-    # Validity-Flags zurückschreiben (interpolierte Augen sind jetzt "Valid")
+    # Write back the validity flags (interpolated eyes are now "Valid")
     if "validity_left" in df.columns:
         df["validity_left"] = vl_out
     if "validity_right" in df.columns:

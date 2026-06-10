@@ -147,7 +147,7 @@ class Ray3DAngle(VelocityCalculationStrategy):
         eye_y_mm: Optional[float],
         eye_z_mm: Optional[float],
     ) -> float:
-        # Eye Position (Fallback auf Defaults wenn nicht verfügbar)
+        # Eye position (fall back to defaults if not available)
         if eye_x_mm is None or not math.isfinite(eye_x_mm):
             eye_x_mm = 0.0
         if eye_y_mm is None or not math.isfinite(eye_y_mm):
@@ -157,7 +157,7 @@ class Ray3DAngle(VelocityCalculationStrategy):
 
         ex, ey, ez = float(eye_x_mm), float(eye_y_mm), float(eye_z_mm)
 
-        # Screen liegt bei z=0
+        # Screen is at z=0
         gx0, gy0, gz0 = float(x1_mm), float(y1_mm), 0.0
         gx1, gy1, gz1 = float(x2_mm), float(y2_mm), 0.0
 
@@ -282,14 +282,14 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
         """Angle in degrees between two normalised 3-D vectors."""
         dot = float(np.dot(v1, v2))
         if dot < 0.0:
-            # Stumpfer Winkel: komplementäre asin-Formel
-            # Origin(0,0,0) - v1 - v2 → Length / 2
+            # Obtuse angle: complementary asin formula
+            # Origin(0,0,0) - v1 - v2 → length / 2
             vec = -v1 - v2
             angle_rad = math.pi - 2.0 * math.asin(
                 min(float(np.linalg.norm(vec)) / 2.0, 1.0)
             )
         else:
-            # Spitzer Winkel: direkte asin-Formel
+            # Acute angle: direct asin formula
             diff_len = float(np.linalg.norm(v1 - v2))
             angle_rad = 2.0 * math.asin(min(diff_len / 2.0, 1.0))
         return math.degrees(angle_rad)
@@ -322,7 +322,7 @@ class TobiiGazeDirAngle(VelocityCalculationStrategy):
         eye_y_mm: Optional[float],
         eye_z_mm: Optional[float],
     ) -> float:
-        # Ohne Richtungsvektoren (dir1/dir2) ist der Winkel nicht berechenbar.
+        # Without direction vectors (dir1/dir2) the angle cannot be computed.
         return float("nan")
 
     def get_description(self) -> str:

@@ -1,17 +1,17 @@
 # ivt_filter/strategies/coordinate_rounding.py
 """
-Strategien für das Runden von Gaze- und Eye-Koordinaten vor der Velocity-Berechnung.
+Strategies for rounding gaze and eye coordinates before velocity calculation.
 
-Das Runden von Koordinaten kann die Velocity-Berechnung beeinflussen und wird oft
-verwendet, um Rauschen zu reduzieren oder Diskretisierungseffekte zu simulieren.
+Rounding coordinates can affect the velocity calculation and is often
+used to reduce noise or to simulate discretization effects.
 
-Beispiel:
+Example:
     >>> from coordinate_rounding import RoundToNearest, RoundHalfUp, FloorRounding
     >>> 
     >>> # Banker's Rounding (round half to even)
     >>> nearest = RoundToNearest()
     >>> x, y = nearest.round_gaze(201.5, 92.5)
-    >>> print(x, y)  # 202.0, 92.0 (0.5 → zur geraden Zahl)
+    >>> print(x, y)  # 202.0, 92.0 (0.5 → to the even number)
     >>> 
     >>> # Classical Rounding (0.5 always up)
     >>> halfup = RoundHalfUp()
@@ -23,10 +23,10 @@ Beispiel:
     >>> x, y = floor.round_gaze(201.8, 92.3)
     >>> print(x, y)  # 201.0, 92.0
 
-Rundungseffekte auf Velocity:
-    - Kleine Koordinatenänderungen: Rounding kann Velocity auf 0 reduzieren
-    - Große Saccaden: 2-5 deg/s Differenz typisch
-    - Empfehlung: 'none' für präzise Messungen, 'nearest' oder 'halfup' für Tobii-ähnliche Filter
+Rounding effects on velocity:
+    - Small coordinate changes: rounding can reduce velocity to 0
+    - Large saccades: 2-5 deg/s difference is typical
+    - Recommendation: 'none' for precise measurements, 'nearest' or 'halfup' for Tobii-like filters
 """
 from __future__ import annotations
 
@@ -37,20 +37,20 @@ import numpy as np
 
 class CoordinateRoundingStrategy(ABC):
     """
-    Abstrakte Basis für Koordinaten-Rundung.
-    
-    Rundet Gaze (x, y) und Eye (x, y, z) Koordinaten vor der Winkelberechnung.
+    Abstract base for coordinate rounding.
+
+    Rounds gaze (x, y) and eye (x, y, z) coordinates before the angle calculation.
     """
 
     @abstractmethod
     def round_gaze(self, x: float, y: float) -> Tuple[float, float]:
         """
-        Rundet Gaze-Koordinaten (x, y).
-        
+        Round gaze coordinates (x, y).
+
         Args:
-            x: X-Koordinate in mm
-            y: Y-Koordinate in mm
-            
+            x: X coordinate in mm
+            y: Y coordinate in mm
+
         Returns:
             Tuple (x_rounded, y_rounded)
         """
@@ -59,13 +59,13 @@ class CoordinateRoundingStrategy(ABC):
     @abstractmethod
     def round_eye(self, x: float, y: float, z: float) -> Tuple[float, float, float]:
         """
-        Rundet Eye-Koordinaten (x, y, z).
-        
+        Round eye coordinates (x, y, z).
+
         Args:
-            x: X-Koordinate in mm
-            y: Y-Koordinate in mm
-            z: Z-Koordinate (Distanz) in mm
-            
+            x: X coordinate in mm
+            y: Y coordinate in mm
+            z: Z coordinate (distance) in mm
+
         Returns:
             Tuple (x_rounded, y_rounded, z_rounded)
         """
@@ -73,13 +73,13 @@ class CoordinateRoundingStrategy(ABC):
 
     @abstractmethod
     def get_description(self) -> str:
-        """Beschreibung der Rounding-Strategie."""
+        """Description of the rounding strategy."""
         pass
 
 
 class NoRounding(CoordinateRoundingStrategy):
     """
-    Keine Rundung: Koordinaten bleiben wie sie sind (Default).
+    No rounding: coordinates stay as they are (default).
     """
 
     def round_gaze(self, x: float, y: float) -> Tuple[float, float]:
@@ -94,12 +94,12 @@ class NoRounding(CoordinateRoundingStrategy):
 
 class RoundToNearest(CoordinateRoundingStrategy):
     """
-    Rundet auf die nächste ganze Zahl (round-to-nearest).
-    
-    Nutzt Python's built-in round(), welches "Banker's Rounding" verwendet:
-    Bei genau 0.5 wird zur nächsten GERADEN Zahl gerundet.
-    
-    Beispiele:
+    Rounds to the nearest integer (round-to-nearest).
+
+    Uses Python's built-in round(), which applies "Banker's Rounding":
+    at exactly 0.5 it rounds to the nearest EVEN number.
+
+    Examples:
       - Gaze: (201.8, 92.0) → (202, 92)
       - Gaze: (202.8, 130.9) → (203, 131)
       - Gaze: (206.1, 125.7) → (206, 126)
@@ -119,12 +119,12 @@ class RoundToNearest(CoordinateRoundingStrategy):
 
 class RoundHalfUp(CoordinateRoundingStrategy):
     """
-    Rundet auf die nächste ganze Zahl, bei 0.5 IMMER aufrunden.
-    
-    Klassisches "round half up" Verhalten.
-    
-    Beispiele:
-      - Gaze: (2.5, 3.5) → (3, 4)  ← Immer aufrunden bei 0.5
+    Rounds to the nearest integer, ALWAYS rounding up at 0.5.
+
+    Classic "round half up" behavior.
+
+    Examples:
+      - Gaze: (2.5, 3.5) → (3, 4)  ← Always round up at 0.5
       - Gaze: (201.8, 92.0) → (202, 92)
       - Gaze: (0.5, 1.5) → (1, 2)
     """
@@ -141,9 +141,9 @@ class RoundHalfUp(CoordinateRoundingStrategy):
 
 class FloorRounding(CoordinateRoundingStrategy):
     """
-    Rundet immer ab (floor).
-    
-    Beispiel:
+    Always rounds down (floor).
+
+    Example:
       - Gaze: (201.8, 92.0) → (201, 92)
       - Eye: (201.8, 92.0, 560.6) → (201, 92, 560)
     """
@@ -160,9 +160,9 @@ class FloorRounding(CoordinateRoundingStrategy):
 
 class CeilRounding(CoordinateRoundingStrategy):
     """
-    Rundet immer auf (ceil).
-    
-    Beispiel:
+    Always rounds up (ceil).
+
+    Example:
       - Gaze: (201.8, 92.0) → (202, 92)
       - Eye: (201.8, 92.0, 560.6) → (202, 92, 561)
     """

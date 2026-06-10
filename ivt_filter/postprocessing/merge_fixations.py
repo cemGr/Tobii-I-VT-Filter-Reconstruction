@@ -23,18 +23,18 @@ def _weighted_fixation_center(
     total_samples: int,
     weighting: str,
 ) -> float:
-    """Berechnet das gewichtete Zentrum einer Fixation.
+    """Compute the weighted center of a fixation.
 
     Args:
-        arr: Koordinaten-Array (x oder y).
-        start: Startindex des Fixationsblocks.
-        end: Endindex des Fixationsblocks (inklusive).
-        n_samples: Anzahl Samples in diesem Block (für sample_count-Gewichtung).
-        total_samples: Gesamtzahl Samples über alle gemergten Blöcke.
-        weighting: "uniform" für np.nanmean, "sample_count" für gewichtetes Mittel.
+        arr: Coordinate array (x or y).
+        start: Start index of the fixation block.
+        end: End index of the fixation block (inclusive).
+        n_samples: Number of samples in this block (for sample_count weighting).
+        total_samples: Total number of samples across all merged blocks.
+        weighting: "uniform" for np.nanmean, "sample_count" for a weighted mean.
 
     Returns:
-        Gewichtetes Zentrum (float).
+        Weighted center (float).
     """
     if weighting == "sample_count":
         block_mean = float(np.nanmean(arr[start : end + 1]))
@@ -53,14 +53,14 @@ def merge_adjacent_fixations(
     use_ray3d: bool = False,
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
-    Benachbarte Fixationen mergen, wenn:
+    Merge adjacent fixations when:
 
-      - Zeitabstand zwischen Ende Fix1 und Start Fix2 <= max_time_gap_ms
-      - visueller Winkel zwischen Fix1-Zentrum und Fix2-Zentrum
+      - Time gap between end of Fix1 and start of Fix2 <= max_time_gap_ms
+      - Visual angle between the Fix1 center and the Fix2 center
         <= max_angle_deg
 
-    Umsetzung:
-      - Luecke zwischen zwei Fixationen wird als Fixation umlabelt.
+    Implementation:
+      - The gap between two fixations is relabeled as Fixation.
     """
     df = df.copy()
     if sample_col not in df.columns:
@@ -80,7 +80,7 @@ def merge_adjacent_fixations(
     if "velocity_deg_per_sec" in df.columns:
         velocity = df["velocity_deg_per_sec"].to_numpy()
     
-    # For Ray3D we need auch eye_x und eye_y
+    # For Ray3D we also need eye_x and eye_y
     eye_x = None
     eye_y = None
     if use_ray3d:
@@ -99,7 +99,7 @@ def merge_adjacent_fixations(
         angle_calculator = Olsen2DApproximation()  # type: ignore[assignment]
         logger.info("[MergeFixations] Using Olsen 2D approximation")
 
-    # Fixations-Bloecke aus den Labels bestimmen
+    # Determine fixation blocks from the labels
     events: List[Tuple[int, int]] = []
     in_fix = False
     start = 0
@@ -122,20 +122,20 @@ def merge_adjacent_fixations(
         s1, e1 = events[idx]
         s2, e2 = events[idx + 1]
 
-        # Zeitabstand zwischen Ende Fix1 und Start Fix2. Dies ist der Abstand
-        # zwischen Event-Grenzen, keine inklusive Eventdauer.
+        # Time gap between end of Fix1 and start of Fix2. This is the distance
+        # between event boundaries, not an inclusive event duration.
         time_gap = float(times[s2]) - float(times[e1])
         if time_gap <= 0 or time_gap > cfg.max_time_gap_ms:
             continue
 
-        # Zentren der Fixationen (gemittelt nach gewählter Strategie)
+        # Fixation centers (averaged according to the chosen strategy)
         weighting = getattr(cfg, "merge_weighting", "uniform")
         n1_samples = e1 - s1 + 1
         n2_samples = e2 - s2 + 1
         total_samples = n1_samples + n2_samples
 
         if weighting == "sample_count":
-            # Tobii-Referenz: Sample-Anzahl-gewichtetes Mittel
+            # Tobii reference: sample-count-weighted mean
             # x_merged = (mean(x_fix1) * n1 + mean(x_fix2) * n2) / (n1 + n2)
             x1_mean = float(np.nanmean(x[s1 : e1 + 1]))
             y1_mean = float(np.nanmean(y[s1 : e1 + 1]))
@@ -143,12 +143,12 @@ def merge_adjacent_fixations(
             y2_mean = float(np.nanmean(y[s2 : e2 + 1]))
             x1 = (x1_mean * n1_samples + x2_mean * n2_samples) / total_samples
             y1 = (y1_mean * n1_samples + y2_mean * n2_samples) / total_samples
-            # Für den Winkeltest repräsentiert x1/y1 nun das gemischte Zentrum;
-            # x2/y2 verwenden wir als zweites Fixationszentrum (ungemittelt)
+            # For the angle test, x1/y1 now represents the blended center;
+            # x2/y2 are used as the second fixation center (not blended)
             x2 = x2_mean
             y2 = y2_mean
         else:
-            # Standard: einfaches nanmean
+            # Standard: simple nanmean
             x1 = float(np.nanmean(x[s1 : e1 + 1]))
             y1 = float(np.nanmean(y[s1 : e1 + 1]))
             x2 = float(np.nanmean(x[s2 : e2 + 1]))
@@ -157,9 +157,9 @@ def merge_adjacent_fixations(
         if any(pd.isna(v) for v in (x1, y1, x2, y2)):
             continue
 
-        # Calculate angle mit gewählter Strategie
+        # Calculate angle with the chosen strategy
         if use_ray3d and eye_x is not None and eye_y is not None and eye_z is not None:
-            # Ray3D: Verwende volle 3D-Geometrie
+            # Ray3D: use full 3D geometry
             ex1 = float(np.nanmean(eye_x[s1 : e1 + 1]))
             ey1 = float(np.nanmean(eye_y[s1 : e1 + 1]))
             ez1 = float(np.nanmean(eye_z[s1 : e1 + 1]))
@@ -167,14 +167,14 @@ def merge_adjacent_fixations(
             ey2 = float(np.nanmean(eye_y[s2 : e2 + 1]))
             ez2 = float(np.nanmean(eye_z[s2 : e2 + 1]))
             
-            # Mittelwerte der Eye-Position
+            # Means of the eye position
             ex = float(np.nanmean([ex1, ex2]))
             ey = float(np.nanmean([ey1, ey2]))
             ez = float(np.nanmean([ez1, ez2]))
             
             angle = angle_calculator.calculate_visual_angle(x1, y1, x2, y2, ex, ey, ez)
         else:
-            # Olsen 2D: Verwende nur Z-Distanz
+            # Olsen 2D: use only the Z distance
             if eye_z is not None:
                 z1 = float(np.nanmean(eye_z[s1 : e1 + 1]))
                 z2 = float(np.nanmean(eye_z[s2 : e2 + 1]))
@@ -187,17 +187,17 @@ def merge_adjacent_fixations(
         if angle > cfg.max_angle_deg:
             continue
 
-        # Luecke zwischen den beiden Fixationen als Fixation umlabeln
-        # WICHTIG: EyesNotFound darf NICHT zu Fixation werden
-        # OPTIMIERUNG: Keine Saccade-Samples einbeziehen (Velocity-Check)
+        # Relabel the gap between the two fixations as Fixation
+        # IMPORTANT: EyesNotFound must NOT become Fixation
+        # OPTIMIZATION: do not include saccade samples (velocity check)
         if s2 > e1 + 1:
             for j in range(e1 + 1, s2):
                 if labels[j] == "Fixation" or labels[j] == "EyesNotFound":
                     continue
                 
-                # Velocity-basiertes Gap-Filling:
-                # Nur Samples bis zum konfigurierten Velocity-Cap werden gemerged.
-                # Verhindert echte Saccade-Samples in Fixations.
+                # Velocity-based gap filling:
+                # Only samples up to the configured velocity cap are merged.
+                # Prevents real saccade samples from ending up in fixations.
                 if velocity is not None and not pd.isna(velocity[j]):
                     if velocity[j] > cfg.max_gap_velocity_deg_per_sec:
                         continue

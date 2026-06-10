@@ -71,6 +71,7 @@ DIMENSION_FILE: dict[str, str] = {
     "window_policy":          "left",
     "postprocessing":         "left",
     "tobii_eye_offset_interp": "both",
+    "coordinate_rounding":     "both",
 }
 
 # ---------------------------------------------------------------------------
@@ -101,6 +102,8 @@ BASELINE: dict[str, Any] = {
     "asymmetric_neighbor_window": False,
     # Tobii-specific
     "tobii_eye_offset_interpolation": False,
+    # Coordinate rounding
+    "coordinate_rounding": "none",
 }
 
 # ---------------------------------------------------------------------------
@@ -159,6 +162,13 @@ SWEEP_DIMENSIONS: list[tuple[str, list[tuple[str, dict[str, Any]]]]] = [
         ("disabled",            {}),                                      # baseline
         ("enabled",             {"tobii_eye_offset_interpolation": True}),
     ]),
+    ("coordinate_rounding", [
+        ("none",                {}),                                      # baseline
+        ("nearest",             {"coordinate_rounding": "nearest"}),
+        ("halfup",              {"coordinate_rounding": "halfup"}),
+        ("floor",               {"coordinate_rounding": "floor"}),
+        ("ceil",                {"coordinate_rounding": "ceil"}),
+    ]),
 ]
 
 
@@ -200,6 +210,7 @@ def _build_pipeline_config(
         shifted_valid_window=params["shifted_valid_window"],
         asymmetric_neighbor_window=params["asymmetric_neighbor_window"],
         tobii_eye_offset_interpolation=params["tobii_eye_offset_interpolation"],
+        coordinate_rounding=params.get("coordinate_rounding", "none"),
     )
     classifier = IVTClassifierConfig(
         velocity_threshold_deg_per_sec=params["velocity_threshold_deg_per_sec"]

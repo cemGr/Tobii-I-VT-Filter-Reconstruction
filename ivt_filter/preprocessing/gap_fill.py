@@ -14,15 +14,15 @@ from ..domain.validity import parse_tobii_validity
 
 def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
     """
-    Zeitliches Gap-Filling pro Auge:
-      - Kleine Luecken (bis gap_fill_max_gap_ms) werden linear interpoliert.
-      - Funktioniert getrennt fuer linkes/rechtes Auge.
-      - Aktualisiert auch validity_left / validity_right auf "gueltig"
-        fuer die imputierten Samples.
+    Temporal gap filling per eye:
+      - Small gaps (up to gap_fill_max_gap_ms) are interpolated linearly.
+      - Operates separately for the left/right eye.
+      - Also updates validity_left / validity_right to "valid"
+        for the imputed samples.
 
-    Wichtig:
-      - Muss VOR prepare_combined_columns() aufgerufen werden.
-      - Nutzt time_ms als Zeitachse.
+    Important:
+      - Must be called BEFORE prepare_combined_columns().
+      - Uses time_ms as the time axis.
     """
     if not cfg.gap_fill_enabled or cfg.gap_fill_max_gap_ms <= 0:
         return df
@@ -49,18 +49,18 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
         if x_col not in df.columns or y_col not in df.columns:
             continue
 
-        # numerische Arrays fuer x/y
-        # .copy() stellt sicher, dass das Array schreibbar ist –
-        # pandas 2.0+ (Copy-on-Write) kann read-only Arrays aus to_numpy() liefern.
+        # numeric arrays for x/y
+        # .copy() ensures the array is writable –
+        # pandas 2.0+ (copy-on-write) can return read-only arrays from to_numpy().
         x_vals = df[x_col].to_numpy().copy()
         y_vals = df[y_col].to_numpy().copy()
 
-        # optionale Arrays
+        # optional arrays
         z_vals = df[z_col].to_numpy().copy() if z_col in df.columns else None
         px_x_vals = df[px_x_col].to_numpy().copy() if px_x_col in df.columns else None
         px_y_vals = df[px_y_col].to_numpy().copy() if px_y_col in df.columns else None
 
-        # Gaze-Direction-Vektoren (normierte Einheitsvektoren, für ray3d_gaze_dir / tobii_gaze_dir)
+        # Gaze direction vectors (normalized unit vectors, for ray3d_gaze_dir / tobii_gaze_dir)
         has_dir = all(c in df.columns for c in (dir_x_col, dir_y_col, dir_z_col))
         if has_dir:
             dir_x_vals = df[dir_x_col].to_numpy().copy()
@@ -69,7 +69,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
         else:
             dir_x_vals = dir_y_vals = dir_z_vals = None
 
-        # Validitaetscodes parsen (falls vorhanden)
+        # Parse the validity codes (if present)
         if val_col in df.columns:
             val_series = df[val_col].copy()
             v_codes = val_series.map(parse_tobii_validity).to_numpy()
@@ -77,7 +77,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             val_series = None
             v_codes = None
 
-        # "valide" Samples fuer dieses Auge:
+        # "valid" samples for this eye:
         valid_mask = ~pd.isna(x_vals) & ~pd.isna(y_vals)
         if v_codes is not None:
             valid_mask &= v_codes <= cfg.max_validity
@@ -90,7 +90,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                 idx += 1
                 continue
 
-            # Beginn eines Gaps
+            # Start of a gap
             gap_start = idx
             while idx < n and not valid_mask[idx]:
                 idx += 1
@@ -99,30 +99,30 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             prev_idx = gap_start - 1
             next_idx = gap_end + 1
 
-            # Gap am Rand -> nicht fuellen
+            # Gap at the edge -> do not fill
             if prev_idx < 0 or next_idx >= n:
                 continue
 
             if not valid_mask[prev_idx] or not valid_mask[next_idx]:
                 continue
 
-            # Gap-Größe: Spanne des ungültigen Runs (erstes bis letztes ungültiges Sample).
-            # Damit werden Vor-/Nachläufer korrekt behandelt: fällt ein Auge einige Samples
-            # vor dem gemeinsamen Gap aus, verlängert das die boundary-to-boundary-Distanz –
-            # nicht aber die eigentliche Lückenlänge. Strikt < max_gap_ms (Tobii-Spec 3.1.1.1).
-            # gap_ms == 0 (1-Sample-Lücke) ist erlaubt.
+            # Gap size: span of the invalid run (first to last invalid sample).
+            # This handles leading/trailing samples correctly: if an eye drops out a few
+            # samples before the shared gap, that extends the boundary-to-boundary distance –
+            # but not the actual gap length. Strictly < max_gap_ms (Tobii spec 3.1.1.1).
+            # gap_ms == 0 (1-sample gap) is allowed.
             gap_ms = float(times[gap_end] - times[gap_start])
             if gap_ms < 0 or gap_ms >= max_gap_ms:
                 continue
 
-            # Endpunkte
+            # Endpoints
             x_prev, y_prev = x_vals[prev_idx], y_vals[prev_idx]
             x_next, y_next = x_vals[next_idx], y_vals[next_idx]
 
             if any(pd.isna(v) for v in (x_prev, y_prev, x_next, y_next)):
                 continue
 
-            # optional: Z- und Pixel-Endpunkte
+            # optional: Z and pixel endpoints
             if z_vals is not None:
                 z_prev, z_next = z_vals[prev_idx], z_vals[next_idx]
             else:
@@ -134,7 +134,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             else:
                 px_x_prev = px_x_next = px_y_prev = px_y_next = None
 
-            # Gaze-Direction-Endpunkte
+            # Gaze direction endpoints
             dpx: tuple[float, float, float] | None
             dnx: tuple[float, float, float] | None
             if dir_x_vals is not None:
@@ -149,7 +149,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
             if dt_total <= 0:
                 continue
 
-            # Interpolation fuer alle Samples zwischen prev_idx und next_idx
+            # Interpolation for all samples between prev_idx and next_idx
             for j in range(prev_idx + 1, next_idx):
                 t_j = float(times[j])
                 alpha = (t_j - float(times[prev_idx])) / dt_total
@@ -172,7 +172,7 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                     px_x_vals[j] = (1.0 - alpha) * float(px_x_prev) + alpha * float(px_x_next)
                     px_y_vals[j] = (1.0 - alpha) * float(px_y_prev) + alpha * float(px_y_next)
 
-                # Gaze-Direction-Vektoren interpolieren und renormieren
+                # Interpolate and renormalize the gaze direction vectors
                 if dir_endpoints_valid and dpx is not None and dnx is not None:
                     ix = (1.0 - alpha) * dpx[0] + alpha * dnx[0]
                     iy = (1.0 - alpha) * dpx[1] + alpha * dnx[1]
@@ -183,11 +183,11 @@ def gap_fill_gaze(df: pd.DataFrame, cfg: OlsenVelocityConfig) -> pd.DataFrame:
                         dir_y_vals[j] = iy / norm
                         dir_z_vals[j] = iz / norm
 
-                # Validitaetscode fuer imputierte Samples auf "gueltig" setzen
+                # Set the validity code to "valid" for imputed samples
                 if val_series is not None:
                     val_series.iloc[j] = val_series.iloc[prev_idx]
 
-        # Zurueck ins DataFrame schreiben
+        # Write back into the DataFrame
         df[x_col] = x_vals
         df[y_col] = y_vals
         if z_vals is not None:

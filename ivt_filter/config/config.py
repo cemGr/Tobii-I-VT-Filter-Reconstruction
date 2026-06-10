@@ -1,23 +1,23 @@
 # ivt_filter/config.py
 """
-Konfigurationsklassen für die I-VT Filter Pipeline.
+Configuration classes for the I-VT filter pipeline.
 
-Dieses Modul definiert alle Konfigurationsparameter für:
-  - Velocity-Berechnung (Olsen-Style mit Erweiterungen)
-  - I-VT Klassifikation (Fixation/Saccade Detection)
-  - Post-Processing (Saccade Merging, Fixation Filtering)
+This module defines all configuration parameters for:
+  - Velocity calculation (Olsen-style with extensions)
+  - I-VT classification (fixation/saccade detection)
+  - Post-processing (saccade merging, fixation filtering)
 
-Beispiel:
+Example:
     >>> from config import OlsenVelocityConfig, IVTClassifierConfig
-    >>> 
-    >>> # Standard-Konfiguration
+    >>>
+    >>> # Standard configuration
     >>> vel_cfg = OlsenVelocityConfig(
     ...     window_length_ms=20.0,
     ...     velocity_method="olsen2d",
     ...     eye_mode="average"
     ... )
-    >>> 
-    >>> # 3D Ray Methode mit Koordinaten-Rounding
+    >>>
+    >>> # 3D ray method with coordinate rounding
     >>> vel_cfg = OlsenVelocityConfig(
     ...     window_length_ms=20.0,
     ...     velocity_method="ray3d",
@@ -25,8 +25,8 @@ Beispiel:
     ...     smoothing_mode="median",
     ...     smoothing_window_samples=5
     ... )
-    >>> 
-    >>> # Klassifikator
+    >>>
+    >>> # Classifier
     >>> clf_cfg = IVTClassifierConfig(
     ...     velocity_threshold_deg_per_sec=30.0
     ... )
@@ -53,12 +53,12 @@ def _require_choice(name: str, value: object, choices: tuple[object, ...]) -> No
         raise ValueError(f"{name} must be one of {choices}, got {value!r}")
 
 
-def _require_non_negative(name: str, value: Real) -> None:
+def _require_non_negative(name: str, value: float) -> None:
     if not isinstance(value, Real) or not math.isfinite(value) or value < 0:
         raise ValueError(f"{name} must be non-negative")
 
 
-def _require_positive(name: str, value: Real) -> None:
+def _require_positive(name: str, value: float) -> None:
     if not isinstance(value, Real) or not math.isfinite(value) or value <= 0:
         raise ValueError(f"{name} must be positive")
 
@@ -89,32 +89,33 @@ def _require_fixed_window_samples(name: str, value: int, *, allow_even: bool) ->
 @dataclass
 class OlsenVelocityConfig:
     """
-    Konfiguration fuer die Olsen-Style-Geschwindigkeitsberechnung.
+    Configuration for the Olsen-style velocity calculation.
     """
 
-    # Zeitfenster in Millisekunden (Olsen-Style)
+    # Time window in milliseconds (Olsen-style)
     window_length_ms: float = 20.0
 
     # Timestamp column and unit (allows microsecond precision when available)
     time_column: str = "time_ms"
     time_unit: Literal["ms", "us", "ns"] = "ms"
 
-    # Augenmodus
-    # - "left":   nur linkes Auge
-    # - "right":  nur rechtes Auge
-    # - "average": Mittelwert der Augen (Standard)
-    eye_mode: Literal["left", "right", "average"] = "average"
+    # Eye mode
+    # - "left":           left eye only
+    # - "right":          right eye only
+    # - "average":        average of both eyes (default, falls back to one eye)
+    # - "strict_average": average only if BOTH eyes are valid, otherwise NaN
+    eye_mode: Literal["left", "right", "average", "strict_average"] = "average"
 
-    # Validitaet der Tobii-Codes
+    # Validity threshold for the Tobii codes
     max_validity: int = 1
 
-    # Minimaler Zeitabstand fuer eine gueltige Velocity-Berechnung
+    # Minimum time difference for a valid velocity calculation
     min_dt_ms: float = 0.1
 
-    # Raeumliches Smoothing auf kombinierten Koordinaten
-    # - "none": Kein Smoothing
-    # - "median": Median-Filter (ignoriert invalide Samples)
-    # - "moving_average": Moving Average (ignoriert invalide Samples)
+    # Spatial smoothing on the combined coordinates
+    # - "none": no smoothing
+    # - "median": median filter (ignores invalid samples)
+    # - "moving_average": moving average (ignores invalid samples)
     # - "median_strict": Median only if ALL samples in window are valid
     # - "moving_average_strict": Average only if ALL samples in window are valid
     # - "median_adaptive": Collects only valid samples, expands search if needed
@@ -136,126 +137,126 @@ class OlsenVelocityConfig:
     # supported for direct callers and are normalized during initialization.
     window_policy: Optional[WindowPolicy] = None
 
-    # Sample-symmetrisches Fenster innerhalb des Zeitfensters
-    # (gleich viele Samples links/rechts, aber immer noch durch window_length_ms begrenzt)
+    # Sample-symmetric window within the time window
+    # (equal number of samples left/right, but still bounded by window_length_ms)
     sample_symmetric_window: bool = False
 
-    # Feste Fenstergroesse in Samples (optional, odd >= 3).
-    # Wenn gesetzt, wird eine reine Sample-Fenster-Strategie verwendet
-    # (FixedSampleSymmetricWindowSelector) und window_length_ms dient nur noch
-    # als Referenz fuer dt-Minimum etc.
+    # Fixed window size in samples (optional, odd >= 3).
+    # When set, a pure sample-window strategy is used
+    # (FixedSampleSymmetricWindowSelector) and window_length_ms only serves
+    # as a reference for the dt minimum etc.
     fixed_window_samples: Optional[int] = None
 
-    # Wenn True: berechne automatisch eine passende feste Fenstergröße
-    # in Samples aus `window_length_ms` und beobachtetem Sampling-Intervall.
+    # If True: automatically compute a suitable fixed window size
+    # in samples from `window_length_ms` and the observed sampling interval.
     auto_fixed_window_from_ms: bool = False
 
-    # Asymmetrisches Fenster: wenn True, wird per_side = round(window_size / 2)
-    # verwendet statt (window_size - 1) / 2. Erlaubt auch gerade Fenstergrößen.
-    # Beispiel: window_size=8 -> per_side=4 (statt zu 9 aufgerundet)
+    # Asymmetric window: if True, per_side = round(window_size / 2) is used
+    # instead of (window_size - 1) / 2. Also allows even window sizes.
+    # Example: window_size=8 -> per_side=4 (instead of rounding up to 9)
     allow_asymmetric_window: bool = False
 
-    # Shifted valid window: halte Fensterlaenge konstant und verschiebe das Fenster,
-    # um einen durchgaengig gueltigen Block zu finden (keine Invalids im Fenster).
-    # Erfordert fixed_window_samples.
+    # Shifted valid window: keep the window length constant and shift the window
+    # to find a continuously valid block (no invalids inside the window).
+    # Requires fixed_window_samples.
     shifted_valid_window: bool = False
-    # Fallback, wenn kein gueltiges Fenster der festen Laenge gefunden wird:
-    # - "shrink": faellt auf das bisherige Shrink-Verhalten zurueck
-    # - "unclassified": liefert kein Fenster (Sample wird spaeter unclassified)
+    # Fallback when no valid window of the fixed length is found:
+    # - "shrink": falls back to the previous shrink behavior
+    # - "unclassified": returns no window (sample is later marked unclassified)
     shifted_valid_fallback: Literal["shrink", "unclassified"] = "shrink"
-    
-    # Asymmetrisches Nachbar-Fenster (nur 2 direkt angrenzende Samples):
-    # Wenn True: Nutze AsymmetricNeighborWindowSelector
-    # - Priorität: Backward (i-1 → i)
-    # - Fallback: Forward (i → i+1)
-    # - Gap-Regel: 2 samples = 1 sample radius
+
+    # Asymmetric neighbor window (only 2 directly adjacent samples):
+    # If True: use AsymmetricNeighborWindowSelector
+    # - Priority: backward (i-1 -> i)
+    # - Fallback: forward (i -> i+1)
+    # - Gap rule: 2 samples = 1 sample radius
     asymmetric_neighbor_window: bool = False
-    
-    # Fixed dt aus Sampling-Rate verwenden (für asymmetric_neighbor_window):
-    # Wenn True: dt = 1/sampling_rate (präzise, ohne time_ms-Jitter)
-    # Wenn False: dt aus time_ms-Differenzen (kann durch Rundung jittern)
+
+    # Use fixed dt from the sampling rate (for asymmetric_neighbor_window):
+    # If True: dt = 1/sampling_rate (precise, without time_ms jitter)
+    # If False: dt from time_ms differences (can jitter due to rounding)
     use_fixed_dt: bool = False
 
-    # Symmetrische Rundungs-Logik: Bestimme per_side = round(window_size / 2)
-    # und verwende dann 2*per_side + 1 als effektive Fenstergröße (symmetrisch um das Zentrum).
-    # Diese Logik kann die Gesamtgröße erhöhen (z.B. 7 -> 9), ist aber unabhängig
-    # von der Unclassified(Gap)-Regel, die weiterhin die ursprüngliche Größe nutzt.
+    # Symmetric rounding logic: determine per_side = round(window_size / 2)
+    # and then use 2*per_side + 1 as the effective window size (symmetric around the center).
+    # This logic can increase the total size (e.g. 7 -> 9), but is independent
+    # of the unclassified (gap) rule, which still uses the original size.
     symmetric_round_window: bool = False
 
-    # Methode zur Bestimmung der Sampling-Rate
-    # - "all_samples": Verwende alle Samples (Standard, robuster)
-    # - "first_100": Verwende nur die ersten 100 Samples (wie im Tobii-Paper)
+    # Method for determining the sampling rate
+    # - "all_samples": use all samples (default, more robust)
+    # - "first_100": use only the first 100 samples (as in the Tobii paper)
     sampling_rate_method: Literal["all_samples", "first_100"] = "first_100"
 
-    # Methode zur Berechnung der Zeitdifferenzen
-    # - "median": Robuster gegenüber Ausreißern (Standard)
-    # - "mean": Arithmetisches Mittel (wie im Tobii-Paper erwähnt)
+    # Method for computing the time differences
+    # - "median": more robust against outliers (default)
+    # - "mean": arithmetic mean (as mentioned in the Tobii paper)
     dt_calculation_method: Literal["median", "mean"] = "mean"
 
-    # Bei ungültigen first/last Samples im Fenster: nächstes gültiges Sample verwenden
+    # For invalid first/last samples in the window: use the nearest valid sample
     use_fallback_valid_samples: bool = True
 
-    # Bei fixed_window_samples: wenn Fensterrand ungültige Samples hat,
-    # verwende Geschwindigkeit vom nächsten Sample mit gültigem Fenster
+    # For fixed_window_samples: if the window edge has invalid samples,
+    # use the velocity from the nearest sample with a valid window
     fixed_window_edge_fallback: bool = False
 
-    # Strategien fuer eye_mode="average"
+    # Strategies for eye_mode="average"
     # - average_window_single_eye:
-    #       bei mixed mono/binokular wird das Auge mit stabilerer Validitaet
-    #       fuer Start/Ende des Fensters verwendet
+    #       for mixed mono/binocular cases, the eye with more stable validity
+    #       is used for the start/end of the window
     # - average_window_impute_neighbor:
-    #       fehlende Augenkoordinate am Fensterrand mit naechstem Nachbarn
-    #       (mit gueltigem Auge) imputieren
+    #       impute a missing eye coordinate at the window edge from the nearest
+    #       neighbor (with a valid eye)
     # - average_fallback_single_eye:
-    #       Wenn im gesamten Fenster (Start bis Ende) oder mittleren Sample
-    #       nur ein Auge valide ist, wird DURCHGEHEND nur dieses eine Auge
-    #       verwendet (kein Average). Verhindert Parallaxe-Effekte bei Augen-Wechsel.
+    #       If only one eye is valid across the whole window (start to end) or
+    #       at the middle sample, only that single eye is used CONSISTENTLY
+    #       (no average). Prevents parallax effects when switching eyes.
     average_window_single_eye: bool = False
     average_window_impute_neighbor: bool = False
     average_fallback_single_eye: bool = False
 
-    # Gap-Filling: kurze Luecken in den Eye-Tracks zeitlich interpolieren
-    # (pro Auge), bevor die Augen kombiniert werden.
+    # Gap filling: temporally interpolate short gaps in the eye tracks
+    # (per eye) before the eyes are combined.
     gap_fill_enabled: bool = False
-    gap_fill_max_gap_ms: float = 75.0  # z.B. bis 75 ms Luecke linear fuellen
+    gap_fill_max_gap_ms: float = 75.0  # e.g. fill gaps up to 75 ms linearly
 
-    # Koordinaten-Rundung vor der Velocity-Berechnung
-    # - "none": Keine Rundung (Standard)
-    # - "nearest": Banker's Rounding (round, bei 0.5 zur geraden Zahl)
-    # - "halfup": Bei 0.5 immer aufrunden (klassisches Rounding)
-    # - "floor": Immer abrunden
-    # - "ceil": Immer aufrunden
+    # Coordinate rounding before the velocity calculation
+    # - "none": no rounding (default)
+    # - "nearest": banker's rounding (round, ties to even)
+    # - "halfup": always round up on 0.5 (classic rounding)
+    # - "floor": always round down
+    # - "ceil": always round up
     coordinate_rounding: Literal["none", "nearest", "halfup", "floor", "ceil"] = "none"
 
-    # Methode zur Berechnung des visuellen Winkels
-    # - "olsen2d": Original Olsen 2D-Näherung: θ = atan(screen_distance / eye_z)
-    #              Schnell, benötigt nur eye_z, 2D-Approximation
-    #              Standard für Backward-Compatibility
-    # - "ray3d": Physikalisch korrekte 3D-Ray-Methode:
-    #            θ = acos(ray0 · ray1 / (|ray0| × |ray1|))
-    #            Präziser, benötigt vollständige Eye-Position (x, y, z)
-    #            Typisch 1-5% niedrigere Velocities als olsen2d
-    # - "ray3d_gaze_dir": Nutzt die normalisierten Blickrichtungs-Vektoren (DACS norm)
-    #            θ = acos(dir0 · dir1); benötigt keine Bildschirm- oder Eye-Position
-    # - "tobii_gaze_dir": Tobii-exakte Formel aus dekompiliertem Quellcode
-    #            θ = 2·asin(‖v₁−v₂‖/2) — numerisch stabiler als acos(dot product)
-    #            Benötigt normierte Richtungsvektoren (DACS norm), wie ray3d_gaze_dir
+    # Method for computing the visual angle
+    # - "olsen2d": original Olsen 2D approximation: theta = atan(screen_distance / eye_z)
+    #              fast, requires only eye_z, 2D approximation
+    #              default for backward compatibility
+    # - "ray3d": physically correct 3D ray method:
+    #            theta = acos(ray0 . ray1 / (|ray0| x |ray1|))
+    #            more precise, requires the full eye position (x, y, z)
+    #            typically 1-5% lower velocities than olsen2d
+    # - "ray3d_gaze_dir": uses the normalized gaze direction vectors (DACS norm)
+    #            theta = acos(dir0 . dir1); needs no screen or eye position
+    # - "tobii_gaze_dir": Tobii-exact formula from decompiled source code
+    #            theta = 2*asin(||v1-v2||/2) -- numerically more stable than acos(dot product)
+    #            requires normalized direction vectors (DACS norm), like ray3d_gaze_dir
     velocity_method: Literal["olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"] = "olsen2d"
 
-    # Tobii-exaktes Fenster (GazeVelocityCalculator):
-    # Wenn True, wird TobiiGazeVelocityWindowSelector verwendet:
+    # Tobii-exact window (GazeVelocityCalculator):
+    # If True, TobiiGazeVelocityWindowSelector is used:
     #   window_samples = floor(window_length_ms / tobii_sample_interval_ms * 1.01) + 1
-    # Überschreibt alle anderen Fenster-Selektoren (höchste Priorität).
+    # Overrides all other window selectors (highest priority).
     tobii_window_mode: bool = False
-    # Nominelles Abtastintervall in ms für Tobii-Fensterberechnung.
-    # Beispiele: 16.67 = 60 Hz, 8.33 = 120 Hz, 4.17 = 240 Hz
-    # Wird automatisch aus Sampling-Rate berechnet, wenn nicht gesetzt (None).
+    # Nominal sampling interval in ms for the Tobii window calculation.
+    # Examples: 16.67 = 60 Hz, 8.33 = 120 Hz, 4.17 = 240 Hz
+    # Computed automatically from the sampling rate when not set (None).
     tobii_sample_interval_ms: Optional[float] = None
 
-    # Tobii-exakte Auge-Offset-Interpolation:
-    # Wenn True, wird der zuletzt bekannte L→R Gaze-/Eye-Positions-Versatz gespeichert
-    # und verwendet, um das fehlende Auge zu schätzen (statt einfachem Fallback).
-    # Entspricht: RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter (Tobii C#)
+    # Tobii-exact eye offset interpolation:
+    # If True, the last known L->R gaze/eye-position offset is stored
+    # and used to estimate the missing eye (instead of a simple fallback).
+    # Corresponds to: RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter (Tobii C#)
     tobii_eye_offset_interpolation: bool = False
 
     def __post_init__(self) -> None:
@@ -268,7 +269,7 @@ class OlsenVelocityConfig:
         _require_non_negative_integer("smoothing_expansion_radius", self.smoothing_expansion_radius)
         _require_non_negative("gap_fill_max_gap_ms", self.gap_fill_max_gap_ms)
         _require_choice("time_unit", self.time_unit, ("ms", "us", "ns"))
-        _require_choice("eye_mode", self.eye_mode, ("left", "right", "average"))
+        _require_choice("eye_mode", self.eye_mode, ("left", "right", "average", "strict_average"))
         _require_choice("smoothing_mode", self.smoothing_mode, (
             "none", "median", "moving_average", "median_strict",
             "moving_average_strict", "median_adaptive", "moving_average_adaptive",
@@ -326,7 +327,7 @@ class OlsenVelocityConfig:
 @dataclass
 class IVTClassifierConfig:
     """
-    Konfiguration fuer den I-VT Threshold Klassifikator.
+    Configuration for the I-VT threshold classifier.
     """
 
     velocity_threshold_deg_per_sec: float = 30.0
@@ -394,20 +395,20 @@ class IVTClassifierConfig:
 @dataclass
 class SaccadeMergeConfig:
     """
-    Konfiguration fuer das Post-Processing von kurzen Saccade-Bloecken.
+    Configuration for the post-processing of short saccade blocks.
     """
 
-    # Saccade-Bloecke kuerzer als diese Dauer (ms), die komplett innerhalb
-    # von GT-Fixationen liegen, koennen zu Fixationen umgelabelt werden.
+    # Saccade blocks shorter than this duration (ms) that lie completely within
+    # GT fixations can be relabeled as fixations.
     max_saccade_block_duration_ms: float = 20.0
 
-    # Wenn True: nur mergen, wenn direkte GT-Nachbarn (sofern vorhanden)
-    # ebenfalls Fixation sind.
+    # If True: only merge when the direct GT neighbors (if present)
+    # are also fixations.
     require_fixation_context: bool = True
 
-    # Auf welcher Spalte operiert werden soll:
-    # - "ivt_sample_type": sample-basiert, danach Events neu bauen
-    # - None: direkt auf "ivt_event_type"
+    # Which column to operate on:
+    # - "ivt_sample_type": sample-based, then rebuild events
+    # - None: directly on "ivt_event_type"
     use_sample_type_column: Optional[str] = "ivt_sample_type"
 
     def __post_init__(self) -> None:
@@ -417,30 +418,30 @@ class SaccadeMergeConfig:
 @dataclass
 class FixationPostConfig:
     """
-    Konfiguration fuer die Tobii-aehnlichen Fixations-Filter:
+    Configuration for the Tobii-like fixation filters:
 
-      1) Zusammenfuehren benachbarter Fixationen
-         (zeitlich nah + kleiner Winkelabstand)
+      1) Merge adjacent fixations
+         (temporally close + small angular distance)
 
-      2) Verwerfen kurzer Fixationen
+      2) Discard short fixations
     """
 
-    # Schritt 1: benachbarte Fixationen mergen
+    # Step 1: merge adjacent fixations
     merge_adjacent_fixations: bool = False
-    max_time_gap_ms: float = 75.0   # z.B. 75 ms wie im Tobii-Paper
-    max_angle_deg: float = 0.5      # z.B. 0.5 Grad zwischen Fixationszentren
-    max_gap_velocity_deg_per_sec: float = 35.0  # maximale Velocity fuer Gap-Relabeling
+    max_time_gap_ms: float = 75.0   # e.g. 75 ms as in the Tobii paper
+    max_angle_deg: float = 0.5      # e.g. 0.5 degrees between fixation centers
+    max_gap_velocity_deg_per_sec: float = 35.0  # maximum velocity for gap relabeling
 
-    # Gewichtungsstrategie für gemittelte Fixations-Position beim Merge:
-    # - "uniform": np.nanmean aller Samples (bisheriges Verhalten)
-    # - "sample_count": Sample-Anzahl-gewichteter Mittelwert
-    #   (entspricht Tobii MergeFixationsFilter: vector2Df / num)
+    # Weighting strategy for the averaged fixation position during merge:
+    # - "uniform": np.nanmean of all samples (previous behavior)
+    # - "sample_count": sample-count-weighted mean
+    #   (corresponds to Tobii MergeFixationsFilter: vector2Df / num)
     merge_weighting: Literal["uniform", "sample_count"] = "uniform"
 
-    # Schritt 2: zu kurze Fixationen verwerfen
+    # Step 2: discard fixations that are too short
     discard_short_fixations: bool = False
-    min_fixation_duration_ms: float = 60.0  # z.B. 60 ms Mindestdauer
-    discard_target: Literal["Unclassified", "Saccade"] = "Unclassified"  # Ziel-Label für verworfene Fixationen
+    min_fixation_duration_ms: float = 60.0  # e.g. 60 ms minimum duration
+    discard_target: Literal["Unclassified", "Saccade"] = "Unclassified"  # target label for discarded fixations
 
     def __post_init__(self) -> None:
         for name in (

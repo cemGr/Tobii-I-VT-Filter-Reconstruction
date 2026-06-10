@@ -20,34 +20,34 @@ def discard_short_fixations(
     discard_target: str = "Unclassified",
 ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
     """
-    Methodisch korrekte Implementierung von "Discard Short Fixations".
-    
-    Arbeitet auf Event-Level (nicht Sample-Level):
-    - Nutzt event_type und event_index um Fixation-Events zu identifizieren
-    - Berechnet Duration pro Event
-    - Verwirft kurze Events durch Umlabeln aller Samples
-    
-    Definitionen:
-    1) Fixation-Event: zusammenhängende Samples mit gleichem event_index und event_type == "Fixation"
-    
-    2) Robust dt aus time_ms:
+    Methodically correct implementation of "Discard Short Fixations".
+
+    Operates at the event level (not the sample level):
+    - Uses event_type and event_index to identify fixation events
+    - Computes the duration per event
+    - Discards short events by relabeling all of their samples
+
+    Definitions:
+    1) Fixation event: contiguous samples with the same event_index and event_type == "Fixation"
+
+    2) Robust dt from time_ms:
        - dt_ms = median(positive_diffs)
-       - Nicht hardcoded
-    
-    3) Eventdauer (inklusive Endsample):
+       - Not hardcoded
+
+    3) Event duration (including the end sample):
        - duration_ms = event_duration_ms(times[start_idx : end_idx + 1], sample_interval_ms=dt_ms)
-       - +dt_ms ist verpflichtend (verhindert Off-by-one)
-    
+       - +dt_ms is mandatory (prevents off-by-one)
+
     Args:
-        df: DataFrame mit Events
-        cfg: FixationPostConfig mit min_fixation_duration_ms
-        event_type_col: Name der Event-Type-Spalte
-        event_index_col: Name der Event-Index-Spalte
-        time_col: Name der Zeit-Spalte
-        discard_target: Ziel-Label für verworfene Fixationen
-    
+        df: DataFrame with events
+        cfg: FixationPostConfig with min_fixation_duration_ms
+        event_type_col: Name of the event type column
+        event_index_col: Name of the event index column
+        time_col: Name of the time column
+        discard_target: Target label for discarded fixations
+
     Returns:
-        (df, stats): Modifizierter DataFrame und Statistiken
+        (df, stats): Modified DataFrame and statistics
     """
     df = df.copy()
     
@@ -77,13 +77,13 @@ def discard_short_fixations(
     times = df[time_col].to_numpy().copy()
     n = len(df)
     
-    # 1) Berechne robustes dt_ms aus time_ms (Median der positiven Differenzen)
+    # 1) Compute a robust dt_ms from time_ms (median of positive differences)
     dt_ms = estimate_sample_interval_ms(times)
-    
-    # 2) Finde alle Fixation-Events anhand von event_type und event_index
+
+    # 2) Find all fixation events using event_type and event_index
     fixation_events: List[Dict[str, Any]] = []
-    
-    # Gruppiere Fixation-Events
+
+    # Group fixation events
     current_event_index = None
     start_idx = None
     
@@ -95,9 +95,9 @@ def discard_short_fixations(
             event_idx_int = int(event_idx)
             
             if current_event_index is None or current_event_index != event_idx_int:
-                # Neues Event beginnt
+                # A new event begins
                 if start_idx is not None:
-                    # Vorheriges Event abschließen
+                    # Finalize the previous event
                     end_idx = i - 1
                     t_first = float(times[start_idx])
                     t_last = float(times[end_idx])
@@ -113,13 +113,13 @@ def discard_short_fixations(
                         "num_samples": end_idx - start_idx + 1,
                     })
                 
-                # Neues Event starten
+                # Start the new event
                 current_event_index = event_idx_int
                 start_idx = i
         else:
-            # Kein Fixation-Sample oder kein Index
+            # Not a fixation sample or no index
             if start_idx is not None:
-                # Vorheriges Event abschließen
+                # Finalize the previous event
                 end_idx = i - 1
                 t_first = float(times[start_idx])
                 t_last = float(times[end_idx])
@@ -138,7 +138,7 @@ def discard_short_fixations(
                 current_event_index = None
                 start_idx = None
     
-    # Letztes Event behandeln
+    # Handle the last event
     if start_idx is not None:
         end_idx = n - 1
         t_first = float(times[start_idx])
@@ -155,21 +155,21 @@ def discard_short_fixations(
             "num_samples": end_idx - start_idx + 1,
         })
     
-    # 3) Verwerfe kurze Fixationen
+    # 3) Discard short fixations
     discarded_fixations = 0
     discarded_samples = 0
     threshold_ms = cfg.min_fixation_duration_ms
-    
+
     for event in fixation_events:
         if event["duration_ms"] < threshold_ms:
-            # Verwerfe dieses Event: setze alle Samples auf discard_target
+            # Discard this event: set all samples to discard_target
             start = event["start_idx"]
             end = event["end_idx"]
-            
+
             for j in range(start, end + 1):
                 if event_types[j] == "Fixation":
                     event_types[j] = discard_target
-                    event_indices[j] = None  # Event-Index entfernen
+                    event_indices[j] = None  # Remove the event index
                     discarded_samples += 1
             
             discarded_fixations += 1
@@ -177,11 +177,11 @@ def discard_short_fixations(
         else:
             event["discarded"] = False
     
-    # 4) Aktualisiere DataFrame
+    # 4) Update the DataFrame
     df[event_type_col] = event_types
     df[event_index_col] = event_indices
-    
-    # 5) Statistiken
+
+    # 5) Statistics
     stats = {
         "discarded_fixations": discarded_fixations,
         "discarded_samples": discarded_samples,

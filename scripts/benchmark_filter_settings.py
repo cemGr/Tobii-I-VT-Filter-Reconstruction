@@ -442,7 +442,22 @@ def run_benchmark(
             if not continue_on_error:
                 raise
         results.append(result)
+        _write_partial(results, results_dir)
     return results
+
+
+def _write_partial(results: list[dict[str, Any]], results_dir: Path) -> None:
+    """Write incremental progress after each file so a mid-run abort is recoverable."""
+    partial = {
+        "partial": True,
+        "files_completed": len(results),
+        "results": _json_safe(results),
+    }
+    (results_dir / "benchmark_partial.json").write_text(
+        json.dumps(partial, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    _write_csv(results, results_dir / "benchmark_partial.csv")
 
 
 def _compute_event_summary(df: Any, pred_col: str) -> dict[str, Any] | None:
@@ -705,40 +720,40 @@ def format_summary(summary: dict[str, Any]) -> str:
     weighted = summary["weighted"]
     means = summary["per_file_mean"]
     lines = [
-        "I-VT Filter Benchmark Gesamtstatistik",
+        "I-VT Filter Benchmark Overall Statistics",
         "====================================",
         "",
-        f"Dateien: {totals['files_ok']} erfolgreich / {totals['files_total']} gesamt",
-        f"Fehlerhafte Dateien: {totals['files_error']}",
-        f"Laufzeit gesamt: {_fmt(totals['duration_seconds'])} s",
-        f"Samples gesamt: {totals['n_samples_total']}",
-        f"GT Fixation/Saccade Samples: {totals['n_samples_gt_fix_or_sac']}",
+        f"Files: {totals['files_ok']} successful / {totals['files_total']} total",
+        f"Failed files: {totals['files_error']}",
+        f"Total runtime: {_fmt(totals['duration_seconds'])} s",
+        f"Total samples: {totals['n_samples_total']}",
+        f"GT Fixation/Saccade samples: {totals['n_samples_gt_fix_or_sac']}",
         "",
-        "Gewichtete Gesamtmetriken",
+        "Weighted overall metrics",
         f"- Agreement Fix/Sac: {_fmt(weighted['percentage_agreement'])} %",
-        f"- Agreement alle Labels: {_fmt(weighted['percentage_agreement_all'])} %",
+        f"- Agreement all labels: {_fmt(weighted['percentage_agreement_all'])} %",
         f"- Fixation Recall: {_fmt(weighted['fixation_recall'])} %",
         f"- Saccade Recall: {_fmt(weighted['saccade_recall'])} %",
-        f"- Cohen's Kappa gepoolt: {_fmt(summary['pooled_cohen_kappa'])}",
+        f"- Cohen's Kappa pooled: {_fmt(summary['pooled_cohen_kappa'])}",
         f"- Event Match Rate: {_fmt(weighted['event_match_rate'])}",
         f"- Event Correct-Type Rate: {_fmt(weighted['event_correct_type_rate'])}",
         "",
-        "Ungewichtete Mittelwerte pro Datei",
+        "Unweighted per-file means",
         f"- Agreement Fix/Sac: {_fmt(means['mean_percentage_agreement'])} %",
-        f"- Agreement alle Labels: {_fmt(means['mean_percentage_agreement_all'])} %",
+        f"- Agreement all labels: {_fmt(means['mean_percentage_agreement_all'])} %",
         f"- Fixation Recall: {_fmt(means['mean_fixation_recall'])} %",
         f"- Saccade Recall: {_fmt(means['mean_saccade_recall'])} %",
         f"- Cohen's Kappa: {_fmt(means['mean_cohen_kappa'])}",
         f"- Event Mean IoU: {_fmt(means['mean_event_iou'])}",
         "",
-        "Beste Dateien nach Fix/Sac Agreement",
+        "Best files by Fix/Sac agreement",
         *_format_ranked(summary["best_files"]),
         "",
-        "Schlechteste Dateien nach Fix/Sac Agreement",
+        "Worst files by Fix/Sac agreement",
         *_format_ranked(summary["worst_files"]),
     ]
     if summary["errors"]:
-        lines.extend(["", "Fehler"])
+        lines.extend(["", "Errors"])
         lines.extend(
             f"- {item['file']}: {item['error_type']}: {item['error_message']}"
             for item in summary["errors"]
@@ -748,10 +763,10 @@ def format_summary(summary: dict[str, Any]) -> str:
 
 def _format_ranked(items: list[dict[str, Any]]) -> list[str]:
     if not items:
-        return ["- Keine erfolgreichen Dateien"]
+        return ["- No successful files"]
     return [
         f"- {item['file']}: {_fmt(item['percentage_agreement'])} % "
-        f"(alle Labels {_fmt(item['percentage_agreement_all'])} %, "
+        f"(all labels {_fmt(item['percentage_agreement_all'])} %, "
         f"kappa {_fmt(item['cohen_kappa'])})"
         for item in items
     ]

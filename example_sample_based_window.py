@@ -471,7 +471,7 @@ def main():
     print("\n" + "="*80)
     print("✅ Sample-based window testing completed!")
     print("="*80)
-    print("\nErgebnisse:")
+    print("\nResults:")
     print("  - experiments/sample_based_metrics.csv")
     print("  - experiments/comparison_metrics.csv")
     print("  - experiments/{experiment_name}/")

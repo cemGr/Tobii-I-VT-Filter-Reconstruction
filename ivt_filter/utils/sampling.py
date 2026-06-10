@@ -89,8 +89,8 @@ def positive_timestamp_deltas(times: np.ndarray) -> np.ndarray:
 
 def _nearest_nominal_rate(hz_measured: float) -> float:
     """
-    Finde die naechste typische Sampling Rate.
-    Wenn die Abweichung zu gross ist (> 25%), geben wir die gemessene zurueck.
+    Find the nearest typical sampling rate.
+    If the deviation is too large (> 25%), return the measured rate.
     """
     best = min(KNOWN_SAMPLING_RATES, key=lambda f: abs(f - hz_measured))
     if hz_measured <= 0:
@@ -107,16 +107,16 @@ def estimate_sampling_rate(
     time_col: str = "time_ms",
 ) -> Dict[str, float]:
     """
-    Schaetze Sampling Rate aus den time_ms Abstaenden.
+    Estimate the sampling rate from the time_ms intervals.
 
-    Gibt ein Dict zurueck mit:
+    Returns a dict with:
       - median_dt_ms
       - mean_dt_ms
       - min_dt_ms
       - max_dt_ms
       - hz_from_median
       - hz_from_mean
-      - nominal_hz  (naechste typische Frequenz, z.B. 300 statt 333)
+      - nominal_hz  (nearest typical frequency, e.g. 300 instead of 333)
     """
     if time_col not in df.columns:
         raise ValueError(f"DataFrame must contain '{time_col}' column.")
