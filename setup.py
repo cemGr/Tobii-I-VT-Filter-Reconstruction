@@ -6,7 +6,7 @@ README = Path(__file__).with_name("README.md").read_text(encoding="utf-8")
 
 setup(
     name="tobii-ivt-filter",
-    version="0.1.0",
+    version="1.0.0",
     description="From-scratch Python implementation of Tobii's I-VT velocity-threshold filter",
     long_description=README,
     long_description_content_type="text/markdown",

@@ -2,6 +2,8 @@
 
 A from-scratch Python implementation of Tobii's I-VT (Velocity-Threshold) filter. Classifies eye-tracking data into fixations, saccades, and unclassified samples based on gaze velocity.
 
+> **Stable release:** `1.0.0` is the first stable version with a settled public API. See [CHANGELOG.md](CHANGELOG.md) for details.
+
 ## What Does This Do?
 
 Eye-trackers record raw sample data at high frequency (typically 60–1200 Hz). To understand what someone is looking at, you need to:
