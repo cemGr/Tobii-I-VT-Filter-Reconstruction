@@ -1,0 +1,209 @@
+== I-VT-botheye20ms30threshold_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: average   smoothing: none
+  samples: 18002   disagreements: 93
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              41    44.09%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude          51    54.84%
+  ambiguous                    0     0.00%
+  other                        1     1.08%
+
+== I-VT-frequency120Fixation export_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: average   smoothing: median
+  samples: 18002   disagreements: 191
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              69    36.13%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        3     1.57%
+  velocity_magnitude          99    51.83%
+  ambiguous                   18     9.42%
+  other                        2     1.05%
+
+== IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: average   smoothing: moving_average
+  samples: 18002   disagreements: 100
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              34    34.00%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude          51    51.00%
+  ambiguous                   15    15.00%
+  other                        0     0.00%
+
+== IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: average   smoothing: none
+  samples: 18002   disagreements: 43
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              27    62.79%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude           9    20.93%
+  ambiguous                    0     0.00%
+  other                        7    16.28%
+
+== IVT30_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: average   smoothing: none
+  samples: 45005   disagreements: 136
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              45    33.09%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude          87    63.97%
+  ambiguous                    4     2.94%
+  other                        0     0.00%
+
+== LeftFixation_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: median
+  samples: 18002   disagreements: 914
+  category                 count    fraction
+  gap_edge                     5     0.55%
+  event_boundary             328    35.89%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        2     0.22%
+  velocity_magnitude          27     2.95%
+  ambiguous                   37     4.05%
+  other                      515    56.35%
+
+== LeftV30W1_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: none
+  samples: 18002   disagreements: 193
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary             168    87.05%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            1     0.52%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude           0     0.00%
+  ambiguous                    3     1.55%
+  other                       21    10.88%
+
+== LeftV30W20Discard60NoSaccade_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: none
+  samples: 18002   disagreements: 34
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              32    94.12%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude           0     0.00%
+  ambiguous                    0     0.00%
+  other                        2     5.88%
+
+== LeftV30W20MergeF75ms0-5angle_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: none
+  samples: 18002   disagreements: 57
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              31    54.39%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude           6    10.53%
+  ambiguous                    0     0.00%
+  other                       20    35.09%
+
+== LeftV30W20NoiseAvW9_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: moving_average
+  samples: 18002   disagreements: 147
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              31    21.09%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation       14     9.52%
+  velocity_magnitude           2     1.36%
+  ambiguous                   95    64.63%
+  other                        5     3.40%
+
+== LeftV30W20NoiseMedW9_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: median
+  samples: 18002   disagreements: 77
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary               9    11.69%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        1     1.30%
+  velocity_magnitude           0     0.00%
+  ambiguous                   66    85.71%
+  other                        1     1.30%
+
+== LeftV30W20_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: none
+  samples: 18002   disagreements: 54
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              49    90.74%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude           1     1.85%
+  ambiguous                    1     1.85%
+  other                        3     5.56%
+
+== left20ms30_extracted.tsv ==
+Discrepancy attribution
+  threshold: 30.000 deg/s   eye_mode: left   smoothing: none
+  samples: 45005   disagreements: 24
+  category                 count    fraction
+  gap_edge                     0     0.00%
+  event_boundary              13    54.17%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude           0     0.00%
+  ambiguous                   11    45.83%
+  other                        0     0.00%
+
+== onlyvelocity100_extracted.tsv ==
+Discrepancy attribution
+  threshold: 100.000 deg/s   eye_mode: average   smoothing: none
+  samples: 45005   disagreements: 270
+  category                 count    fraction
+  gap_edge                     1     0.37%
+  event_boundary              94    34.81%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            0     0.00%
+  smoothing_attenuation        0     0.00%
+  velocity_magnitude         153    56.67%
+  ambiguous                   20     7.41%
+  other                        2     0.74%
+
+== POOLED ==
+Discrepancy attribution
+  threshold: nan deg/s   eye_mode: mixed   smoothing: mixed
+  samples: 333037   disagreements: 2333
+  category                 count    fraction
+  gap_edge                     6     0.26%
+  event_boundary             971    41.62%
+  eye_offset_avg               0     0.00%
+  near_threshold_fp            1     0.04%
+  smoothing_attenuation       20     0.86%
+  velocity_magnitude         486    20.83%
+  ambiguous                  270    11.57%
+  other                      579    24.82%

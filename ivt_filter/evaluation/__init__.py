@@ -14,6 +14,13 @@ from .event_iou import (
     compute_event_iou_metrics,
     format_event_iou_report,
 )
+from .discrepancy import (
+    CATEGORIES,
+    DISCREPANCY_CATEGORY,
+    AttributionParams,
+    attribute_discrepancies,
+    format_attribution_report,
+)
 
 _PLOTTING_EXPORTS = {"plot_velocity_only", "plot_velocity_and_classification"}
 
@@ -42,4 +49,10 @@ __all__ = [
     "match_events_max_iou",
     "compute_event_iou_metrics",
     "format_event_iou_report",
+    # Per-sample discrepancy attribution (WS-A)
+    "CATEGORIES",
+    "DISCREPANCY_CATEGORY",
+    "AttributionParams",
+    "attribute_discrepancies",
+    "format_attribution_report",
 ]
