@@ -1,0 +1,149 @@
+{
+  "version": "1.0.0",
+  "source": "results/filter_benchmark/benchmark_results.json",
+  "gate_metric": "cohen_kappa",
+  "tolerance": 1e-06,
+  "n_conditions": 14,
+  "conditions": {
+    "I-VT-botheye20ms30threshold_extracted.tsv": {
+      "cohen_kappa": 0.9777083549922626,
+      "percentage_agreement": 99.47788008084437,
+      "percentage_agreement_all": 99.48339073436286,
+      "fixation_recall": 99.47005490997319,
+      "saccade_recall": 99.53488372093024,
+      "event_match_rate": 0.9955396966993756,
+      "event_correct_type_rate": 0.9937555753791257,
+      "event_mean_iou": 0.984643863587406
+    },
+    "I-VT-frequency120Fixation export_extracted.tsv": {
+      "cohen_kappa": 0.9551358698453246,
+      "percentage_agreement": 98.94896582733813,
+      "percentage_agreement_all": 98.93900677702477,
+      "fixation_recall": 98.914223669924,
+      "saccade_recall": 99.20374707259954,
+      "event_match_rate": 0.9926062846580407,
+      "event_correct_type_rate": 0.9907578558225508,
+      "event_mean_iou": 0.9800622199305729
+    },
+    "IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv": {
+      "cohen_kappa": 0.9786397819810176,
+      "percentage_agreement": 99.43858073209071,
+      "percentage_agreement_all": 99.44450616598157,
+      "fixation_recall": 99.46429738028353,
+      "saccade_recall": 99.28143712574851,
+      "event_match_rate": 0.9943609022556391,
+      "event_correct_type_rate": 0.9924812030075187,
+      "event_mean_iou": 0.9838145698713374
+    },
+    "IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv": {
+      "cohen_kappa": 0.989465346814921,
+      "percentage_agreement": 99.75931937758872,
+      "percentage_agreement_all": 99.76113765137207,
+      "fixation_recall": 99.86604579957901,
+      "saccade_recall": 98.99497487437185,
+      "event_match_rate": 0.994535519125683,
+      "event_correct_type_rate": 0.9899817850637522,
+      "event_mean_iou": 0.9937299509212479
+    },
+    "IVT30_extracted.tsv": {
+      "cohen_kappa": 0.9886889749335577,
+      "percentage_agreement": 99.68965359864907,
+      "percentage_agreement_all": 99.69781135429396,
+      "fixation_recall": 99.6696121876393,
+      "saccade_recall": 99.8240985048373,
+      "event_match_rate": 0.992,
+      "event_correct_type_rate": 0.9904,
+      "event_mean_iou": 0.9903244962336701
+    },
+    "LeftFixation_extracted.tsv": {
+      "cohen_kappa": 0.8067341008123711,
+      "percentage_agreement": 94.94716726618705,
+      "percentage_agreement_all": 94.92278635707143,
+      "fixation_recall": 95.40780481573738,
+      "saccade_recall": 91.56908665105387,
+      "event_match_rate": 0.9371534195933456,
+      "event_correct_type_rate": 0.9232902033271719,
+      "event_mean_iou": 0.9517058106107367
+    },
+    "LeftV30W1_extracted.tsv": {
+      "cohen_kappa": 0.966489404961162,
+      "percentage_agreement": 98.8691627116658,
+      "percentage_agreement_all": 98.92789690034441,
+      "fixation_recall": 99.25556617948368,
+      "saccade_recall": 96.5360824742268,
+      "event_match_rate": 0.9707943925233645,
+      "event_correct_type_rate": 0.9608644859813084,
+      "event_mean_iou": 0.9607152704120128
+    },
+    "LeftV30W20Discard60NoSaccade_extracted.tsv": {
+      "cohen_kappa": 0.9936894064091331,
+      "percentage_agreement": 99.81729239111216,
+      "percentage_agreement_all": 99.81113209643372,
+      "fixation_recall": 99.87250889082735,
+      "saccade_recall": 99.4186046511628,
+      "event_match_rate": 0.9982758620689656,
+      "event_correct_type_rate": 0.996551724137931,
+      "event_mean_iou": 0.9925999812429893
+    },
+    "LeftV30W20MergeF75ms0-5angle_extracted.tsv": {
+      "cohen_kappa": 0.9890077746785025,
+      "percentage_agreement": 99.66637401229148,
+      "percentage_agreement_all": 99.68336851460948,
+      "fixation_recall": 99.70077797725912,
+      "saccade_recall": 99.41348973607037,
+      "event_match_rate": 0.9981617647058824,
+      "event_correct_type_rate": 0.9972426470588235,
+      "event_mean_iou": 0.9869737264546483
+    },
+    "LeftV30W20NoiseAvW9_extracted.tsv": {
+      "cohen_kappa": 0.9778897746915057,
+      "percentage_agreement": 99.13848678427006,
+      "percentage_agreement_all": 99.18342406399289,
+      "fixation_recall": 99.55405308206862,
+      "saccade_recall": 97.31012658227847,
+      "event_match_rate": 0.9727722772277227,
+      "event_correct_type_rate": 0.9665841584158416,
+      "event_mean_iou": 0.973174602827571
+    },
+    "LeftV30W20NoiseMedW9_extracted.tsv": {
+      "cohen_kappa": 0.9846779531475786,
+      "percentage_agreement": 99.54873117271289,
+      "percentage_agreement_all": 99.57226974780579,
+      "fixation_recall": 99.90733999602885,
+      "saccade_recall": 96.77584442169908,
+      "event_match_rate": 0.9788408463661453,
+      "event_correct_type_rate": 0.9760809567617296,
+      "event_mean_iou": 0.988750136573584
+    },
+    "LeftV30W20_extracted.tsv": {
+      "cohen_kappa": 0.9897159401214299,
+      "percentage_agreement": 99.68352575748696,
+      "percentage_agreement_all": 99.70003332963005,
+      "fixation_recall": 99.67997866524435,
+      "saccade_recall": 99.70930232558139,
+      "event_match_rate": 0.9956896551724138,
+      "event_correct_type_rate": 0.993103448275862,
+      "event_mean_iou": 0.9872777649126308
+    },
+    "left20ms30_extracted.tsv": {
+      "cohen_kappa": 0.998032302656117,
+      "percentage_agreement": 99.94487194211554,
+      "percentage_agreement_all": 99.94667259193423,
+      "fixation_recall": 99.93685706016996,
+      "saccade_recall": 100.0,
+      "event_match_rate": 0.9992254066615027,
+      "event_correct_type_rate": 0.9969016266460109,
+      "event_mean_iou": 0.9975152212128956
+    },
+    "onlyvelocity100_extracted.tsv": {
+      "cohen_kappa": 0.9666420410707632,
+      "percentage_agreement": 99.38387111496509,
+      "percentage_agreement_all": 99.40006665926008,
+      "fixation_recall": 99.40084471073568,
+      "saccade_recall": 99.16074887023886,
+      "event_match_rate": 0.9884575026232949,
+      "event_correct_type_rate": 0.9800629590766002,
+      "event_mean_iou": 0.9764941173692715
+    }
+  }
+}

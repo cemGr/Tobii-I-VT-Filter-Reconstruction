@@ -1,39 +1,39 @@
-I-VT Filter Benchmark Gesamtstatistik
+I-VT Filter Benchmark Overall Statistics
 ====================================
 
-Dateien: 14 erfolgreich / 14 gesamt
-Fehlerhafte Dateien: 0
-Laufzeit gesamt: 518.5645 s
-Samples gesamt: 333037
-GT Fixation/Saccade Samples: 322561
+Files: 14 successful / 14 total
+Failed files: 0
+Total runtime: 861.0752 s
+Total samples: 333037
+GT Fixation/Saccade samples: 322561
 
-Gewichtete Gesamtmetriken
-- Agreement Fix/Sac: 98.5463 %
-- Agreement alle Labels: 98.5854 %
-- Fixation Recall: 99.1645 %
-- Saccade Recall: 94.0694 %
-- Cohen's Kappa gepoolt: 0.9460
-- Event Match Rate: 0.9883
-- Event Correct-Type Rate: 0.9841
+Weighted overall metrics
+- Agreement Fix/Sac: 99.2835 %
+- Agreement all labels: 99.2995 %
+- Fixation Recall: 99.3769 %
+- Saccade Recall: 98.6074 %
+- Cohen's Kappa pooled: 0.9735
+- Event Match Rate: 0.9863
+- Event Correct-Type Rate: 0.9819
 
-Ungewichtete Mittelwerte pro Datei
-- Agreement Fix/Sac: 98.1791 %
-- Agreement alle Labels: 98.2331 %
-- Fixation Recall: 98.9951 %
-- Saccade Recall: 94.1524 %
-- Cohen's Kappa: 0.9381
-- Event Mean IoU: 0.9498
+Unweighted per-file means
+- Agreement Fix/Sac: 99.1653 %
+- Agreement all labels: 99.1767 %
+- Fixation Recall: 99.2929 %
+- Saccade Recall: 98.3380 %
+- Cohen's Kappa: 0.9688
+- Event Mean IoU: 0.9820
 
-Beste Dateien nach Fix/Sac Agreement
-- left20ms30_extracted.tsv: 99.9449 % (alle Labels 99.9467 %, kappa 0.9980)
-- LeftV30W20Discard60NoSaccade_extracted.tsv: 99.8173 % (alle Labels 99.8111 %, kappa 0.9937)
-- IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv: 99.7593 % (alle Labels 99.7611 %, kappa 0.9895)
-- IVT30_extracted.tsv: 99.6897 % (alle Labels 99.6978 %, kappa 0.9887)
-- LeftV30W20_extracted.tsv: 99.6835 % (alle Labels 99.7000 %, kappa 0.9897)
+Best files by Fix/Sac agreement
+- left20ms30_extracted.tsv: 99.9449 % (all labels 99.9467 %, kappa 0.9980)
+- LeftV30W20Discard60NoSaccade_extracted.tsv: 99.8173 % (all labels 99.8111 %, kappa 0.9937)
+- IVT-Interp75-EyeBoth-NoNoise-W20-V30.tsv: 99.7593 % (all labels 99.7611 %, kappa 0.9895)
+- IVT30_extracted.tsv: 99.6897 % (all labels 99.6978 %, kappa 0.9887)
+- LeftV30W20_extracted.tsv: 99.6835 % (all labels 99.7000 %, kappa 0.9897)
 
-Schlechteste Dateien nach Fix/Sac Agreement
-- LeftV30W20NoiseAvW9_extracted.tsv: 88.6831 % (alle Labels 89.2734 %, kappa 0.6788)
-- LeftFixation_extracted.tsv: 94.6380 % (alle Labels 94.6117 %, kappa 0.7966)
-- IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv: 96.9459 % (alle Labels 96.9781 %, kappa 0.8774)
-- I-VT-frequency120Fixation export_extracted.tsv: 98.7860 % (alle Labels 98.7835 %, kappa 0.9486)
-- LeftV30W1_extracted.tsv: 98.8692 % (alle Labels 98.9279 %, kappa 0.9665)
+Worst files by Fix/Sac agreement
+- LeftFixation_extracted.tsv: 94.9472 % (all labels 94.9228 %, kappa 0.8067)
+- LeftV30W1_extracted.tsv: 98.8692 % (all labels 98.9279 %, kappa 0.9665)
+- I-VT-frequency120Fixation export_extracted.tsv: 98.9490 % (all labels 98.9390 %, kappa 0.9551)
+- LeftV30W20NoiseAvW9_extracted.tsv: 99.1385 % (all labels 99.1834 %, kappa 0.9779)
+- onlyvelocity100_extracted.tsv: 99.3839 % (all labels 99.4001 %, kappa 0.9666)

@@ -1,0 +1,31 @@
+# Pre-commit hooks mirroring the CI lint and type-check jobs
+# (.github/workflows/main.yml). ruff and mypy run from the active environment
+# (language: system) so local checks use the exact pinned tool versions from
+# constraints-dev.txt, and mypy sees the installed numpy/pandas rather than an
+# isolated hook environment.
+#
+# Setup:  pip install --requirement constraints-dev.txt && pre-commit install
+# Run all: pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff check ivt_filter
+        entry: ruff check ivt_filter
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: mypy
+        name: mypy ivt_filter
+        entry: mypy ivt_filter
+        language: system
+        types: [python]
+        pass_filenames: false
