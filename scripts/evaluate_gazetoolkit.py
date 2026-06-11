@@ -454,7 +454,25 @@ def generate_summary(results: Dict[str, Any]) -> str:
 
 # ── main ──────────────────────────────────────────────────────────────────────
 
-def main() -> None:
+def main(argv: "list[str] | None" = None) -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Evaluate GazeToolkit vs Tobii (head-to-head axis)")
+    parser.add_argument("--gtk-dir", default=str(GAZETOOLKIT_DIR),
+                        help="directory holding the GazeToolkit input/output files")
+    parser.add_argument("--results-dir", default=str(RESULTS_DIR))
+    args = parser.parse_args(argv)
+
+    gtk_dir = Path(args.gtk_dir)
+    RESULTS_DIR = Path(args.results_dir)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    NO_GAP_FILL_INPUT = gtk_dir / "I-VT-botheye20ms30threshold_input.csv"
+    NO_GAP_FILL_OUTPUT = gtk_dir / "I-VT-botheye20ms30threshold_output.tsv"
+    GAP_FILL_TOBII_TSV = (
+        gtk_dir / "dataset"
+        / "IVT-Interpolation75ms-Eyeboth-NoNoise-VelocityWindow20-VelocityTreshold30.tsv"
+    )
+
     results: Dict[str, Any] = {}
 
     # ── Variant 1: no-gap-fill ─────────────────────────────────────────────
