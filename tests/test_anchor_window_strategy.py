@@ -43,6 +43,8 @@ def reference_fixture() -> pd.DataFrame:
         / "inputs"
         / "LeftV30W1_extracted.tsv"
     )
+    if not path.exists():
+        pytest.skip("Tobii reference recording not available")
     df = pd.read_csv(path, sep="\t", decimal=",", low_memory=False)
     valid = df[df["validity_left"] == "Valid"].reset_index(drop=True)
     return valid

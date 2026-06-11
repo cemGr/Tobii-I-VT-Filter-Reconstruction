@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from ivt_filter.config import IVTClassifierConfig, OlsenVelocityConfig
 from ivt_filter.io.pipeline import IVTPipeline
 
@@ -13,6 +15,8 @@ def test_default_tobii_policy_handles_left_v30_w1_1ms_window() -> None:
         / "inputs"
         / "LeftV30W1_extracted.tsv"
     )
+    if not path.exists():
+        pytest.skip("Tobii reference recording not available")
     velocity_config = OlsenVelocityConfig(
         window_length_ms=1.0,
         eye_mode="left",
