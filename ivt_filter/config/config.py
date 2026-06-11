@@ -199,6 +199,9 @@ class OlsenVelocityConfig:
     # For fixed_window_samples: if the window edge has invalid samples,
     # use the velocity from the nearest sample with a valid window
     fixed_window_edge_fallback: bool = False
+    # How far (in samples) the edge fallback searches for a fillable velocity.
+    # Default 50 preserves the historical hard-coded limit.
+    fixed_window_edge_fallback_limit: int = 50
 
     # Strategies for eye_mode="average"
     # - average_window_single_eye:
@@ -258,6 +261,12 @@ class OlsenVelocityConfig:
     # and used to estimate the missing eye (instead of a simple fallback).
     # Corresponds to: RemoteTrackerGazeDataToRecordedTwoEyedGazeDataConverter (Tobii C#)
     tobii_eye_offset_interpolation: bool = False
+    # Strategy used by the offset interpolation when only one eye is valid:
+    # - "last_offset":       estimate the missing eye from the last inter-eye
+    #                        offset (current Tobii-reconstruction behaviour).
+    # - "single_eye_direct": use the valid eye directly, without a parallax
+    #                        offset (the combined gaze becomes the valid eye).
+    offset_fallback_strategy: Literal["last_offset", "single_eye_direct"] = "last_offset"
 
     def __post_init__(self) -> None:
         """Validate values and normalize deprecated selector flags into one policy."""
@@ -268,6 +277,7 @@ class OlsenVelocityConfig:
         _require_positive_integer("smoothing_min_samples", self.smoothing_min_samples)
         _require_non_negative_integer("smoothing_expansion_radius", self.smoothing_expansion_radius)
         _require_non_negative("gap_fill_max_gap_ms", self.gap_fill_max_gap_ms)
+        _require_positive_integer("fixed_window_edge_fallback_limit", self.fixed_window_edge_fallback_limit)
         _require_choice("time_unit", self.time_unit, ("ms", "us", "ns"))
         _require_choice("eye_mode", self.eye_mode, ("left", "right", "average", "strict_average"))
         _require_choice("smoothing_mode", self.smoothing_mode, (
@@ -279,6 +289,7 @@ class OlsenVelocityConfig:
         _require_choice("coordinate_rounding", self.coordinate_rounding, ("none", "nearest", "halfup", "floor", "ceil"))
         _require_choice("velocity_method", self.velocity_method, ("olsen2d", "ray3d", "ray3d_gaze_dir", "tobii_gaze_dir"))
         _require_choice("shifted_valid_fallback", self.shifted_valid_fallback, ("shrink", "unclassified"))
+        _require_choice("offset_fallback_strategy", self.offset_fallback_strategy, ("last_offset", "single_eye_direct"))
         if self.fixed_window_samples is not None:
             _require_fixed_window_samples(
                 "fixed_window_samples", self.fixed_window_samples,

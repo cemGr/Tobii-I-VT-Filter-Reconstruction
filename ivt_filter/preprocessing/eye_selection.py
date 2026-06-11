@@ -346,6 +346,7 @@ def apply_tobii_eye_offset_interpolation(
     rez_ = df["eye_right_z_mm"].to_numpy(dtype=float).copy() if has_eye_right else None
 
     max_v = cfg.max_validity
+    single_eye_direct = cfg.offset_fallback_strategy == "single_eye_direct"
 
     for i in range(len(df)):
         left_valid = (_parse_validity(vl_arr[i]) <= max_v
@@ -364,30 +365,55 @@ def apply_tobii_eye_offset_interpolation(
                     rez_[i] - lez[i],   # type: ignore[index]
                 ])
 
-        elif right_valid and not left_valid and last_gaze_offset is not None:
-            # Only right eye -> estimate left eye via the stored offset
-            # left_gaze = right_gaze - offset  (offset = right - left)
-            lx[i] = rx[i] - last_gaze_offset[0]
-            ly[i] = ry[i] - last_gaze_offset[1]
-            if (has_eye_left and has_eye_right and last_eye_offset is not None
-                    and np.isfinite(rex_[i])):  # type: ignore[index]
-                lex[i] = rex_[i] - last_eye_offset[0]   # type: ignore[index]
-                ley[i] = rey_[i] - last_eye_offset[1]   # type: ignore[index]
-                lez[i] = rez_[i] - last_eye_offset[2]   # type: ignore[index]
+        elif right_valid and not left_valid and (
+            single_eye_direct or last_gaze_offset is not None
+        ):
+            # Only right eye -> reconstruct the missing left eye.
+            if single_eye_direct:
+                # Use the valid eye directly (combined gaze becomes the right eye).
+                lx[i] = rx[i]
+                ly[i] = ry[i]
+                if has_eye_left and has_eye_right and np.isfinite(rex_[i]):  # type: ignore[index]
+                    lex[i] = rex_[i]   # type: ignore[index]
+                    ley[i] = rey_[i]   # type: ignore[index]
+                    lez[i] = rez_[i]   # type: ignore[index]
+            else:
+                # last_offset path: the elif guard ensures an offset is stored.
+                assert last_gaze_offset is not None
+                # left_gaze = right_gaze - offset  (offset = right - left)
+                lx[i] = rx[i] - last_gaze_offset[0]
+                ly[i] = ry[i] - last_gaze_offset[1]
+                if (has_eye_left and has_eye_right and last_eye_offset is not None
+                        and np.isfinite(rex_[i])):  # type: ignore[index]
+                    lex[i] = rex_[i] - last_eye_offset[0]   # type: ignore[index]
+                    ley[i] = rey_[i] - last_eye_offset[1]   # type: ignore[index]
+                    lez[i] = rez_[i] - last_eye_offset[2]   # type: ignore[index]
             # Set validity to the valid marker so that prepare_combined_columns
-            # treats the interpolated eye as equivalent
+            # treats the reconstructed eye as equivalent
             vl_out[i] = valid_marker_l
 
-        elif left_valid and not right_valid and last_gaze_offset is not None:
-            # Only left eye -> estimate right eye via the stored offset
-            # right_gaze = left_gaze + offset
-            rx[i] = lx[i] + last_gaze_offset[0]
-            ry[i] = ly[i] + last_gaze_offset[1]
-            if (has_eye_right and has_eye_left and last_eye_offset is not None
-                    and np.isfinite(lex[i])):  # type: ignore[index]
-                rex_[i] = lex[i] + last_eye_offset[0]   # type: ignore[index]
-                rey_[i] = ley[i] + last_eye_offset[1]   # type: ignore[index]
-                rez_[i] = lez[i] + last_eye_offset[2]   # type: ignore[index]
+        elif left_valid and not right_valid and (
+            single_eye_direct or last_gaze_offset is not None
+        ):
+            # Only left eye -> reconstruct the missing right eye.
+            if single_eye_direct:
+                rx[i] = lx[i]
+                ry[i] = ly[i]
+                if has_eye_right and has_eye_left and np.isfinite(lex[i]):  # type: ignore[index]
+                    rex_[i] = lex[i]   # type: ignore[index]
+                    rey_[i] = ley[i]   # type: ignore[index]
+                    rez_[i] = lez[i]   # type: ignore[index]
+            else:
+                # last_offset path: the elif guard ensures an offset is stored.
+                assert last_gaze_offset is not None
+                # right_gaze = left_gaze + offset
+                rx[i] = lx[i] + last_gaze_offset[0]
+                ry[i] = ly[i] + last_gaze_offset[1]
+                if (has_eye_right and has_eye_left and last_eye_offset is not None
+                        and np.isfinite(lex[i])):  # type: ignore[index]
+                    rex_[i] = lex[i] + last_eye_offset[0]   # type: ignore[index]
+                    rey_[i] = ley[i] + last_eye_offset[1]   # type: ignore[index]
+                    rez_[i] = lez[i] + last_eye_offset[2]   # type: ignore[index]
             # Set validity to the valid marker
             vr_out[i] = valid_marker_r
         # else: both invalid -> no estimation, data stays NaN

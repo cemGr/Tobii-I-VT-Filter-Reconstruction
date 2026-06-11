@@ -274,7 +274,8 @@ def apply_fixed_window_edge_fallback(
         ):
             continue
         found = None
-        for offset in range(1, min(50, len(df))):
+        search_limit = min(context.cfg.fixed_window_edge_fallback_limit, len(df))
+        for offset in range(1, search_limit):
             for candidate in (i + offset, i - offset):
                 if 0 <= candidate < len(df) and bool(valid[candidate]):
                     velocity = df.at[candidate, "velocity_deg_per_sec"]
@@ -283,6 +284,12 @@ def apply_fixed_window_edge_fallback(
                         break
             if found is not None:
                 break
+        if found is None:
+            logger.debug(
+                "edge fallback exhausted limit %d at sample %d; leaving unclassified",
+                context.cfg.fixed_window_edge_fallback_limit,
+                i,
+            )
         if found is not None:
             source_idx, velocity = found
             df.at[i, "velocity_deg_per_sec"] = velocity
@@ -422,7 +429,12 @@ def _compute_olsen_velocity_impl(
             combined_dir_z[i] = rdz[i]
 
     n = len(df)
-    if n == 0:
+    if n < 2:
+        # Fewer than two samples: no sampling rate can be estimated and no
+        # velocity window can be formed. Emit a NaN velocity so the classifier
+        # marks the sample(s) unclassified rather than raising.
+        if n == 1:
+            df["velocity_deg_per_sec"] = np.nan
         return df
 
     # Sampling analysis can adjust the effective fixed-window configuration.
