@@ -22,6 +22,8 @@ setup(
     extras_require={
         "plot": ["matplotlib>=3.5"],
         "parallel": ["joblib>=1.1"],
+        # External hand-annotated benchmark loader (Lund2013 .mat files).
+        "external": ["scipy>=1.7"],
     },
     classifiers=[
         "Programming Language :: Python :: 3",

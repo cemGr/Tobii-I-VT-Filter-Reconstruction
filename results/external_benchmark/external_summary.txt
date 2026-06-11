@@ -1,0 +1,9 @@
+External benchmark (Lund2013 / Andersson 2017)
+  config: {'velocity_threshold_deg_per_sec': 30.0, 'window_length_ms': 20.0, 'velocity_method': 'olsen2d'}
+
+  P0 vs MN (14 files): pooled kappa=0.617 agree=93.7% fixR=97 sacR=73 | event match=0.959 IoU=0.752
+  P0 vs RA (14 files): pooled kappa=0.603 agree=93.5% fixR=98 sacR=72 | event match=0.974 IoU=0.737
+  S1 vs MN (14 files): pooled kappa=0.599 agree=94.7% fixR=95 sacR=92 | event match=0.958 IoU=0.800
+  S1 vs RA (14 files): pooled kappa=0.605 agree=95.1% fixR=95 sacR=93 | event match=0.963 IoU=0.801
+  S2 vs MN (14 files): pooled kappa=0.615 agree=93.7% fixR=97 sacR=73 | event match=0.960 IoU=0.751
+  S2 vs RA (14 files): pooled kappa=0.595 agree=93.4% fixR=97 sacR=72 | event match=0.963 IoU=0.738

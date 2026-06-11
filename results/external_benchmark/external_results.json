@@ -1,0 +1,868 @@
+{
+  "config": {
+    "velocity_threshold_deg_per_sec": 30.0,
+    "window_length_ms": 20.0,
+    "velocity_method": "olsen2d"
+  },
+  "data_dir": "/home/cem/Documents/Gitprojekt/Tobii-I-VT-Filter-Reconstruction/test_data/external/lund2013/img",
+  "protocols": {
+    "P0": {
+      "MN": {
+        "n_files": 14,
+        "pooled_sample": {
+          "cohen_kappa": 0.6165107067924533,
+          "percentage_agreement": 93.72590432129807,
+          "fixation_recall": 97.33787857888827,
+          "saccade_recall": 73.15074643618813
+        },
+        "mean_event": {
+          "match_rate": 0.9589167699800648,
+          "mean_iou": 0.7517077576193057,
+          "correct_type_rate": 0.9502954620974281
+        },
+        "files": {
+          "TH34_img_Europe_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7824131651735833,
+            "percentage_agreement": 95.12830793905373,
+            "fixation_recall": 98.7155534796824,
+            "saccade_recall": 73.37110481586402,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7823841623181702
+          },
+          "TH34_img_vy_labelled_MN.mat": {
+            "n_samples": 4990,
+            "cohen_kappa": 0.7287309014496033,
+            "percentage_agreement": 98.89779559118237,
+            "fixation_recall": 99.65135356849876,
+            "saccade_recall": 66.66666666666666,
+            "event_match_rate": 0.8461538461538461,
+            "event_mean_iou": 0.7572156939154955
+          },
+          "TL20_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7195960901980898,
+            "percentage_agreement": 95.38650809924134,
+            "fixation_recall": 97.70920991117345,
+            "saccade_recall": 78.79799666110183,
+            "event_match_rate": 0.896551724137931,
+            "event_mean_iou": 0.7726287982815082
+          },
+          "TL28_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.6938622763960627,
+            "percentage_agreement": 90.23900381602732,
+            "fixation_recall": 94.02460456942003,
+            "saccade_recall": 75.1004016064257,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7157387900091027
+          },
+          "UH21_img_Rome_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.6695807876880274,
+            "percentage_agreement": 92.1411387329591,
+            "fixation_recall": 98.56080594866874,
+            "saccade_recall": 59.462759462759465,
+            "event_match_rate": 0.8769230769230769,
+            "event_mean_iou": 0.7168704436217922
+          },
+          "UH27_img_vy_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.753688355963087,
+            "percentage_agreement": 94.20609462710505,
+            "fixation_recall": 98.88467014712862,
+            "saccade_recall": 68.73385012919897,
+            "event_match_rate": 0.9666666666666667,
+            "event_mean_iou": 0.7692882038153003
+          },
+          "UH29_img_Europe_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7276325001564345,
+            "percentage_agreement": 93.4439498178875,
+            "fixation_recall": 98.14498413473272,
+            "saccade_recall": 70.6508875739645,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.834335479287073
+          },
+          "UH33_img_vy_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7429957622459004,
+            "percentage_agreement": 94.32638331996792,
+            "fixation_recall": 98.55140186915888,
+            "saccade_recall": 68.78531073446328,
+            "event_match_rate": 0.9344262295081968,
+            "event_mean_iou": 0.7780215682532718
+          },
+          "UH47_img_Europe_labelled_MN.mat": {
+            "n_samples": 1997,
+            "cohen_kappa": 0.6163754922572866,
+            "percentage_agreement": 89.18377566349524,
+            "fixation_recall": 94.16767922235722,
+            "saccade_recall": 65.8119658119658,
+            "event_match_rate": 0.9433962264150944,
+            "event_mean_iou": 0.7160374172710736
+          },
+          "UL23_img_Europe_labelled_MN.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.609502995948415,
+            "percentage_agreement": 93.24236517218974,
+            "fixation_recall": 96.81662720336753,
+            "saccade_recall": 76.59313725490196,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.6900471059139314
+          },
+          "UL31_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4986,
+            "cohen_kappa": 0.3771143826190617,
+            "percentage_agreement": 94.3836405529954,
+            "fixation_recall": 97.2420837589377,
+            "saccade_recall": 78.69158878504673,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7713127533366714
+          },
+          "UL39_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.3603698985461627,
+            "percentage_agreement": 92.79700654817586,
+            "fixation_recall": 94.24354243542436,
+            "saccade_recall": 84.90945674044266,
+            "event_match_rate": 0.9782608695652174,
+            "event_mean_iou": 0.7325009881874173
+          },
+          "UL43_img_Rome_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.71741923620307,
+            "percentage_agreement": 94.60370994940978,
+            "fixation_recall": 97.27431857964491,
+            "saccade_recall": 80.26845637583892,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7951495664611133
+          },
+          "UL47_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 1996,
+            "cohen_kappa": 0.5636783507620102,
+            "percentage_agreement": 87.4534821903243,
+            "fixation_recall": 90.8598510494245,
+            "saccade_recall": 75.0,
+            "event_match_rate": 0.9824561403508771,
+            "event_mean_iou": 0.69237763599836
+          }
+        }
+      },
+      "RA": {
+        "n_files": 14,
+        "pooled_sample": {
+          "cohen_kappa": 0.6029331848463155,
+          "percentage_agreement": 93.54158314013283,
+          "fixation_recall": 97.52818285241493,
+          "saccade_recall": 72.17911771225893
+        },
+        "mean_event": {
+          "match_rate": 0.9737017609526931,
+          "mean_iou": 0.7369694170078018,
+          "correct_type_rate": 0.9631035871966246
+        },
+        "files": {
+          "TH34_img_Europe_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8104888339177374,
+            "percentage_agreement": 95.91921715594421,
+            "fixation_recall": 98.63407620416966,
+            "saccade_recall": 77.93650793650794,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8019004752751029
+          },
+          "TH34_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7071182772061246,
+            "percentage_agreement": 98.52193995381062,
+            "fixation_recall": 99.85687022900763,
+            "saccade_recall": 57.971014492753625,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7035257190407106
+          },
+          "TL20_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7543868610853413,
+            "percentage_agreement": 95.54883318928262,
+            "fixation_recall": 97.56461232604374,
+            "saccade_recall": 82.11920529801324,
+            "event_match_rate": 0.9454545454545454,
+            "event_mean_iou": 0.7778472666530128
+          },
+          "TL28_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.727419417500874,
+            "percentage_agreement": 91.38409042439753,
+            "fixation_recall": 93.61869747899159,
+            "saccade_recall": 81.72531214528944,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7506871000893023
+          },
+          "UH21_img_Rome_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.6536343469407223,
+            "percentage_agreement": 91.7401764234162,
+            "fixation_recall": 98.36734693877551,
+            "saccade_recall": 58.201701093560146,
+            "event_match_rate": 0.9047619047619048,
+            "event_mean_iou": 0.6960354711426322
+          },
+          "UH27_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7062031927439981,
+            "percentage_agreement": 92.93072106645123,
+            "fixation_recall": 98.48192771084338,
+            "saccade_recall": 64.16978776529338,
+            "event_match_rate": 0.9661016949152542,
+            "event_mean_iou": 0.7268626649250497
+          },
+          "UH29_img_Europe_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7369830790528988,
+            "percentage_agreement": 93.80566801619433,
+            "fixation_recall": 98.15309842041312,
+            "saccade_recall": 72.12121212121212,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7977597775925098
+          },
+          "UH33_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7264961668452725,
+            "percentage_agreement": 93.61790302527973,
+            "fixation_recall": 98.67582148111819,
+            "saccade_recall": 66.0427807486631,
+            "event_match_rate": 0.9032258064516129,
+            "event_mean_iou": 0.7683390101315517
+          },
+          "UH47_img_Europe_labelled_RA.mat": {
+            "n_samples": 1997,
+            "cohen_kappa": 0.606658870834657,
+            "percentage_agreement": 88.88332498748123,
+            "fixation_recall": 94.0389294403893,
+            "saccade_recall": 64.87252124645893,
+            "event_match_rate": 0.9122807017543859,
+            "event_mean_iou": 0.7115411699012962
+          },
+          "UL23_img_Europe_labelled_RA.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.5636917906592563,
+            "percentage_agreement": 92.27957971676565,
+            "fixation_recall": 97.98387096774194,
+            "saccade_recall": 70.41942604856513,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.6601754986487434
+          },
+          "UL31_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4986,
+            "cohen_kappa": 0.31726377428077496,
+            "percentage_agreement": 93.09695638531534,
+            "fixation_recall": 97.6009139375476,
+            "saccade_recall": 72.01426024955437,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7049727805914903
+          },
+          "UL39_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.3705595518354481,
+            "percentage_agreement": 93.04432222581688,
+            "fixation_recall": 95.77689243027888,
+            "saccade_recall": 81.23924268502581,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7319859603506366
+          },
+          "UL43_img_Rome_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.720269046424038,
+            "percentage_agreement": 94.6470462785242,
+            "fixation_recall": 97.74854540855047,
+            "saccade_recall": 77.98913043478261,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7870961213110729
+          },
+          "UL47_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 1996,
+            "cohen_kappa": 0.5901005357545269,
+            "percentage_agreement": 88.6096256684492,
+            "fixation_recall": 92.75261324041811,
+            "saccade_recall": 74.94252873563218,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.6988428224561144
+          }
+        }
+      }
+    },
+    "S1": {
+      "MN": {
+        "n_files": 14,
+        "pooled_sample": {
+          "cohen_kappa": 0.5990623974170892,
+          "percentage_agreement": 94.72157967079016,
+          "fixation_recall": 94.9572064994362,
+          "saccade_recall": 92.42941916921417
+        },
+        "mean_event": {
+          "match_rate": 0.9580799520330379,
+          "mean_iou": 0.8002388338538127,
+          "correct_type_rate": 0.9475033709869772
+        },
+        "files": {
+          "TH34_img_Europe_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8813037896736349,
+            "percentage_agreement": 97.71451483560544,
+            "fixation_recall": 97.94871794871794,
+            "saccade_recall": 95.62624254473161,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8932834254584354
+          },
+          "TH34_img_vy_labelled_MN.mat": {
+            "n_samples": 4990,
+            "cohen_kappa": 0.7521627128222006,
+            "percentage_agreement": 99.09819639278558,
+            "fixation_recall": 99.5304205798285,
+            "saccade_recall": 76.08695652173914,
+            "event_match_rate": 0.8461538461538461,
+            "event_mean_iou": 0.8134610135551693
+          },
+          "TL20_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.6516131896427345,
+            "percentage_agreement": 94.79188025425466,
+            "fixation_recall": 95.20410439437876,
+            "saccade_recall": 90.1015228426396,
+            "event_match_rate": 0.896551724137931,
+            "event_mean_iou": 0.7658309249771272
+          },
+          "TL28_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.6133720610333258,
+            "percentage_agreement": 89.93773850170716,
+            "fixation_recall": 89.09538737124943,
+            "saccade_recall": 97.270955165692,
+            "event_match_rate": 0.9714285714285714,
+            "event_mean_iou": 0.7432289614656107
+          },
+          "UH21_img_Rome_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7974622525483437,
+            "percentage_agreement": 96.25100240577386,
+            "fixation_recall": 97.20372836218375,
+            "saccade_recall": 87.34439834024896,
+            "event_match_rate": 0.8769230769230769,
+            "event_mean_iou": 0.8558024578058862
+          },
+          "UH27_img_vy_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8514382422722574,
+            "percentage_agreement": 97.17321571772254,
+            "fixation_recall": 97.35907678650688,
+            "saccade_recall": 95.4356846473029,
+            "event_match_rate": 0.9666666666666667,
+            "event_mean_iou": 0.886102403560561
+          },
+          "UH29_img_Europe_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.79888384,
+            "percentage_agreement": 95.83164710643463,
+            "fixation_recall": 97.85630153121319,
+            "saccade_recall": 83.50071736011478,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8833526647404126
+          },
+          "UH33_img_vy_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8731440299320407,
+            "percentage_agreement": 97.59422614274258,
+            "fixation_recall": 98.21388702835453,
+            "saccade_recall": 92.14145383104125,
+            "event_match_rate": 0.9508196721311475,
+            "event_mean_iou": 0.8659157149239975
+          },
+          "UH47_img_Europe_labelled_MN.mat": {
+            "n_samples": 1997,
+            "cohen_kappa": 0.5405192109907254,
+            "percentage_agreement": 89.9849774661993,
+            "fixation_recall": 90.0326797385621,
+            "saccade_recall": 89.44099378881988,
+            "event_match_rate": 0.9433962264150944,
+            "event_mean_iou": 0.659986989600255
+          },
+          "UL23_img_Europe_labelled_MN.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.4807153423323666,
+            "percentage_agreement": 91.40134286333117,
+            "fixation_recall": 91.0056657223796,
+            "saccade_recall": 95.8005249343832,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8032186617879924
+          },
+          "UL31_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4986,
+            "cohen_kappa": 0.33242607029154764,
+            "percentage_agreement": 92.94354838709677,
+            "fixation_recall": 92.64475743348983,
+            "saccade_recall": 96.38989169675091,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8193292214231035
+          },
+          "UL39_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.3122944345927896,
+            "percentage_agreement": 91.23791705643904,
+            "fixation_recall": 90.73560027758502,
+            "saccade_recall": 95.6923076923077,
+            "event_match_rate": 0.9787234042553191,
+            "event_mean_iou": 0.7230170219363472
+          },
+          "UL43_img_Rome_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7434330718013523,
+            "percentage_agreement": 96.03709949409782,
+            "fixation_recall": 96.05168700646087,
+            "saccade_recall": 95.929203539823,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8663370717481905
+          },
+          "UL47_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 1996,
+            "cohen_kappa": 0.44971288340395177,
+            "percentage_agreement": 85.64593301435407,
+            "fixation_recall": 84.47971781305115,
+            "saccade_recall": 96.66666666666667,
+            "event_match_rate": 0.9824561403508771,
+            "event_mean_iou": 0.6244771409702891
+          }
+        }
+      },
+      "RA": {
+        "n_files": 14,
+        "pooled_sample": {
+          "cohen_kappa": 0.6045681534879265,
+          "percentage_agreement": 95.14877891470707,
+          "fixation_recall": 95.38738599175073,
+          "saccade_recall": 92.99685644428921
+        },
+        "mean_event": {
+          "match_rate": 0.9630922544456378,
+          "mean_iou": 0.8005237482179278,
+          "correct_type_rate": 0.9539123278850504
+        },
+        "files": {
+          "TH34_img_Europe_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8501646746213904,
+            "percentage_agreement": 97.16843639392046,
+            "fixation_recall": 97.486741987549,
+            "saccade_recall": 94.20600858369099,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8448221402464255
+          },
+          "TH34_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8046295890453327,
+            "percentage_agreement": 99.19168591224017,
+            "fixation_recall": 99.7165131112686,
+            "saccade_recall": 76.28865979381443,
+            "event_match_rate": 0.8666666666666667,
+            "event_mean_iou": 0.769138108667293
+          },
+          "TL20_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7207800135201373,
+            "percentage_agreement": 95.37597234226448,
+            "fixation_recall": 95.71565342269028,
+            "saccade_recall": 92.22222222222223,
+            "event_match_rate": 0.9298245614035088,
+            "event_mean_iou": 0.7818908986858271
+          },
+          "TL28_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.69715025869368,
+            "percentage_agreement": 91.40541693324803,
+            "fixation_recall": 90.87330873308733,
+            "saccade_recall": 94.87179487179486,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7841560609471201
+          },
+          "UH21_img_Rome_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.804995467661366,
+            "percentage_agreement": 96.4514835605453,
+            "fixation_recall": 97.10561201944323,
+            "saccade_recall": 90.04329004329004,
+            "event_match_rate": 0.9047619047619048,
+            "event_mean_iou": 0.8520272762195443
+          },
+          "UH27_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8441309147992896,
+            "percentage_agreement": 97.05110078771966,
+            "fixation_recall": 97.16644355198572,
+            "saccade_recall": 95.94882729211088,
+            "event_match_rate": 0.9666666666666667,
+            "event_mean_iou": 0.8612732129053737
+          },
+          "UH29_img_Europe_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8562881878874392,
+            "percentage_agreement": 97.51012145748987,
+            "fixation_recall": 97.83110290724504,
+            "saccade_recall": 95.21452145214522,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.89402224204526
+          },
+          "UH33_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.8691533282231012,
+            "percentage_agreement": 97.40986324077912,
+            "fixation_recall": 98.30193068155386,
+            "saccade_recall": 90.13282732447819,
+            "event_match_rate": 0.9206349206349206,
+            "event_mean_iou": 0.8449151915121055
+          },
+          "UH47_img_Europe_labelled_RA.mat": {
+            "n_samples": 1997,
+            "cohen_kappa": 0.5783715774710396,
+            "percentage_agreement": 90.18527791687532,
+            "fixation_recall": 91.12723214285714,
+            "saccade_recall": 81.95121951219512,
+            "event_match_rate": 0.9122807017543859,
+            "event_mean_iou": 0.6833528280809735
+          },
+          "UL23_img_Europe_labelled_RA.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.47009731981631653,
+            "percentage_agreement": 91.91411603471906,
+            "fixation_recall": 91.82643794147326,
+            "saccade_recall": 92.7536231884058,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.8021916574528093
+          },
+          "UL31_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4986,
+            "cohen_kappa": 0.2935242928502152,
+            "percentage_agreement": 93.47348603702541,
+            "fixation_recall": 93.28049620951067,
+            "saccade_recall": 95.43859649122807,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7902174953737237
+          },
+          "UL39_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.32804873890956393,
+            "percentage_agreement": 92.00905855710127,
+            "fixation_recall": 91.83899556868538,
+            "saccade_recall": 93.21148825065274,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7664562999269516
+          },
+          "UL43_img_Rome_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7540459254144831,
+            "percentage_agreement": 96.3318404777138,
+            "fixation_recall": 96.45612343297975,
+            "saccade_recall": 95.37892791127541,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.876887178041082
+          },
+          "UL47_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 1996,
+            "cohen_kappa": 0.47880520615150257,
+            "percentage_agreement": 86.79144385026738,
+            "fixation_recall": 85.65451285116558,
+            "saccade_recall": 96.44670050761421,
+            "event_match_rate": 0.9824561403508771,
+            "event_mean_iou": 0.6559818849464998
+          }
+        }
+      }
+    },
+    "S2": {
+      "MN": {
+        "n_files": 14,
+        "pooled_sample": {
+          "cohen_kappa": 0.6148499347758589,
+          "percentage_agreement": 93.68802219158513,
+          "fixation_recall": 97.25503957577885,
+          "saccade_recall": 73.15074643618813
+        },
+        "mean_event": {
+          "match_rate": 0.9604695650111206,
+          "mean_iou": 0.7510109752778619,
+          "correct_type_rate": 0.951848257128484
+        },
+        "files": {
+          "TH34_img_Europe_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7824131651735833,
+            "percentage_agreement": 95.12830793905373,
+            "fixation_recall": 98.7155534796824,
+            "saccade_recall": 73.37110481586402,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7823841623181702
+          },
+          "TH34_img_vy_labelled_MN.mat": {
+            "n_samples": 4990,
+            "cohen_kappa": 0.7287309014496033,
+            "percentage_agreement": 98.89779559118237,
+            "fixation_recall": 99.65135356849876,
+            "saccade_recall": 66.66666666666666,
+            "event_match_rate": 0.8461538461538461,
+            "event_mean_iou": 0.7572156939154955
+          },
+          "TL20_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7195960901980898,
+            "percentage_agreement": 95.38650809924134,
+            "fixation_recall": 97.70920991117345,
+            "saccade_recall": 78.79799666110183,
+            "event_match_rate": 0.896551724137931,
+            "event_mean_iou": 0.7726287982815082
+          },
+          "TL28_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.6938622763960627,
+            "percentage_agreement": 90.23900381602732,
+            "fixation_recall": 94.02460456942003,
+            "saccade_recall": 75.1004016064257,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7157387900091027
+          },
+          "UH21_img_Rome_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.6695807876880274,
+            "percentage_agreement": 92.1411387329591,
+            "fixation_recall": 98.56080594866874,
+            "saccade_recall": 59.462759462759465,
+            "event_match_rate": 0.8769230769230769,
+            "event_mean_iou": 0.7168704436217922
+          },
+          "UH27_img_vy_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.753688355963087,
+            "percentage_agreement": 94.20609462710505,
+            "fixation_recall": 98.88467014712862,
+            "saccade_recall": 68.73385012919897,
+            "event_match_rate": 0.9666666666666667,
+            "event_mean_iou": 0.7692882038153003
+          },
+          "UH29_img_Europe_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7276325001564345,
+            "percentage_agreement": 93.4439498178875,
+            "fixation_recall": 98.14498413473272,
+            "saccade_recall": 70.6508875739645,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.834335479287073
+          },
+          "UH33_img_vy_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7429957622459004,
+            "percentage_agreement": 94.32638331996792,
+            "fixation_recall": 98.55140186915888,
+            "saccade_recall": 68.78531073446328,
+            "event_match_rate": 0.9344262295081968,
+            "event_mean_iou": 0.7780215682532718
+          },
+          "UH47_img_Europe_labelled_MN.mat": {
+            "n_samples": 1997,
+            "cohen_kappa": 0.6163754922572866,
+            "percentage_agreement": 89.18377566349524,
+            "fixation_recall": 94.16767922235722,
+            "saccade_recall": 65.8119658119658,
+            "event_match_rate": 0.9433962264150944,
+            "event_mean_iou": 0.7160374172710736
+          },
+          "UL23_img_Europe_labelled_MN.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.609502995948415,
+            "percentage_agreement": 93.24236517218974,
+            "fixation_recall": 96.81662720336753,
+            "saccade_recall": 76.59313725490196,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.6900471059139314
+          },
+          "UL31_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4986,
+            "cohen_kappa": 0.3771143826190617,
+            "percentage_agreement": 94.3836405529954,
+            "fixation_recall": 97.2420837589377,
+            "saccade_recall": 78.69158878504673,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7713127533366714
+          },
+          "UL39_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.3612153912361602,
+            "percentage_agreement": 92.32409381663112,
+            "fixation_recall": 93.45622119815668,
+            "saccade_recall": 84.90945674044266,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.722746035407202
+          },
+          "UL43_img_Rome_labelled_MN.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.71741923620307,
+            "percentage_agreement": 94.60370994940978,
+            "fixation_recall": 97.27431857964491,
+            "saccade_recall": 80.26845637583892,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7951495664611133
+          },
+          "UL47_img_konijntjes_labelled_MN.mat": {
+            "n_samples": 1996,
+            "cohen_kappa": 0.5636783507620102,
+            "percentage_agreement": 87.4534821903243,
+            "fixation_recall": 90.8598510494245,
+            "saccade_recall": 75.0,
+            "event_match_rate": 0.9824561403508771,
+            "event_mean_iou": 0.69237763599836
+          }
+        }
+      },
+      "RA": {
+        "n_files": 14,
+        "pooled_sample": {
+          "cohen_kappa": 0.5953828206723113,
+          "percentage_agreement": 93.35992922599276,
+          "fixation_recall": 97.11517676420304,
+          "saccade_recall": 72.17911771225893
+        },
+        "mean_event": {
+          "match_rate": 0.9632116004296456,
+          "mean_iou": 0.7381067514780513,
+          "correct_type_rate": 0.9569918607395111
+        },
+        "files": {
+          "TH34_img_Europe_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7911200692356745,
+            "percentage_agreement": 95.56224899598394,
+            "fixation_recall": 98.11494252873563,
+            "saccade_recall": 77.93650793650794,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7939388588276284
+          },
+          "TH34_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7080843032400127,
+            "percentage_agreement": 98.7169206094627,
+            "fixation_recall": 99.87628865979381,
+            "saccade_recall": 57.971014492753625,
+            "event_match_rate": 0.8666666666666667,
+            "event_mean_iou": 0.7410822801266834
+          },
+          "TL20_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7530214964795165,
+            "percentage_agreement": 95.70177225504176,
+            "fixation_recall": 97.60743321718931,
+            "saccade_recall": 82.11920529801324,
+            "event_match_rate": 0.9298245614035088,
+            "event_mean_iou": 0.7816759829570925
+          },
+          "TL28_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.7208297111980262,
+            "percentage_agreement": 91.49748743718592,
+            "fixation_recall": 93.60039081582804,
+            "saccade_recall": 81.72531214528944,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7533315019498747
+          },
+          "UH21_img_Rome_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.6536343469407223,
+            "percentage_agreement": 91.7401764234162,
+            "fixation_recall": 98.36734693877551,
+            "saccade_recall": 58.201701093560146,
+            "event_match_rate": 0.9047619047619048,
+            "event_mean_iou": 0.6960354711426322
+          },
+          "UH27_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7052030245058581,
+            "percentage_agreement": 92.9430633520449,
+            "fixation_recall": 98.44757582994984,
+            "saccade_recall": 64.16978776529338,
+            "event_match_rate": 0.9666666666666667,
+            "event_mean_iou": 0.7280452835548686
+          },
+          "UH29_img_Europe_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7369830790528988,
+            "percentage_agreement": 93.80566801619433,
+            "fixation_recall": 98.15309842041312,
+            "saccade_recall": 72.12121212121212,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7977597775925098
+          },
+          "UH33_img_vy_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.7271147345706508,
+            "percentage_agreement": 93.80513231756214,
+            "fixation_recall": 98.70283018867924,
+            "saccade_recall": 66.0427807486631,
+            "event_match_rate": 0.9047619047619048,
+            "event_mean_iou": 0.771092489889276
+          },
+          "UH47_img_Europe_labelled_RA.mat": {
+            "n_samples": 1997,
+            "cohen_kappa": 0.606658870834657,
+            "percentage_agreement": 88.88332498748123,
+            "fixation_recall": 94.0389294403893,
+            "saccade_recall": 64.87252124645893,
+            "event_match_rate": 0.9122807017543859,
+            "event_mean_iou": 0.7115411699012962
+          },
+          "UL23_img_Europe_labelled_RA.mat": {
+            "n_samples": 4989,
+            "cohen_kappa": 0.5638615824541712,
+            "percentage_agreement": 92.36403995560488,
+            "fixation_recall": 97.88830230619617,
+            "saccade_recall": 70.41942604856513,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.6646405369611145
+          },
+          "UL31_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4986,
+            "cohen_kappa": 0.31726377428077496,
+            "percentage_agreement": 93.09695638531534,
+            "fixation_recall": 97.6009139375476,
+            "saccade_recall": 72.01426024955437,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7049727805914903
+          },
+          "UL39_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.37276532980500177,
+            "percentage_agreement": 92.49732047159699,
+            "fixation_recall": 94.57315138051412,
+            "saccade_recall": 81.23924268502581,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7169413243664565
+          },
+          "UL43_img_Rome_labelled_RA.mat": {
+            "n_samples": 4988,
+            "cohen_kappa": 0.6385549987996184,
+            "percentage_agreement": 91.75236528177705,
+            "fixation_recall": 94.20746485700437,
+            "saccade_recall": 77.98913043478261,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.7735942403756803
+          },
+          "UL47_img_konijntjes_labelled_RA.mat": {
+            "n_samples": 1996,
+            "cohen_kappa": 0.5901005357545269,
+            "percentage_agreement": 88.6096256684492,
+            "fixation_recall": 92.75261324041811,
+            "saccade_recall": 74.94252873563218,
+            "event_match_rate": 1.0,
+            "event_mean_iou": 0.6988428224561144
+          }
+        }
+      }
+    }
+  }
+}
