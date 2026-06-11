@@ -48,7 +48,7 @@ jobs:
       # - Unfixed vulnerabilities are temporarily accepted because no patched dependency
       #   or base-image version is available yet. Fixable HIGH and CRITICAL findings fail the job.
       - name: Report accepted vulnerability findings
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           format: table
@@ -58,7 +58,7 @@ jobs:
           exit-code: '0'
 
       - name: Reject fixable high-severity vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
           format: table
