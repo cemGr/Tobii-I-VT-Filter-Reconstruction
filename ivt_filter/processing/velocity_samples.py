@@ -531,6 +531,28 @@ def _compute_olsen_velocity_impl(
 
     neighbor_imputer = AverageNeighborImputer.from_arrays(arrays)
 
+    # Accumulate per-sample results in numpy arrays and assign the columns once
+    # after the loop. This is value-identical to the previous scalar ``df.at``
+    # writes but avoids ~15 pandas ``_set_value`` calls per sample, which
+    # dominated the runtime on long recordings. Defaults mirror the column
+    # initialisers above (float NaN / bool False / object pd.NA).
+    out_velocity = np.full(n, np.nan)
+    out_dt_ms = np.full(n, np.nan)
+    out_velocity_raw = np.full(n, np.nan)
+    out_window_any_invalid = np.zeros(n, dtype=bool)
+    out_window_width = np.full(n, pd.NA, dtype=object)
+    out_first_idx = np.full(n, pd.NA, dtype=object)
+    out_last_idx = np.full(n, pd.NA, dtype=object)
+    out_eye_used = np.full(n, pd.NA, dtype=object)
+    out_window_selector = np.full(n, pd.NA, dtype=object)
+    out_fallback_applied = np.full(n, pd.NA, dtype=object)
+    out_env_above = np.full(n, pd.NA, dtype=object)
+    out_env_below = np.full(n, pd.NA, dtype=object)
+    out_env_rule = np.full(n, pd.NA, dtype=object)
+    out_gap_triggered = np.full(n, pd.NA, dtype=object)
+    out_gap_left = np.full(n, pd.NA, dtype=object)
+    out_gap_right = np.full(n, pd.NA, dtype=object)
+
     for i in range(n):
         # Explicit check: only compute velocity if the sample itself is valid
         if not bool(valid[i]):
@@ -572,13 +594,13 @@ def _compute_olsen_velocity_impl(
                 gap = R - L - 1
                 if gap <= gap_max:
                     triggered = True
-            df.at[i, "gap_rule_triggered"] = bool(triggered)
-            df.at[i, "gap_left_invalid_idx"] = None if L == -1 else int(L)
-            df.at[i, "gap_right_invalid_idx"] = None if R == -1 else int(R)
+            out_gap_triggered[i] = bool(triggered)
+            out_gap_left[i] = None if L == -1 else int(L)
+            out_gap_right[i] = None if R == -1 else int(R)
             # For backward compatibility, set the old env flags to False
-            df.at[i, "env_has_invalid_above"] = False
-            df.at[i, "env_has_invalid_below"] = False
-            df.at[i, "env_rule_triggered"] = False
+            out_env_above[i] = False
+            out_env_below[i] = False
+            out_env_rule[i] = False
             if triggered:
                 continue
 
@@ -611,7 +633,7 @@ def _compute_olsen_velocity_impl(
         window_lv = left_valid[first_idx : last_idx + 1]
         window_rv = right_valid[first_idx : last_idx + 1]
         window_any_invalid = (~window_lv | ~window_rv).any()
-        df.at[i, "window_any_invalid"] = bool(window_any_invalid)
+        out_window_any_invalid[i] = bool(window_any_invalid)
 
         # Compute the time difference (uses the window selector type)
         dt_ms = _calculate_dt_ms(
@@ -869,18 +891,37 @@ def _compute_olsen_velocity_impl(
         sample_result = VelocitySampleComputer.compute_sample(
             ctx, dt_ms, velocity_strategy
         )
-        df.at[i, "velocity_deg_per_sec"] = sample_result.velocity_deg_per_sec
-        df.at[i, "dt_ms"] = sample_result.dt_ms
-        df.at[i, "velocity_raw_deg_per_sec"] = sample_result.raw_velocity_deg_per_sec
-        df.at[i, "velocity_first_idx"] = actual_first_idx
-        df.at[i, "velocity_last_idx"] = actual_last_idx
-        df.at[i, "velocity_eye_used"] = used_eye
-        df.at[i, "velocity_window_selector"] = type(selected_selector).__name__
-        df.at[i, "velocity_fallback_applied"] = fallback_applied
+        out_velocity[i] = sample_result.velocity_deg_per_sec
+        out_dt_ms[i] = sample_result.dt_ms
+        out_velocity_raw[i] = sample_result.raw_velocity_deg_per_sec
+        out_first_idx[i] = actual_first_idx
+        out_last_idx[i] = actual_last_idx
+        out_eye_used[i] = used_eye
+        out_window_selector[i] = type(selected_selector).__name__
+        out_fallback_applied[i] = fallback_applied
 
         # Store the actual window width (in samples)
         final_window_size = actual_last_idx - actual_first_idx + 1
-        df.at[i, "window_width_samples"] = final_window_size
+        out_window_width[i] = final_window_size
+
+    # Assign accumulated per-sample results back as whole columns (value-identical
+    # to the previous per-cell writes; see the allocation note above).
+    df["velocity_deg_per_sec"] = out_velocity
+    df["dt_ms"] = out_dt_ms
+    df["velocity_raw_deg_per_sec"] = out_velocity_raw
+    df["window_any_invalid"] = out_window_any_invalid
+    df["window_width_samples"] = out_window_width
+    df["velocity_first_idx"] = out_first_idx
+    df["velocity_last_idx"] = out_last_idx
+    df["velocity_eye_used"] = out_eye_used
+    df["velocity_window_selector"] = out_window_selector
+    df["velocity_fallback_applied"] = out_fallback_applied
+    df["env_has_invalid_above"] = out_env_above
+    df["env_has_invalid_below"] = out_env_below
+    df["env_rule_triggered"] = out_env_rule
+    df["gap_rule_triggered"] = out_gap_triggered
+    df["gap_left_invalid_idx"] = out_gap_left
+    df["gap_right_invalid_idx"] = out_gap_right
 
     # Transparency: output window statistics
     computed = (~df["velocity_deg_per_sec"].isna()).sum()
