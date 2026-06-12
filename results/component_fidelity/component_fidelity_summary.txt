@@ -1,0 +1,56 @@
+Component-fidelity (direction-faithful recall = how well we
+reproduce Tobii's marginal effect of each component)
+
+component    dose           src       |Tdelta|  |Mdelta|  recall   prec   jacc
+------------------------------------------------------------------------------
+smoothing    median3        study_a1        88        82   0.591  0.634  0.444
+smoothing    median5        study_a1       150       164   0.773  0.707  0.586
+smoothing    median9        study_a1       256       307   0.820  0.684  0.595
+smoothing    average3       study_a1       269       257   0.888  0.930  0.836
+smoothing    average5       study_a1       619       602   0.918  0.944  0.870
+smoothing    average9       study_a1      1575      1575   0.946  0.946  0.898
+merge        25ms_0.5deg    study_a1        25        15   0.480  0.800  0.429
+merge        75ms_0.5deg    study_a1        37        15   0.324  0.800  0.300
+merge        150ms_0.5deg   study_a1        73        15   0.164  0.800  0.158
+merge        75ms_1deg      study_a1       302        51   0.156  0.922  0.154
+merge        75ms_2deg      study_a1       841        95   0.105  0.926  0.104
+merge        75ms_5deg      study_a1      2876       165   0.056  0.976  0.056
+discard      40ms           study_a1       210       308   0.910  0.620  0.584
+discard      60ms           study_a1       244       387   0.914  0.576  0.547
+discard      100ms          study_a1       556       749   0.962  0.714  0.695
+discard      140ms          study_a1      2608      2846   0.987  0.904  0.893
+gap_fill     25ms           study_a1       110       166   0.873  0.578  0.545
+gap_fill     75ms           study_a1       249       340   0.944  0.691  0.671
+gap_fill     100ms          study_a1       490       572   0.937  0.802  0.789
+gap_fill     150ms          study_a1       720       870   0.911  0.754  0.747
+gap_fill     250ms          study_a1       879      1044   0.875  0.737  0.730
+window       4ms            study_a1      3325      3389   0.978  0.960  0.941
+window       8ms            study_a1      1819      1882   0.973  0.940  0.917
+window       10ms           study_a1      1488      1541   0.964  0.931  0.900
+window       12ms           study_a1      1488      1541   0.964  0.931  0.900
+window       16ms           study_a1       821       871   0.949  0.894  0.853
+window       32ms           study_a1      1243      1302   0.953  0.909  0.871
+window       50ms           study_a1      3353      3451   0.958  0.931  0.896
+window       52ms           study_a1      3353      3451   0.958  0.931  0.896
+threshold    50dps          study_a1       948       911   0.942  0.980  0.924
+threshold    75dps          study_a1      1837      1767   0.949  0.986  0.937
+threshold    100dps         study_a1      2604      2497   0.948  0.989  0.938
+eye          left           study_a1       795       858   0.961  0.890  0.859
+eye          right          study_a1      1048      1089   0.979  0.942  0.924
+eye          strict_average study_a1      1000      1034   0.974  0.942  0.920
+smoothing    median9        inputs         134       233   0.910  0.524  0.500
+smoothing    average9       inputs        1916      2003   0.973  0.931  0.908
+merge        75ms_0.5deg    inputs          40        51   0.275  0.216  0.138
+discard      60ms           inputs          96       133   0.969  0.699  0.684
+window       1ms            inputs        1127      1166   0.908  0.877  0.810
+smoothing    average3       inputs   -- skipped
+gap_fill     75ms           inputs   -- skipped
+
+== pooled per component (micro-averaged) ==
+eye          n= 3  recall_dir=0.972  precision_dir=0.927  (colo recall=0.973)
+merge        n= 7  recall_dir=0.082  precision_dir=0.843  (colo recall=0.082)
+threshold    n= 3  recall_dir=0.947  precision_dir=0.986  (colo recall=0.947)
+window       n= 9  recall_dir=0.960  precision_dir=0.930  (colo recall=0.962)
+gap_fill     n= 5  recall_dir=0.905  precision_dir=0.740  (colo recall=0.980)
+smoothing    n= 8  recall_dir=0.931  precision_dir=0.892  (colo recall=0.932)  [env-drift]
+discard      n= 5  recall_dir=0.973  precision_dir=0.817  (colo recall=0.973)
