@@ -45,6 +45,19 @@ def test_build_arg_parser_exposes_central_flags_snapshot() -> None:
     assert [flag for flag in CENTRAL_CLI_FLAGS if flag not in flags] == []
 
 
+def test_merge_absorb_saccades_flag_threads_into_fixation_post() -> None:
+    parser = build_arg_parser()
+    base = ["--input", "in.tsv", "--output", "out.tsv", "--merge-close-fixations"]
+
+    default_fp = ConfigBuilder.build_fixation_post_config(parser.parse_args(base))
+    assert default_fp.merge_absorb_saccades is False
+
+    absorb_fp = ConfigBuilder.build_fixation_post_config(
+        parser.parse_args(base + ["--merge-absorb-saccades"])
+    )
+    assert absorb_fp.merge_absorb_saccades is True
+
+
 def test_config_builder_accepts_cli_namespace_after_refactor() -> None:
     parser = build_arg_parser()
     args = parser.parse_args(

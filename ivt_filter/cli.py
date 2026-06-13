@@ -517,6 +517,12 @@ def _add_postprocessing_arguments(parser: argparse.ArgumentParser) -> None:
         help="Maximum velocity in deg/s for relabeling gap samples (default: 35).",
     )
     parser.add_argument(
+        "--merge-absorb-saccades",
+        action="store_true",
+        help="Tobii-faithful merge: absorb the whole inter-fixation saccade "
+        "(bypass the gap velocity cap). Default off keeps the conservative cap.",
+    )
+    parser.add_argument(
         "--discard-short-fixations",
         action="store_true",
         help="Discard fixations whose duration is smaller than min-fixation-duration-ms.",

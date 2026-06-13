@@ -207,6 +207,7 @@ python -m ivt_filter.cli \
 | `--merge-close-fixations` | - | Merge fixations that are temporally/spatially close |
 | `--merge-fix-max-gap-ms` | `75` | Max time gap between fixations to merge (ms) |
 | `--merge-fix-max-angle-deg` | `0.5` | Max angular distance between fixation centers to merge (°) |
+| `--merge-absorb-saccades` | - | Tobii-faithful merge: absorb the whole inter-fixation saccade (see [docs/tuning_protocol.md](docs/tuning_protocol.md)) |
 | `--discard-short-fixations` | - | Remove fixations <60 ms (noise) |
 | `--time-column` | `time_us` | Name of your timestamp column |
 | `--time-unit` | `us` | Unit of timestamps (us or ms) |
