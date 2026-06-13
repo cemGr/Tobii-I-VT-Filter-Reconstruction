@@ -189,19 +189,20 @@ def merge_adjacent_fixations(
 
         # Relabel the gap between the two fixations as Fixation
         # IMPORTANT: EyesNotFound must NOT become Fixation
-        # OPTIMIZATION: do not include saccade samples (velocity check)
+        absorb_saccades = getattr(cfg, "merge_absorb_saccades", False)
         if s2 > e1 + 1:
             for j in range(e1 + 1, s2):
                 if labels[j] == "Fixation" or labels[j] == "EyesNotFound":
                     continue
-                
-                # Velocity-based gap filling:
-                # Only samples up to the configured velocity cap are merged.
-                # Prevents real saccade samples from ending up in fixations.
-                if velocity is not None and not pd.isna(velocity[j]):
+
+                # Velocity-based gap filling (default): only samples up to the
+                # configured velocity cap are merged, to keep real saccade
+                # samples out of fixations. When merge_absorb_saccades is set we
+                # follow Tobii and absorb the whole inter-fixation saccade.
+                if not absorb_saccades and velocity is not None and not pd.isna(velocity[j]):
                     if velocity[j] > cfg.max_gap_velocity_deg_per_sec:
                         continue
-                
+
                 labels[j] = "Fixation"
                 gap_samples_to_fix += 1
 

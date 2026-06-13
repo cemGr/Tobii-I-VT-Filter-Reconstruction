@@ -742,6 +742,120 @@ class TestMergeFixationsGapVelocityCap:
         ] * 6
 
 
+class TestMergeFixationsAbsorbSaccades:
+    """Flag-gated Tobii-faithful merge: absorb the inter-fixation saccade.
+
+    Tobii's MergeFixationsFilter relabels the entire gap between two merged
+    fixations regardless of velocity. Our default keeps the conservative
+    velocity cap (baseline-preserving); ``merge_absorb_saccades=True`` bypasses
+    the cap so the high-velocity saccade samples between the fixations become
+    Fixation, which is what merge is meant to do.
+    """
+
+    @staticmethod
+    def _merge(
+        gap_velocities: list[float],
+        *,
+        absorb_saccades: bool,
+        max_gap_velocity_deg_per_sec: float = 35.0,
+    ) -> tuple[pd.DataFrame, dict[str, object], slice]:
+        gap = len(gap_velocities)
+        fixation_len = 3
+        n = fixation_len + gap + fixation_len
+        gap_slice = slice(fixation_len, fixation_len + gap)
+        df = pd.DataFrame({
+            "time_ms": np.arange(n, dtype=float),
+            "combined_x_mm": np.zeros(n),
+            "combined_y_mm": np.zeros(n),
+            "eye_z_mm": np.full(n, 600.0),
+            "ivt_sample_type": (
+                ["Fixation"] * fixation_len
+                + ["Saccade"] * gap
+                + ["Fixation"] * fixation_len
+            ),
+            "velocity_deg_per_sec": (
+                [0.0] * fixation_len + gap_velocities + [0.0] * fixation_len
+            ),
+        })
+        cfg = FixationPostConfig(
+            merge_adjacent_fixations=True,
+            max_time_gap_ms=10.0,
+            max_angle_deg=0.5,
+            max_gap_velocity_deg_per_sec=max_gap_velocity_deg_per_sec,
+            merge_absorb_saccades=absorb_saccades,
+        )
+        result, stats = merge_adjacent_fixations(
+            df, cfg,
+            sample_col="ivt_sample_type",
+            time_col="time_ms",
+            x_col="combined_x_mm",
+            y_col="combined_y_mm",
+            eye_z_col="eye_z_mm",
+        )
+        return result, stats, gap_slice
+
+    def test_flag_defaults_to_false(self):
+        """Default is baseline-preserving: the flag is off."""
+        assert FixationPostConfig().merge_absorb_saccades is False
+
+    def test_default_keeps_high_velocity_saccade_samples_unmerged(self):
+        """With the flag off, the velocity cap still blocks saccade samples."""
+        result, stats, gap_slice = self._merge(
+            [120.0, 140.0], absorb_saccades=False
+        )
+
+        assert result.iloc[gap_slice]["ivt_sample_type"].tolist() == [
+            "Saccade",
+            "Saccade",
+        ]
+        assert stats["gap_samples_to_fixation"] == 0
+
+    def test_absorb_relabels_full_saccade_gap(self):
+        """With the flag on, the whole high-velocity gap becomes Fixation."""
+        result, stats, gap_slice = self._merge(
+            [120.0, 140.0], absorb_saccades=True
+        )
+
+        assert result.iloc[gap_slice]["ivt_sample_type"].tolist() == [
+            "Fixation",
+            "Fixation",
+        ]
+        assert stats["gap_samples_to_fixation"] == 2
+
+    def test_absorb_still_respects_eyesnotfound(self):
+        """Absorbing the gap must never overwrite EyesNotFound samples."""
+        gap = ["Saccade", "EyesNotFound", "Saccade"]
+        n = 3 + len(gap) + 3
+        df = pd.DataFrame({
+            "time_ms": np.arange(n, dtype=float),
+            "combined_x_mm": np.zeros(n),
+            "combined_y_mm": np.zeros(n),
+            "eye_z_mm": np.full(n, 600.0),
+            "ivt_sample_type": ["Fixation"] * 3 + gap + ["Fixation"] * 3,
+            "velocity_deg_per_sec": [0.0] * 3 + [120.0, np.nan, 120.0] + [0.0] * 3,
+        })
+        cfg = FixationPostConfig(
+            merge_adjacent_fixations=True,
+            max_time_gap_ms=10.0,
+            max_angle_deg=0.5,
+            merge_absorb_saccades=True,
+        )
+        result, stats = merge_adjacent_fixations(
+            df, cfg,
+            sample_col="ivt_sample_type",
+            time_col="time_ms",
+            x_col="combined_x_mm",
+            y_col="combined_y_mm",
+            eye_z_col="eye_z_mm",
+        )
+        assert result.iloc[3:6]["ivt_sample_type"].tolist() == [
+            "Fixation",
+            "EyesNotFound",
+            "Fixation",
+        ]
+        assert stats["gap_samples_to_fixation"] == 2
+
+
 # ---------------------------------------------------------------------------
 # 5. Integration: OlsenVelocityConfig with Tobii flags
 # ---------------------------------------------------------------------------

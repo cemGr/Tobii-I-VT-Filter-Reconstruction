@@ -266,12 +266,20 @@ def _predict(raw: pd.DataFrame, config) -> np.ndarray:
     return df[bench.prediction_column(config)].to_numpy()
 
 
+def _apply_merge_absorb(config) -> None:
+    """Opt-in: enable Tobii-faithful saccade absorption on a merge config."""
+    fp = getattr(config, "fixation_post", None)
+    if fp is not None and getattr(fp, "merge_adjacent_fixations", False):
+        fp.merge_absorb_saccades = True
+
+
 def compute_pair(
     spec: PairSpec,
     data_dir: Path,
     explicit_configs: dict[str, Any],
     max_rows: Optional[int] = None,
     baseline_cache: Optional[dict[tuple, np.ndarray]] = None,
+    merge_absorb_saccades: bool = False,
 ) -> dict[str, Any]:
     base_path = data_dir / spec.baseline
     var_path = data_dir / spec.variant
@@ -301,6 +309,9 @@ def compute_pair(
 
     cfg_b, _ = resolve_config(spec.baseline, base_path, explicit_configs)
     cfg_v, _ = resolve_config(spec.variant, var_path, explicit_configs)
+    if merge_absorb_saccades:
+        _apply_merge_absorb(cfg_v)
+        row["merge_absorb_saccades"] = True
 
     raw = ab  # B's raw gaze, aligned to the common samples
     # The baseline prediction is identical across every variant that shares the
@@ -431,6 +442,7 @@ def run(
     *,
     max_rows: Optional[int] = None,
     configs_by_source: Optional[dict[str, dict[str, Any]]] = None,
+    merge_absorb_saccades: bool = False,
 ) -> dict[str, Any]:
     if configs_by_source is None:
         configs_by_source = {
@@ -449,6 +461,7 @@ def run(
             configs_by_source.get(spec.source, {}),
             max_rows=max_rows,
             baseline_cache=baseline_cache,
+            merge_absorb_saccades=merge_absorb_saccades,
         )
         rows.append(row)
 
@@ -465,6 +478,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--component", nargs="*", default=None, help="restrict to these components")
     parser.add_argument("--source", choices=["study_a1", "inputs"], default=None)
     parser.add_argument("--plot", action="store_true")
+    parser.add_argument(
+        "--merge-absorb-saccades",
+        action="store_true",
+        help="opt-in: enable the Tobii-faithful merge (absorb the inter-fixation "
+        "saccade) to A/B the flag-gated fix against the default capped merge",
+    )
     args = parser.parse_args(argv)
 
     specs = build_pair_specs()
@@ -476,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
         print("[component_fidelity] no pairs match the filters", file=sys.stderr)
         return 1
 
-    result = run(specs, max_rows=args.max_rows)
+    result = run(specs, max_rows=args.max_rows, merge_absorb_saccades=args.merge_absorb_saccades)
     rows = result["variants"]
     pooled = result["pooled"]
 
