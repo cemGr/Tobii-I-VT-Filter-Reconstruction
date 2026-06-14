@@ -386,13 +386,25 @@ class IVTClassifierConfig:
     confident_switch_margin_deg: float = 4.0
     confident_switch_method: Literal["olsen2d", "ray3d", "ray3d_gaze_dir"] = "ray3d_gaze_dir"
 
+    # Saccade-edge erosion (event-boundary off-by-one). The centred Olsen window
+    # smears velocity across a fixation/saccade transition, lifting the boundary
+    # sample just over threshold so our saccade runs one sample too wide on each
+    # fixation-facing edge (clean single-eye conditions: GT-Fixation/pred-Saccade
+    # boundary errors outnumber the reverse ~7:1). When enabled, the first/last
+    # sample of a saccade run that borders a fixation is relabelled to Fixation
+    # iff its velocity sits in a narrow band just above threshold
+    # [threshold, threshold + band) — high-velocity (genuine) saccade edges are
+    # left untouched. Default off preserves the strict I-VT baseline.
+    erode_saccade_edges: bool = False
+    saccade_edge_velocity_band_deg: float = 2.0
+
     def __post_init__(self) -> None:
         _require_positive("velocity_threshold_deg_per_sec", self.velocity_threshold_deg_per_sec)
         for name in (
             "hysteresis_width_deg_per_sec", "near_threshold_band",
             "near_threshold_confidence_margin", "near_threshold_max_delta",
             "eye_jump_threshold_mm", "eye_jump_velocity_threshold",
-            "confident_switch_margin_deg",
+            "confident_switch_margin_deg", "saccade_edge_velocity_band_deg",
         ):
             _require_non_negative(name, getattr(self, name))
         for name in ("near_threshold_band_lower", "near_threshold_band_upper"):

@@ -88,6 +88,10 @@ class ConfigBuilder:
             enable_confident_switch=args.confident_switch_enabled,
             confident_switch_margin_deg=args.confident_switch_margin_deg,
             confident_switch_method=args.confident_switch_method,
+            erode_saccade_edges=getattr(args, "erode_saccade_edges", False),
+            saccade_edge_velocity_band_deg=getattr(
+                args, "saccade_edge_velocity_band_deg", 2.0
+            ),
         )
 
     @staticmethod

@@ -457,6 +457,26 @@ def _add_refinement_arguments(parser: argparse.ArgumentParser) -> None:
         help="Velocity threshold (deg/s) for 'clear saccade' in jump rule (default: 50.0).",
     )
 
+    # Saccade-edge erosion (event-boundary off-by-one)
+    parser.add_argument(
+        "--erode-saccade-edges",
+        action="store_true",
+        help=(
+            "Relabel a borderline saccade edge sample bordering a fixation back to "
+            "Fixation when its velocity is in [threshold, threshold+band). Corrects "
+            "the centred-window off-by-one (saccade ~1 sample too wide). Default off."
+        ),
+    )
+    parser.add_argument(
+        "--saccade-edge-velocity-band-deg",
+        type=float,
+        default=2.0,
+        help=(
+            "Velocity band (deg/s) above threshold within which a fixation-facing "
+            "saccade edge sample is eroded to Fixation (default: 2.0)."
+        ),
+    )
+
 
 def _add_postprocessing_arguments(parser: argparse.ArgumentParser) -> None:
     # Gap filling

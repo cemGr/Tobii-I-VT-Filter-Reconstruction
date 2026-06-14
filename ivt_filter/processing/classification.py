@@ -151,6 +151,18 @@ class IVTClassifier:
             labels.append(label)
             if label in ("Fixation", "Saccade"):
                 previous_motion_label = label
+
+        if self.cfg.erode_saccade_edges:
+            velocities = pd.to_numeric(
+                df["velocity_deg_per_sec"], errors="coerce"
+            ).to_numpy(dtype=float)
+            labels = self._erode_saccade_edges(
+                labels,
+                velocities,
+                float(self.cfg.velocity_threshold_deg_per_sec),
+                float(self.cfg.saccade_edge_velocity_band_deg),
+            )
+
         df["ivt_sample_type"] = labels
 
         df = rebuild_events_from_sample_labels(
@@ -372,6 +384,47 @@ class IVTClassifier:
         
         df["refinement_applied"] = refinement_reasons
         return df
+
+    @staticmethod
+    def _erode_saccade_edges(
+        labels: list[str],
+        velocities: np.ndarray,
+        threshold: float,
+        band: float,
+    ) -> list[str]:
+        """Relabel borderline saccade edge samples adjacent to a fixation.
+
+        Targets the centred-window event-boundary off-by-one: the first and/or
+        last sample of a Saccade run that *borders a Fixation* is relabelled to
+        Fixation iff its velocity sits in ``[threshold, threshold + band)``.
+        Run boundaries and neighbour labels are read from the original labelling
+        so each fixation-facing edge erodes at most one sample; genuine
+        high-velocity saccade edges (v >= threshold + band) are left untouched,
+        and edges bordering EyesNotFound/Unclassified are not eroded.
+        """
+        n = len(labels)
+        if n == 0 or band <= 0.0:
+            return labels
+        upper = threshold + band
+        out = list(labels)
+        i = 0
+        while i < n:
+            if labels[i] != "Saccade":
+                i += 1
+                continue
+            start = i
+            while i < n and labels[i] == "Saccade":
+                i += 1
+            end = i - 1
+            if start - 1 >= 0 and labels[start - 1] == "Fixation":
+                v = velocities[start]
+                if np.isfinite(v) and threshold <= v < upper:
+                    out[start] = "Fixation"
+            if end + 1 < n and labels[end + 1] == "Fixation":
+                v = velocities[end]
+                if np.isfinite(v) and threshold <= v < upper:
+                    out[end] = "Fixation"
+        return out
 
     def _enabled_refinement_rules(self) -> list[str]:
         """Return enabled non-baseline classifier rules for run diagnostics."""

@@ -95,8 +95,29 @@ attribution (WS-A, `scripts/attribute_discrepancies.py`) refines this:
    dominant cause, so it is the strongest candidate for promotion to default
    (which requires re-freezing the baseline across all merge conditions).
 
-All three default to current behaviour, so the benchmark gate stays green. The
-first two do not target the dominant clean-condition residual (velocity-magnitude
-and event-boundary timing); that residual reflects the irreducible difference
-between the reconstruction's per-sample velocity and Tobii's windowed
-classification, and is documented as a limitation rather than forced.
+4. `erode_saccade_edges` (default `False`, with `saccade_edge_velocity_band_deg`,
+   default 2.0) targets the event-boundary off-by-one. The per-sample attribution
+   makes it the largest single residual cause (~41% of all disagreements; 87-94%
+   on the clean single-eye conditions), and on the proper 20 ms window it is
+   directional: at fixation/saccade transitions our saccade runs ~1 sample too
+   wide (GT-Fixation/pred-Saccade boundary errors outnumber the reverse ~7:1 on
+   `LeftV30W20`). The centred Olsen window smears velocity across the transition,
+   lifting the boundary sample just over threshold. With the flag on, the
+   first/last sample of a saccade run that borders a fixation is relabelled to
+   Fixation iff its velocity is in `[threshold, threshold + band)`; genuine fast
+   saccade edges are untouched. **Tested and NOT recommended:** an A/B over the
+   clean conditions and a band sweep (2.0/1.0/0.5 deg/s) shows net kappa never
+   rises — it ranges from neutral to clearly negative (e.g. `LeftV30W20`
+   0.9953->0.9925 at band 2.0, ->0.9943 at band 1.0; `left20ms30` 0.9980->0.9889).
+   Genuine saccade edges share the same borderline-velocity band, so the rule
+   erodes correct labels at least as often as it fixes incorrect ones. This is a
+   reproducible negative result: the event-boundary residual is not correctable by
+   a velocity-band edge convention and is confirmed as an intrinsic limitation.
+
+All four default to current behaviour, so the benchmark gate stays green. Flags
+1, 2 and 4 do not net-improve the dominant clean-condition residual
+(velocity-magnitude and event-boundary timing); that residual reflects the
+irreducible difference between the reconstruction's per-sample velocity and
+Tobii's windowed classification, and is documented as a limitation rather than
+forced. Flag 4 in particular has been tested and shown not to help, so it stays
+opt-in only.

@@ -58,6 +58,23 @@ def test_merge_absorb_saccades_flag_threads_into_fixation_post() -> None:
     assert absorb_fp.merge_absorb_saccades is True
 
 
+def test_erode_saccade_edges_flag_threads_into_classifier() -> None:
+    parser = build_arg_parser()
+    base = ["--input", "in.tsv", "--output", "out.tsv"]
+
+    default_clf = ConfigBuilder.build_classifier_config(parser.parse_args(base))
+    assert default_clf.erode_saccade_edges is False
+    assert default_clf.saccade_edge_velocity_band_deg == 2.0
+
+    eroded_clf = ConfigBuilder.build_classifier_config(
+        parser.parse_args(
+            base + ["--erode-saccade-edges", "--saccade-edge-velocity-band-deg", "1.5"]
+        )
+    )
+    assert eroded_clf.erode_saccade_edges is True
+    assert eroded_clf.saccade_edge_velocity_band_deg == 1.5
+
+
 def test_config_builder_accepts_cli_namespace_after_refactor() -> None:
     parser = build_arg_parser()
     args = parser.parse_args(
