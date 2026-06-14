@@ -111,7 +111,7 @@ class ConfigBuilder:
             max_time_gap_ms=args.merge_fix_max_gap_ms,
             max_angle_deg=args.merge_fix_max_angle_deg,
             max_gap_velocity_deg_per_sec=args.merge_fix_max_gap_velocity_deg_per_sec,
-            merge_absorb_saccades=getattr(args, "merge_absorb_saccades", False),
+            merge_absorb_saccades=getattr(args, "merge_absorb_saccades", True),
             merge_adjacent_fixations=args.merge_close_fixations,
             discard_short_fixations=args.discard_short_fixations,
             discard_target=args.discard_fixation_target,

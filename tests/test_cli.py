@@ -49,13 +49,21 @@ def test_merge_absorb_saccades_flag_threads_into_fixation_post() -> None:
     parser = build_arg_parser()
     base = ["--input", "in.tsv", "--output", "out.tsv", "--merge-close-fixations"]
 
+    # Default is now Tobii-faithful (on).
     default_fp = ConfigBuilder.build_fixation_post_config(parser.parse_args(base))
-    assert default_fp.merge_absorb_saccades is False
+    assert default_fp.merge_absorb_saccades is True
 
+    # Explicit opt-in stays on.
     absorb_fp = ConfigBuilder.build_fixation_post_config(
         parser.parse_args(base + ["--merge-absorb-saccades"])
     )
     assert absorb_fp.merge_absorb_saccades is True
+
+    # --no- restores the conservative velocity cap.
+    capped_fp = ConfigBuilder.build_fixation_post_config(
+        parser.parse_args(base + ["--no-merge-absorb-saccades"])
+    )
+    assert capped_fp.merge_absorb_saccades is False
 
 
 def test_erode_saccade_edges_flag_threads_into_classifier() -> None:

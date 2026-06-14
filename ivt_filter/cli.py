@@ -538,9 +538,11 @@ def _add_postprocessing_arguments(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument(
         "--merge-absorb-saccades",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
+        default=True,
         help="Tobii-faithful merge: absorb the whole inter-fixation saccade "
-        "(bypass the gap velocity cap). Default off keeps the conservative cap.",
+        "(bypass the gap velocity cap). On by default; pass "
+        "--no-merge-absorb-saccades to restore the conservative velocity cap.",
     )
     parser.add_argument(
         "--discard-short-fixations",

@@ -77,8 +77,8 @@ attribution (WS-A, `scripts/attribute_discrepancies.py`) refines this:
    no-op on the binocular benchmark, so its A/B validation belongs on the
    controlled-study data rather than the 14-file benchmark.
 
-3. `merge_absorb_saccades` (default `False`) makes the fixation-merge stage
-   Tobii-faithful. The component-fidelity analysis
+3. `merge_absorb_saccades` (**default `True` since 2026-06-14**) makes the
+   fixation-merge stage Tobii-faithful. The component-fidelity analysis
    (`scripts/component_fidelity.py`, `results/component_fidelity/`) found merge
    to be the single weakest-reproduced stage: pooled direction-faithful recall
    0.08 against >=0.90 for every other component, with high precision, i.e. pure
@@ -86,14 +86,16 @@ attribution (WS-A, `scripts/attribute_discrepancies.py`) refines this:
    `max_gap_velocity_deg_per_sec` cap (35 deg/s, just above the 30 deg/s
    classification threshold): it blocks ~100% of the inter-fixation saccade
    samples, which is exactly what merge must absorb. Tobii's
-   `MergeFixationsFilter` does not cap. With the flag on, a merged pair relabels
-   its whole gap to Fixation (never overwriting EyesNotFound); the default keeps
-   the conservative cap. A/B over the study_a1 merge sweep
+   `MergeFixationsFilter` does not cap. The default now relabels a merged pair's
+   whole gap to Fixation (never overwriting EyesNotFound); pass
+   `--no-merge-absorb-saccades` (or `merge_absorb_saccades=False`) to restore the
+   conservative cap. A/B over the study_a1 merge sweep
    (`component_fidelity.py --component merge --source study_a1
    --merge-absorb-saccades`) lifts pooled merge recall 0.082 -> 0.901 at stable
-   precision (0.843 -> 0.852). Unlike the other two flags this targets a
-   dominant cause, so it is the strongest candidate for promotion to default
-   (which requires re-freezing the baseline across all merge conditions).
+   precision (0.843 -> 0.852). **Promoted to default and baseline re-frozen
+   (2026-06-14):** on the 13-condition benchmark only the two merge conditions
+   move, both upward (`I-VT-frequency120Fixation` kappa 0.9551 -> 0.9870;
+   `LeftV30W20MergeF75ms0-5angle` 0.9890 -> 0.9902); the other 11 stay bit-exact.
 
 4. `erode_saccade_edges` (default `False`, with `saccade_edge_velocity_band_deg`,
    default 2.0) targets the event-boundary off-by-one. The per-sample attribution
@@ -114,10 +116,11 @@ attribution (WS-A, `scripts/attribute_discrepancies.py`) refines this:
    reproducible negative result: the event-boundary residual is not correctable by
    a velocity-band edge convention and is confirmed as an intrinsic limitation.
 
-All four default to current behaviour, so the benchmark gate stays green. Flags
-1, 2 and 4 do not net-improve the dominant clean-condition residual
-(velocity-magnitude and event-boundary timing); that residual reflects the
-irreducible difference between the reconstruction's per-sample velocity and
-Tobii's windowed classification, and is documented as a limitation rather than
-forced. Flag 4 in particular has been tested and shown not to help, so it stays
-opt-in only.
+Flag 3 (`merge_absorb_saccades`) was the one dominant, correctable cause and is
+now the default; the baseline was re-frozen accordingly and the gate stays green.
+Flags 1, 2 and 4 default to current behaviour and do not net-improve the dominant
+clean-condition residual (velocity-magnitude and event-boundary timing); that
+residual reflects the irreducible difference between the reconstruction's
+per-sample velocity and Tobii's windowed classification, and is documented as a
+limitation rather than forced. Flag 4 in particular has been tested and shown not
+to help, so it stays opt-in only.

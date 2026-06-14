@@ -454,13 +454,14 @@ class FixationPostConfig:
     max_time_gap_ms: float = 75.0   # e.g. 75 ms as in the Tobii paper
     max_angle_deg: float = 0.5      # e.g. 0.5 degrees between fixation centers
     max_gap_velocity_deg_per_sec: float = 35.0  # maximum velocity for gap relabeling
-    # Tobii-faithful merge: absorb the inter-fixation saccade. When True, a merged
-    # fixation pair relabels its entire gap (the saccade between them) to Fixation,
-    # bypassing max_gap_velocity_deg_per_sec. Default False keeps the conservative,
-    # baseline-preserving velocity cap. Tobii's MergeFixationsFilter does not cap;
-    # the cap (35 deg/s, just above the 30 deg/s threshold) otherwise blocks nearly
-    # every real saccade sample and makes merge near-inert.
-    merge_absorb_saccades: bool = False
+    # Tobii-faithful merge: absorb the inter-fixation saccade. When True (the
+    # default), a merged fixation pair relabels its entire gap (the saccade between
+    # them) to Fixation, bypassing max_gap_velocity_deg_per_sec. Tobii's
+    # MergeFixationsFilter does not cap; the cap (35 deg/s, just above the 30 deg/s
+    # threshold) otherwise blocks nearly every real saccade sample and makes merge
+    # near-inert (pooled merge recall 0.082 vs 0.901). Set False to restore the
+    # conservative velocity cap (CLI: --no-merge-absorb-saccades).
+    merge_absorb_saccades: bool = True
 
     # Weighting strategy for the averaged fixation position during merge:
     # - "uniform": np.nanmean of all samples (previous behavior)

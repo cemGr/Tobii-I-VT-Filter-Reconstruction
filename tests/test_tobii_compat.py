@@ -646,7 +646,12 @@ class TestMergeFixationsSampleCountWeighting:
 
 
 class TestMergeFixationsGapVelocityCap:
-    """Regression tests for the configurable velocity cap during gap relabeling."""
+    """Regression tests for the configurable velocity cap during gap relabeling.
+
+    The cap is now opt-in (``merge_absorb_saccades=False``); the default absorbs
+    the whole inter-fixation saccade. These tests pin the cap behaviour, so they
+    construct the config with the cap explicitly enabled.
+    """
 
     @staticmethod
     def _merge_gap_velocities(
@@ -679,6 +684,7 @@ class TestMergeFixationsGapVelocityCap:
             max_time_gap_ms=10.0,
             max_angle_deg=0.5,
             max_gap_velocity_deg_per_sec=max_gap_velocity_deg_per_sec,
+            merge_absorb_saccades=False,  # opt into the cap these tests pin
         )
         result, stats = merge_adjacent_fixations(
             df, cfg,
@@ -746,10 +752,10 @@ class TestMergeFixationsAbsorbSaccades:
     """Flag-gated Tobii-faithful merge: absorb the inter-fixation saccade.
 
     Tobii's MergeFixationsFilter relabels the entire gap between two merged
-    fixations regardless of velocity. Our default keeps the conservative
-    velocity cap (baseline-preserving); ``merge_absorb_saccades=True`` bypasses
-    the cap so the high-velocity saccade samples between the fixations become
-    Fixation, which is what merge is meant to do.
+    fixations regardless of velocity. Our default (``merge_absorb_saccades=True``)
+    is Tobii-faithful and bypasses the velocity cap so the high-velocity saccade
+    samples between the fixations become Fixation, which is what merge is meant to
+    do. Setting it False restores the conservative velocity cap.
     """
 
     @staticmethod
@@ -794,9 +800,9 @@ class TestMergeFixationsAbsorbSaccades:
         )
         return result, stats, gap_slice
 
-    def test_flag_defaults_to_false(self):
-        """Default is baseline-preserving: the flag is off."""
-        assert FixationPostConfig().merge_absorb_saccades is False
+    def test_flag_defaults_to_true(self):
+        """Default is Tobii-faithful: the flag is on."""
+        assert FixationPostConfig().merge_absorb_saccades is True
 
     def test_default_keeps_high_velocity_saccade_samples_unmerged(self):
         """With the flag off, the velocity cap still blocks saccade samples."""

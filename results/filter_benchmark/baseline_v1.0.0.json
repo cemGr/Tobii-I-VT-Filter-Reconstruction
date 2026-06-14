@@ -16,14 +16,14 @@
       "event_mean_iou": 0.984643863587406
     },
     "I-VT-frequency120Fixation export_extracted.tsv": {
-      "cohen_kappa": 0.9551358698453246,
-      "percentage_agreement": 98.94896582733813,
-      "percentage_agreement_all": 98.93900677702477,
-      "fixation_recall": 98.914223669924,
-      "saccade_recall": 99.20374707259954,
-      "event_match_rate": 0.9926062846580407,
-      "event_correct_type_rate": 0.9907578558225508,
-      "event_mean_iou": 0.9800622199305729
+      "cohen_kappa": 0.9869690833221673,
+      "percentage_agreement": 99.71897482014388,
+      "percentage_agreement_all": 99.70003332963005,
+      "fixation_recall": 99.79561857316216,
+      "saccade_recall": 99.15690866510538,
+      "event_match_rate": 0.9907578558225508,
+      "event_correct_type_rate": 0.9898336414048059,
+      "event_mean_iou": 0.9887208266152014
     },
     "IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv": {
       "cohen_kappa": 0.9786397819810176,
@@ -76,14 +76,14 @@
       "event_mean_iou": 0.9925999812429893
     },
     "LeftV30W20MergeF75ms0-5angle_extracted.tsv": {
-      "cohen_kappa": 0.9890077746785025,
-      "percentage_agreement": 99.66637401229148,
-      "percentage_agreement_all": 99.68336851460948,
-      "fixation_recall": 99.70077797725912,
-      "saccade_recall": 99.41348973607037,
-      "event_match_rate": 0.9981617647058824,
-      "event_correct_type_rate": 0.9972426470588235,
-      "event_mean_iou": 0.9869737264546483
+      "cohen_kappa": 0.9901511426746819,
+      "percentage_agreement": 99.70149253731343,
+      "percentage_agreement_all": 99.71669814465059,
+      "fixation_recall": 99.75397300352417,
+      "saccade_recall": 99.31573802541544,
+      "event_match_rate": 0.9944852941176471,
+      "event_correct_type_rate": 0.9935661764705882,
+      "event_mean_iou": 0.9878009951111358
     },
     "LeftV30W20NoiseAvW9_extracted.tsv": {
       "cohen_kappa": 0.9778897746915057,

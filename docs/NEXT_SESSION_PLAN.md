@@ -81,6 +81,24 @@ Reihenfolge laut User: zuerst Decision 4, dann Decision 2, dann Bericht, evtl. D
 Verifikation grün: `ruff check ivt_filter`, `mypy ivt_filter` (55 Dateien), volle
 Suite 497 passed + 1 skip, Baseline-Gate 2 passed, 13/13 behaltene Bedingungen bit-genau.
 
+## Session 2026-06-14c: Decision 1 + Paper-Push erledigt
+
+- **Decision 1 (merge_absorb_saccades als Default) — UMGESETZT.** Dataclass-Default
+  `False`->`True`; CLI auf `BooleanOptionalAction` (`--merge-absorb-saccades` /
+  `--no-merge-absorb-saccades`, default on). A/B über 13 Bedingungen: nur die 2
+  Merge-Bedingungen bewegen sich, beide nach oben (`frequency120` 0.9551->0.9870;
+  `MergeF75ms0-5angle` 0.9890->0.9902), die anderen 11 bit-genau. Baseline neu
+  eingefroren, Gate grün, Suite 497 passed, ruff+mypy clean.
+- **Paper-Push — UMGESETZT.** §3 mathematisch formalisiert (~10 nummerierte
+  Gleichungen + Notations-/Window-Policy-Tabellen, amsmath). Neue §6b
+  „Implementation performance" (2 Figures + 2 Tabellen): 4 Velocity-Methoden
+  (Laufzeit+κ), scalar `df.at` vs. vektorisiert (bit-identisch, isoliert), Per-Stage
+  Breakdown. Neu: `scripts/benchmark_implementations.py`,
+  `scripts/generate_performance_figures.py` (schreibt `figures/perf_*.{png,pdf}` +
+  `figures/perf_values.tex` Makros), `Makefile perf`-Target,
+  `IVT-Paper/docs/repro_map.md` erweitert. Beide Branches werden zu GitHub
+  gepusht (Sessionende, User-freigegeben).
+
 ## Offene Entscheidungen / Next Steps (dem User vorlegen)
 
 1. **Merge-Fix zum Default machen?** `merge_absorb_saccades=True` als neuer
