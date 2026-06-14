@@ -1,0 +1,57 @@
+{
+  "env": {
+    "numpy_version": "1.26.4",
+    "pandas_version": "3.0.3",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python_version": "3.12.3",
+    "repeats": 3,
+    "warmup": 1
+  },
+  "rows": [
+    {
+      "cohen_kappa": 0.988404933324502,
+      "input": "I-VT-botheye20ms30threshold_extracted.tsv",
+      "method": "olsen2d",
+      "n_rows": 18002,
+      "percentage_agreement": 99.73051875140355,
+      "runtime_iqr_s": 9.762124718006817,
+      "runtime_median_s": 12.101821023999946,
+      "runtime_min_s": 11.562570772999607,
+      "status": "ok"
+    },
+    {
+      "cohen_kappa": 0.9929576176621673,
+      "input": "I-VT-botheye20ms30threshold_extracted.tsv",
+      "method": "ray3d",
+      "n_rows": 18002,
+      "percentage_agreement": 99.8371884123063,
+      "runtime_iqr_s": 1.4268838620046154,
+      "runtime_median_s": 12.781550037005218,
+      "runtime_min_s": 11.606244789996708,
+      "status": "ok"
+    },
+    {
+      "cohen_kappa": 0.9648377251326253,
+      "input": "I-VT-botheye20ms30threshold_extracted.tsv",
+      "method": "ray3d_gaze_dir",
+      "n_rows": 18002,
+      "percentage_agreement": 99.18032786885246,
+      "runtime_iqr_s": 0.4223217890030355,
+      "runtime_median_s": 11.253078390000155,
+      "runtime_min_s": 10.966895516001387,
+      "status": "ok"
+    },
+    {
+      "cohen_kappa": 0.9777083549922626,
+      "input": "I-VT-botheye20ms30threshold_extracted.tsv",
+      "method": "tobii_gaze_dir",
+      "n_rows": 18002,
+      "percentage_agreement": 99.47788008084437,
+      "runtime_iqr_s": 0.3575247899934766,
+      "runtime_median_s": 10.813974873999541,
+      "runtime_min_s": 10.539866768005595,
+      "status": "ok"
+    }
+  ]
+}

@@ -75,5 +75,10 @@ external:
 figures:
 	$(PYTHON) scripts/generate_sensitivity_figure.py
 
-reproduce: checksums benchmark attribution gazetoolkit external figures
+# Implementation-performance comparison (paper Section "Implementation performance").
+perf:
+	$(PYTHON) scripts/benchmark_implementations.py --which all --results-dir $(RESULTS_DIR)/implementation_benchmark
+	$(PYTHON) scripts/generate_performance_figures.py
+
+reproduce: checksums benchmark attribution gazetoolkit external figures perf
 	@echo "Reproduced all evaluation artefacts under $(RESULTS_DIR)/"

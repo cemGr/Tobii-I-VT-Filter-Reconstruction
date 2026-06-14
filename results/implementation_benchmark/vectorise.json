@@ -1,0 +1,11 @@
+{
+  "identical": true,
+  "input": "I-VT-botheye20ms30threshold_extracted.tsv",
+  "n_columns": 16,
+  "n_rows": 18002,
+  "scalar_iqr_s": 0.10084009849379072,
+  "scalar_median_s": 8.752157063005143,
+  "speedup": 435.8807194864321,
+  "vector_iqr_s": 0.0037813494964211714,
+  "vector_median_s": 0.020079247995454352
+}
