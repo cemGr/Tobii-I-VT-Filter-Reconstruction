@@ -140,7 +140,10 @@ print("=" * 70)
 print("PHASE 2: C5 ANOMALY — C3, C5, C6 METRICS")
 print("=" * 70)
 
-# C5: Right-eye occluded 120Hz — LeftFixation_extracted.tsv, left eye, median-3, merge+discard
+# C5: MISLABELED condition. LeftFixation_extracted.tsv is a byte-identical duplicate
+# of 'I-VT-frequency120Fixation export_extracted.tsv' (md5 9d3d29ee) — an AVERAGE-eye
+# 120 Hz recording, not a genuine left-eye/occluded condition. Running it with eye_mode=left
+# mismatches the average-eye GT, hence the artefactually low kappa. See test_data/inputs/PROVENANCE.md.
 c5_path = INPUTS / "LeftFixation_extracted.tsv"
 c5_config = _make_std_config(
     "left",

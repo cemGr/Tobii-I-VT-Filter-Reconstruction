@@ -3,7 +3,7 @@
   "source": "results/filter_benchmark/benchmark_results.json",
   "gate_metric": "cohen_kappa",
   "tolerance": 1e-06,
-  "n_conditions": 14,
+  "n_conditions": 13,
   "conditions": {
     "I-VT-botheye20ms30threshold_extracted.tsv": {
       "cohen_kappa": 0.9777083549922626,
@@ -54,16 +54,6 @@
       "event_match_rate": 0.992,
       "event_correct_type_rate": 0.9904,
       "event_mean_iou": 0.9903244962336701
-    },
-    "LeftFixation_extracted.tsv": {
-      "cohen_kappa": 0.8067341008123711,
-      "percentage_agreement": 94.94716726618705,
-      "percentage_agreement_all": 94.92278635707143,
-      "fixation_recall": 95.40780481573738,
-      "saccade_recall": 91.56908665105387,
-      "event_match_rate": 0.9371534195933456,
-      "event_correct_type_rate": 0.9232902033271719,
-      "event_mean_iou": 0.9517058106107367
     },
     "LeftV30W1_extracted.tsv": {
       "cohen_kappa": 0.966489404961162,

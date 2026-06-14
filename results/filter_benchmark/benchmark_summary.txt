@@ -1,28 +1,28 @@
 I-VT Filter Benchmark Overall Statistics
 ====================================
 
-Files: 14 successful / 14 total
+Files: 13 successful / 13 total
 Failed files: 0
-Total runtime: 861.0752 s
-Total samples: 333037
-GT Fixation/Saccade samples: 322561
+Total runtime: 294.9465 s
+Total samples: 315035
+GT Fixation/Saccade samples: 304769
 
 Weighted overall metrics
-- Agreement Fix/Sac: 99.2835 %
-- Agreement all labels: 99.2995 %
-- Fixation Recall: 99.3769 %
-- Saccade Recall: 98.6074 %
-- Cohen's Kappa pooled: 0.9735
-- Event Match Rate: 0.9863
-- Event Correct-Type Rate: 0.9819
+- Agreement Fix/Sac: 99.5367 %
+- Agreement all labels: 99.5496 %
+- Fixation Recall: 99.6090 %
+- Saccade Recall: 99.0135 %
+- Cohen's Kappa pooled: 0.9830
+- Event Match Rate: 0.9898
+- Event Correct-Type Rate: 0.9862
 
 Unweighted per-file means
-- Agreement Fix/Sac: 99.1653 %
-- Agreement all labels: 99.1767 %
-- Fixation Recall: 99.2929 %
-- Saccade Recall: 98.3380 %
-- Cohen's Kappa: 0.9688
-- Event Mean IoU: 0.9820
+- Agreement Fix/Sac: 99.4897 %
+- Agreement all labels: 99.5039 %
+- Fixation Recall: 99.5917 %
+- Saccade Recall: 98.8587 %
+- Cohen's Kappa: 0.9812
+- Event Mean IoU: 0.9843
 
 Best files by Fix/Sac agreement
 - left20ms30_extracted.tsv: 99.9449 % (all labels 99.9467 %, kappa 0.9980)
@@ -32,8 +32,8 @@ Best files by Fix/Sac agreement
 - LeftV30W20_extracted.tsv: 99.6835 % (all labels 99.7000 %, kappa 0.9897)
 
 Worst files by Fix/Sac agreement
-- LeftFixation_extracted.tsv: 94.9472 % (all labels 94.9228 %, kappa 0.8067)
 - LeftV30W1_extracted.tsv: 98.8692 % (all labels 98.9279 %, kappa 0.9665)
 - I-VT-frequency120Fixation export_extracted.tsv: 98.9490 % (all labels 98.9390 %, kappa 0.9551)
 - LeftV30W20NoiseAvW9_extracted.tsv: 99.1385 % (all labels 99.1834 %, kappa 0.9779)
 - onlyvelocity100_extracted.tsv: 99.3839 % (all labels 99.4001 %, kappa 0.9666)
+- IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv: 99.4386 % (all labels 99.4445 %, kappa 0.9786)
