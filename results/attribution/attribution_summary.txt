@@ -15,16 +15,16 @@ Discrepancy attribution
 == I-VT-frequency120Fixation export_extracted.tsv ==
 Discrepancy attribution
   threshold: 30.000 deg/s   eye_mode: average   smoothing: median
-  samples: 18002   disagreements: 191
+  samples: 18002   disagreements: 54
   category                 count    fraction
   gap_edge                     0     0.00%
-  event_boundary              69    36.13%
+  event_boundary              28    51.85%
   eye_offset_avg               0     0.00%
   near_threshold_fp            0     0.00%
-  smoothing_attenuation        3     1.57%
-  velocity_magnitude          99    51.83%
-  ambiguous                   18     9.42%
-  other                        2     1.05%
+  smoothing_attenuation        3     5.56%
+  velocity_magnitude           3     5.56%
+  ambiguous                   18    33.33%
+  other                        2     3.70%
 
 == IVT-Eyeboth-NoiseAv3-Win20-V30_extracted.tsv ==
 Discrepancy attribution
@@ -68,20 +68,6 @@ Discrepancy attribution
   ambiguous                    4     2.94%
   other                        0     0.00%
 
-== LeftFixation_extracted.tsv ==
-Discrepancy attribution
-  threshold: 30.000 deg/s   eye_mode: left   smoothing: median
-  samples: 18002   disagreements: 914
-  category                 count    fraction
-  gap_edge                     5     0.55%
-  event_boundary             328    35.89%
-  eye_offset_avg               0     0.00%
-  near_threshold_fp            0     0.00%
-  smoothing_attenuation        2     0.22%
-  velocity_magnitude          27     2.95%
-  ambiguous                   37     4.05%
-  other                      515    56.35%
-
 == LeftV30W1_extracted.tsv ==
 Discrepancy attribution
   threshold: 30.000 deg/s   eye_mode: left   smoothing: none
@@ -113,16 +99,16 @@ Discrepancy attribution
 == LeftV30W20MergeF75ms0-5angle_extracted.tsv ==
 Discrepancy attribution
   threshold: 30.000 deg/s   eye_mode: left   smoothing: none
-  samples: 18002   disagreements: 57
+  samples: 18002   disagreements: 51
   category                 count    fraction
   gap_edge                     0     0.00%
-  event_boundary              31    54.39%
+  event_boundary              30    58.82%
   eye_offset_avg               0     0.00%
   near_threshold_fp            0     0.00%
   smoothing_attenuation        0     0.00%
-  velocity_magnitude           6    10.53%
+  velocity_magnitude           1     1.96%
   ambiguous                    0     0.00%
-  other                       20    35.09%
+  other                       20    39.22%
 
 == LeftV30W20NoiseAvW9_extracted.tsv ==
 Discrepancy attribution
@@ -197,13 +183,13 @@ Discrepancy attribution
 == POOLED ==
 Discrepancy attribution
   threshold: nan deg/s   eye_mode: mixed   smoothing: mixed
-  samples: 333037   disagreements: 2333
+  samples: 315035   disagreements: 1276
   category                 count    fraction
-  gap_edge                     6     0.26%
-  event_boundary             971    41.62%
+  gap_edge                     1     0.08%
+  event_boundary             601    47.10%
   eye_offset_avg               0     0.00%
-  near_threshold_fp            1     0.04%
-  smoothing_attenuation       20     0.86%
-  velocity_magnitude         486    20.83%
-  ambiguous                  270    11.57%
-  other                      579    24.82%
+  near_threshold_fp            1     0.08%
+  smoothing_attenuation       18     1.41%
+  velocity_magnitude         358    28.06%
+  ambiguous                  233    18.26%
+  other                       64     5.02%

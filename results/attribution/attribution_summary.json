@@ -43,26 +43,26 @@
     },
     "I-VT-frequency120Fixation export_extracted.tsv": {
       "n_total": 18002,
-      "n_disagreements": 191,
+      "n_disagreements": 54,
       "counts": {
         "gap_edge": 0,
-        "event_boundary": 69,
+        "event_boundary": 28,
         "eye_offset_avg": 0,
         "near_threshold_fp": 0,
         "smoothing_attenuation": 3,
-        "velocity_magnitude": 99,
+        "velocity_magnitude": 3,
         "ambiguous": 18,
         "other": 2
       },
       "fraction": {
         "gap_edge": 0.0,
-        "event_boundary": 0.3612565445026178,
+        "event_boundary": 0.5185185185185185,
         "eye_offset_avg": 0.0,
         "near_threshold_fp": 0.0,
-        "smoothing_attenuation": 0.015706806282722512,
-        "velocity_magnitude": 0.518324607329843,
-        "ambiguous": 0.09424083769633508,
-        "other": 0.010471204188481676
+        "smoothing_attenuation": 0.05555555555555555,
+        "velocity_magnitude": 0.05555555555555555,
+        "ambiguous": 0.3333333333333333,
+        "other": 0.037037037037037035
       },
       "params": {
         "near_threshold_eps_deg": 0.05,
@@ -193,44 +193,6 @@
       "eye_mode": "average",
       "smoothing_mode": "none"
     },
-    "LeftFixation_extracted.tsv": {
-      "n_total": 18002,
-      "n_disagreements": 914,
-      "counts": {
-        "gap_edge": 5,
-        "event_boundary": 328,
-        "eye_offset_avg": 0,
-        "near_threshold_fp": 0,
-        "smoothing_attenuation": 2,
-        "velocity_magnitude": 27,
-        "ambiguous": 37,
-        "other": 515
-      },
-      "fraction": {
-        "gap_edge": 0.005470459518599562,
-        "event_boundary": 0.3588621444201313,
-        "eye_offset_avg": 0.0,
-        "near_threshold_fp": 0.0,
-        "smoothing_attenuation": 0.002188183807439825,
-        "velocity_magnitude": 0.02954048140043764,
-        "ambiguous": 0.04048140043763676,
-        "other": 0.563457330415755
-      },
-      "params": {
-        "near_threshold_eps_deg": 0.05,
-        "boundary_extra_samples": 0,
-        "event_boundary_samples": 2,
-        "min_single_eye_run": 3,
-        "confident_margin_deg": 2.0,
-        "smoothing_recheck": true
-      },
-      "threshold": 30.0,
-      "half_window_samples": 2,
-      "gt_col": "gt_sample_type",
-      "pred_col": "ivt_event_type_post",
-      "eye_mode": "left",
-      "smoothing_mode": "median"
-    },
     "LeftV30W1_extracted.tsv": {
       "n_total": 18002,
       "n_disagreements": 193,
@@ -309,26 +271,26 @@
     },
     "LeftV30W20MergeF75ms0-5angle_extracted.tsv": {
       "n_total": 18002,
-      "n_disagreements": 57,
+      "n_disagreements": 51,
       "counts": {
         "gap_edge": 0,
-        "event_boundary": 31,
+        "event_boundary": 30,
         "eye_offset_avg": 0,
         "near_threshold_fp": 0,
         "smoothing_attenuation": 0,
-        "velocity_magnitude": 6,
+        "velocity_magnitude": 1,
         "ambiguous": 0,
         "other": 20
       },
       "fraction": {
         "gap_edge": 0.0,
-        "event_boundary": 0.543859649122807,
+        "event_boundary": 0.5882352941176471,
         "eye_offset_avg": 0.0,
         "near_threshold_fp": 0.0,
         "smoothing_attenuation": 0.0,
-        "velocity_magnitude": 0.10526315789473684,
+        "velocity_magnitude": 0.0196078431372549,
         "ambiguous": 0.0,
-        "other": 0.3508771929824561
+        "other": 0.39215686274509803
       },
       "params": {
         "near_threshold_eps_deg": 0.05,
@@ -537,28 +499,28 @@
     }
   },
   "pooled": {
-    "n_total": 333037,
-    "n_disagreements": 2333,
+    "n_total": 315035,
+    "n_disagreements": 1276,
     "counts": {
-      "gap_edge": 6,
-      "event_boundary": 971,
+      "gap_edge": 1,
+      "event_boundary": 601,
       "eye_offset_avg": 0,
       "near_threshold_fp": 1,
-      "smoothing_attenuation": 20,
-      "velocity_magnitude": 486,
-      "ambiguous": 270,
-      "other": 579
+      "smoothing_attenuation": 18,
+      "velocity_magnitude": 358,
+      "ambiguous": 233,
+      "other": 64
     },
     "fraction": {
-      "gap_edge": 0.002571795970852979,
-      "event_boundary": 0.41620231461637375,
+      "gap_edge": 0.0007836990595611285,
+      "event_boundary": 0.47100313479623823,
       "eye_offset_avg": 0.0,
-      "near_threshold_fp": 0.0004286326618088298,
-      "smoothing_attenuation": 0.008572653236176597,
-      "velocity_magnitude": 0.2083154736390913,
-      "ambiguous": 0.11573081868838406,
-      "other": 0.24817831118731248
+      "near_threshold_fp": 0.0007836990595611285,
+      "smoothing_attenuation": 0.014106583072100314,
+      "velocity_magnitude": 0.28056426332288403,
+      "ambiguous": 0.18260188087774296,
+      "other": 0.050156739811912224
     },
-    "n_conditions": 14
+    "n_conditions": 13
   }
 }

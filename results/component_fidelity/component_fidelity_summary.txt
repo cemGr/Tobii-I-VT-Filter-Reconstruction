@@ -9,12 +9,12 @@ smoothing    median9        study_a1       256       307   0.820  0.684  0.595
 smoothing    average3       study_a1       269       257   0.888  0.930  0.836
 smoothing    average5       study_a1       619       602   0.918  0.944  0.870
 smoothing    average9       study_a1      1575      1575   0.946  0.946  0.898
-merge        25ms_0.5deg    study_a1        25        15   0.480  0.800  0.429
-merge        75ms_0.5deg    study_a1        37        15   0.324  0.800  0.300
-merge        150ms_0.5deg   study_a1        73        15   0.164  0.800  0.158
-merge        75ms_1deg      study_a1       302        51   0.156  0.922  0.154
-merge        75ms_2deg      study_a1       841        95   0.105  0.926  0.104
-merge        75ms_5deg      study_a1      2876       165   0.056  0.976  0.056
+merge        25ms_0.5deg    study_a1        25        69   0.640  0.232  0.205
+merge        75ms_0.5deg    study_a1        37       110   0.757  0.255  0.235
+merge        150ms_0.5deg   study_a1        73       126   0.603  0.349  0.284
+merge        75ms_1deg      study_a1       302       346   0.762  0.665  0.550
+merge        75ms_2deg      study_a1       841       942   0.923  0.824  0.771
+merge        75ms_5deg      study_a1      2876      2799   0.921  0.947  0.876
 discard      40ms           study_a1       210       308   0.910  0.620  0.584
 discard      60ms           study_a1       244       387   0.914  0.576  0.547
 discard      100ms          study_a1       556       749   0.962  0.714  0.695
@@ -38,19 +38,12 @@ threshold    100dps         study_a1      2604      2497   0.948  0.989  0.938
 eye          left           study_a1       795       858   0.961  0.890  0.859
 eye          right          study_a1      1048      1089   0.979  0.942  0.924
 eye          strict_average study_a1      1000      1034   0.974  0.942  0.920
-smoothing    median9        inputs         134       233   0.910  0.524  0.500
-smoothing    average9       inputs        1916      2003   0.973  0.931  0.908
-merge        75ms_0.5deg    inputs          40        51   0.275  0.216  0.138
-discard      60ms           inputs          96       133   0.969  0.699  0.684
-window       1ms            inputs        1127      1166   0.908  0.877  0.810
-smoothing    average3       inputs   -- skipped
-gap_fill     75ms           inputs   -- skipped
 
 == pooled per component (micro-averaged) ==
 eye          n= 3  recall_dir=0.972  precision_dir=0.927  (colo recall=0.973)
-merge        n= 7  recall_dir=0.082  precision_dir=0.843  (colo recall=0.082)
-threshold    n= 3  recall_dir=0.947  precision_dir=0.986  (colo recall=0.947)
-window       n= 9  recall_dir=0.960  precision_dir=0.930  (colo recall=0.962)
+window       n= 8  recall_dir=0.964  precision_dir=0.934  (colo recall=0.965)
+discard      n= 4  recall_dir=0.973  precision_dir=0.821  (colo recall=0.973)
+smoothing    n= 6  recall_dir=0.905  precision_dir=0.896  (colo recall=0.905)  [env-drift]
 gap_fill     n= 5  recall_dir=0.905  precision_dir=0.740  (colo recall=0.980)
-smoothing    n= 8  recall_dir=0.931  precision_dir=0.892  (colo recall=0.932)  [env-drift]
-discard      n= 5  recall_dir=0.973  precision_dir=0.817  (colo recall=0.973)
+threshold    n= 3  recall_dir=0.947  precision_dir=0.986  (colo recall=0.947)
+merge        n= 6  recall_dir=0.901  precision_dir=0.852  (colo recall=0.901)
