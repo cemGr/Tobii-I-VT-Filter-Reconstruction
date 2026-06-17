@@ -1,5 +1,10 @@
 # Tobii I-VT Filter Reconstruction
 
+Tobii project file and tsv files which has been used for this project and benchmark (free acess until December 2026): https://1drv.ms/f/c/e101278c5ec85f65/IgAGIZegdvVbRp0-inCIUamLAROeVd43mijnIKERR5gJvaw?e=Ch74SQ
+
+(Tobii gives everyone a 30 day free test trial for tobii pro lab (june 2026)) https://www.tobii.com/products/software/behavior-research-software/tobii-pro-lab
+
+
 A from-scratch Python implementation of Tobii's I-VT (Velocity-Threshold) filter. Classifies eye-tracking data into fixations, saccades, and unclassified samples based on gaze velocity.
 
 > **Stable release:** `1.0.0` is the first stable version with a settled public API. See [CHANGELOG.md](CHANGELOG.md) for details.
@@ -34,7 +39,7 @@ Raw eye-tracking data
     ↓
 [6] Classify (Fixation if v < threshold, else Saccade)
     ↓
-[7] Merge nearby fixations (post-processing)
+[7] Merge nearby fixations (post-processing) 
     ↓
 [8] Filter short fixations (optional)
     ↓
